@@ -7,8 +7,8 @@
 | 프로젝트 이름 / 확인된 절대경로 | 달기지 리와인드 (가칭) / C:\Users\USER\Desktop\나사 첼린지\Junior-Astronaut-Mission-Trainer |
 | 현재 단계 / 실제 시작 시각 | 역할별 워크플로·시작 계약 v0.1 작성 및 공개 저장소 반영. 2026-11-14 KST; 24시간 제작 시작 시각 미정. |
 | 시간·인원 / 역할 / 호스트·대상 | 총 24시간 사용자 지정. PM: 부모 에이전트 / 문서 준비 Worker: project_setup. Windows 호스트. 2명·대상 Windows 2대는 기존 기본값이며 명시 재확인 아님. |
-| 주제·자료 / 공식 조사·한계 | 2026-11-14 Asia/Seoul PM이 공식 Details/Resources 브라우저 본문 확인 후 전달. 요구·자료 목록은 PROJECT 참조. 실제 데이터 수집·개별 라이선스·전체 행사 규정·마감 확인 미완료. |
-| 비교·추천 / 선택·승인 | 사용자 Blender + Godot·GDScript 1인칭 3D·웹 출력 방향 승인. C+A 달 기지·24시간·균형 유지. 규칙 수치는 START_SPEC v0.1로 고정. 실제 도구 실행·두 PC·자료·claim·구현 준비 미완료. |
+| 주제·자료 / 공식 조사·한계 | DONKI 과거1건·CSA 설명/사용조건 준비 및 독립검증 완료. docs/DATA_SOURCES.md 참조. 행사 전체 규정·마감과 제품 적용은 미완료. |
+| 비교·추천 / 선택·승인 | 사용자 Blender + Godot·GDScript 1인칭 3D·웹 출력 방향 승인. C+A 달 기지·24시간·균형 유지. 규칙 v0.1 고정. 본인 Godot·템플릿·신원/루트·브라우저와 실제 자료 준비 완료. 팀원 PC 증거·claim 미완료. |
 | 창의성 선호（안정적/균형/실험적/자유 설명）/ 답변 또는 명시한 가정 | 사용자 균형 선택. |
 | Git 루트 / 기존 변경 / 브랜치 | 독립 루트 확인, docs/mission-spec-v2. 시작 계약 410063037ba62da61f9119b4ba8b10cbdadc9ccb를 docs 및 두 feature refs에 push·SHA 확인. 현재 docs에서 후속 기록만 변경. 제품 소스 없음. |
 | 신원 확인 / 인증·권한 확인 상태（개인 값 제외） | PM 읽기 확인: gh 활성 계정 dyhan0528, 저장소 ADMIN. dyhan0528·jsjavsj 각각 admin. 조직 Owner 여부 미검증. 로컬 유효 user.name/user.email 존재, 개인 값 기록 안 함. |
@@ -267,3 +267,22 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 
 - DOC-DELIVERY-LOG-001: 이 결과 기록을 독립 검토 후 docs에 명시 commit/push하고 최종 원격 대조한다. 작업 브랜치 기준은 시작 계약에 유지한다.
 - 바로 다음 행동은 README의 본인/팀원 링크다. 두 PC의 실제 환경·준비 조건·claim을 AI가 채우며 사람에게 새 기획이나 동일 정보 재입력을 요구하지 않는다. IMPLEMENTATION_READY=false, 제품 검사는 미실행이다.
+
+## 현재 PC 환경 준비 실행 — 2026-11-14
+
+- 사용자 실제 진행 승인에 따라 environment Worker project_setup이 준비한다. 재개 docs HEAD 1fddcc5342431cbcb5aa72a7a616ed7836bad379 clean/fetch 대조. 계약 4100630 존재, #1 OPEN/blocked·dyhan0528 확인.
+- ENV-PERSONAL-001: 기존 본인 Git 신원값을 비공개 재사용하여 .user_info 생성, 예제와 Windows 점검 도구 2개를 원본 그대로 복사. 기존 파일 부재 확인, 토큰·개인값 출력 없음. .user_info/.tools/logs Git 제외.
+- GODOT-PORTABLE-001 executing: 공식 GitHub godotengine/godot 4.7.2-stable API에서 일반판 win64 및 동일 export templates 자산·SHA256 확인. 프로젝트 .tools 아래 다운로드·해시 대조·압축해제, _sc_ self-contained 모드로 전역 설정 변경 없이 실행 검증할 계획.
+- 게임 코드·모델·project.godot 생성은 아직 금지, IMPLEMENTATION_READY=false. 팀원은 준비 중이며 실제 두 번째 PC 증거는 없다.
+
+## 본인 환경·자료 준비 결과 — 현재 상태
+
+- 현재 PC readiness: 준비 완료. Godot 4.7.2.stable.official.ed1daf0bf 실제 실행, 동일4.7.2.stable export templates35개·공식SHA256 일치, 기존 Git 신원 파일/검사·독립루트·로그인 dyhan0528/ADMIN, Edge157.0.4341.46·Chrome157.0.8103.78 파일버전 확인. 상세 명령·경로·예외는 docs/ENVIRONMENT.md.
+- ENV-PERSONAL-001 completed: 원본 예제/Windows 점검2파일 복사·해시일치, 본인값 .user_info 비공개 준비. 원본 CMD 경로/OS 실행정책 실패를 기록하고 절대 PS1·단일프로세스 ExecutionPolicy로 재검사 exit0. 전역 정책/신원 설정 변경 없음.
+- GODOT-PORTABLE-001 completed: 공식 자산 다운로드·해시검증·.tools 압축해제·_sc_ 구성·템플릿설치. 첫 headless 실행의 전역 user-data 접근 오류 후 자식 APPDATA만 로컬로 격리해 exit0/stderr없음. 실제 제품 프로젝트/렌더링/Web 검사는 수행하지 않았다.
+- .tools/logs/.user_info는 Git 제외, .git/info/exclude에도 도구/로그 추가해 다른 작업 브랜치에서도 로컬설치 노출 방지. 설치 아카이브·실행파일·개인값은 stage하지 않는다.
+- 자료 준비: data_prep의 docs/DATA_SOURCES.md, research/donki-sample.json 및 metadata를 verify_planning이 독립 API/원문 대조해 통과. 과거 DONKI M2.3 플레어1개와 CSA 교육 설명·사용조건 준비. 제품 규칙과 실측 자료를 분리하며 제품 적용은 미완료.
+- 팀원 jsjavsj: 사용자 응답은 “하고 있어”(준비 중). 두 번째 PC의 실제 루트/버전/브랜치/계약 증거 없음. 본인 검사결과를 대신 사용하지 않음.
+- 전체 IMPLEMENTATION_READY=false의 남은 사유: 팀원 PC 증거·해당 이슈의 실제 ready/claim·시작 패킷 대조. 현재 본인의 도구 미설치나 수치 미정을 blocker로 반복하지 않는다. 모델링 통합에는 HH-001 인터페이스·core import 검증이 별도 선행한다.
+- ENV-DOCS-001: 환경 결과·필요 ignore·원본 점검 사본·자료파일을 독립 검토 후 docs에 명시 commit/push한다. 제품 코드·모델은 이번 Worker 범위에서 만들지 않았다.
+- ENV-ISSUES-001 completed: #1/#4를 gh issue view로 조회 후 기존 body의 낡은 본인 환경 blocker를 갱신하고 환경/자료 링크를 추가했다. gh issue edit --body-file 후 body 전체·assignee 재조회 일치. #1 dyhan0528/#4 jsjavsj, OPEN/blocked 유지. 규칙 Contract-Commit은 변경하지 않았다.

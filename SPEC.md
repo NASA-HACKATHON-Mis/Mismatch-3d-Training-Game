@@ -1,5 +1,7 @@
 # 달기지 리와인드 — 1인칭 3D 기술 설계 v2
 
+현재 본인 PC의 실제 도구·템플릿·신원 준비는 [ENVIRONMENT](docs/ENVIRONMENT.md), NASA/CSA 자료 준비는 [DATA_SOURCES](docs/DATA_SOURCES.md)에 기록했다. 아래 초기 환경 관측은 과거 이력이다. 팀원 PC 증거·claim과 제품 실행 검증은 별도 미완료다.
+
 이 파일은 전체 기술 구조 문서다. **현재 초기 규칙·인터페이스의 단일 기준은 [START_SPEC v0.1](START_SPEC.md)**이며 이전 초안의 수치 미정 표현을 갱신한다. 역할별 실행 순서는 [WORKFLOW](WORKFLOW.md), 자산 소유권·규격은 [ASSET_BRIEF](ASSET_BRIEF.md)를 따른다. C 기지 건설 + A 되돌리기 및 Blender + Godot·GDScript의 1인칭 3D·웹 출력 방향은 사용자 승인 사항이다. 초기 수치는 START_SPEC에 고정했다. 실제 버전 설치·두 PC 준비·claim·제품 검증은 별도 증거가 필요하다. 빈 항목은 미정이며 구현 준비 증거가 아니다.
 
 - 승인된 제품 형태 / 아키텍처: Blender 모델링 + Godot·GDScript 1인칭 3D, 웹 출력. Compatibility 렌더러·단일스레드 웹 권장.

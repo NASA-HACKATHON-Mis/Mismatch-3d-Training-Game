@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "retrieved_at": "2026-11-14T15:49:09.6214612+09:00",
+  "provider": "NASA CCMC / DONKI",
+  "api_reference": "https://ccmc.gsfc.nasa.gov/DONKI/api/",
+  "openapi_url": "https://ccmc.gsfc.nasa.gov/DONKI/api/openapi/",
+  "request_url": "https://ccmc.gsfc.nasa.gov/DONKI-API/get/FLR?startDate=2016-01-01&endDate=2016-01-02&catalog=M2M_CATALOG&class=ALL&version=Latest",
+  "raw_file": "donki-sample.json",
+  "raw_sha256": "A2AD2A855F30AB79DAEF95CDF819F02803BE2A2FB2F219C32F3EF374DB3BF6B0",
+  "raw_record_count": 1,
+  "selected_event_id": "2016-01-01T23:10:00-FLR-001",
+  "event_link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/9963/-1",
+  "data_version_id": 5,
+  "transformations": "None: HTTP response body saved directly, parsed only for validation",
+  "use": "Archived factual education card; no mapping to game risk, health, or resource values",
+  "live_data": false,
+  "source_detail_web_crosscheck": "Failed through web reader; values verified directly from official API response",
+  "rules_url": "https://ccmc.gsfc.nasa.gov/tools/DONKI/",
+  "publication_policy_url": "https://ccmc.gsfc.nasa.gov/publication-policy/"
+}

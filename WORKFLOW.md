@@ -14,7 +14,7 @@
 | 4 | 규칙·복원·설명 확장, GLB import 확인 | 확인된 규격으로 나머지 자산 제작 | feature 커밋·자산 manifest·검사 결과 |
 | 5 | 독립 검증·제출 자료 준비 | 모델 결함 수정·재현 보조 | 통합 snapshot·시연·출처·접근 증거 |
 
-현재 공통 준비 상태는 **IMPLEMENTATION_READY=false**입니다. 문서와 실제 이슈 7개는 있으나 도구 실행·두 PC 증거·데이터 검토·작업 claim은 미완료입니다. 숫자 규칙은 START_SPEC v0.1로 설계했지만 문서 산술 검산을 제품 테스트로 간주하지 않습니다.
+현재 공통 준비 상태는 **IMPLEMENTATION_READY=false**입니다. 본인 dyhan0528 PC의 Godot·템플릿·신원·브라우저 버전 확인은 [환경 기록](docs/ENVIRONMENT.md), 실제 자료 수집·사용 조건 검토는 [자료 기록](docs/DATA_SOURCES.md)에 완료 증거가 있습니다. 팀원 PC 증거와 ready/claim·시작 패킷 대조가 남았습니다. 숫자 규칙은 START_SPEC v0.1로 설계했지만 문서 산술 검산을 제품 테스트로 간주하지 않습니다.
 
 ## 준비 단계에서 AI가 맡을 일
 
@@ -47,11 +47,11 @@ $HasEmail = -not [string]::IsNullOrWhiteSpace((git config --get user.email))
 "Git 신원 존재: name=$HasName email=$HasEmail"
 ```
 
-본인은 dyhan0528, 팀원은 jsjavsj 계정으로 접속한다. 로그인하지 않았다면 자기 PC에서 `gh auth login`을 진행한다. 토큰·비밀번호를 채팅이나 파일에 보내지 않는다. Git 이름/이메일은 커밋에 공개되는 정보이므로 기존 값이 본인인지 비공개 확인하며 상대방 값을 복사하지 않는다. AI가 이미 승인된 본인 Git 설정을 재사용해 START D에 따른 개인 파일 준비·검사를 진행한다. 같은 이름·이메일을 다시 입력하는 숙제를 사람에게 주지 않는다. 각 PC에서 본인 값만 사용하고 `.user_info`에 토큰 저장·타인 파일 복사·Git 추적을 금지한다. 현재 개인 파일과 점검 도구 사본 준비는 미수행이며 완료로 표시하지 않는다.
+본인은 dyhan0528, 팀원은 jsjavsj 계정으로 접속한다. 로그인하지 않았다면 자기 PC에서 `gh auth login`을 진행한다. 토큰·비밀번호를 채팅이나 파일에 보내지 않는다. Git 이름/이메일은 커밋에 공개되는 정보이므로 기존 값이 본인인지 비공개 확인하며 상대방 값을 복사하지 않는다. AI가 이미 승인된 본인 Git 설정을 재사용해 START D에 따른 개인 파일 준비·검사를 진행한다. 같은 이름·이메일을 다시 입력하는 숙제를 사람에게 주지 않는다. 각 PC에서 본인 값만 사용하고 `.user_info`에 토큰 저장·타인 파일 복사·Git 추적을 금지한다. 본인 PC의 개인 파일·점검 도구 준비와 실행은 완료했다(환경 기록 참조). 팀원 PC는 별도로 실제 확인하며 본인 결과를 복사하지 않는다.
 
 ## 프로그램 준비
 
-- [Godot Windows 공식 다운로드](https://godotengine.org/download/windows/): 일반판 x86_64 **4.7.2**와 같은 버전 export templates가 현재 고정 후보다. 기존 설치가 있으면 먼저 경로·버전을 확인한다. 실제 실행 검증은 아직 미완료다. C#/.NET판은 웹 목표에 사용하지 않는다.
+- [Godot Windows 공식 다운로드](https://godotengine.org/download/windows/): 일반판 x86_64 **4.7.2**와 같은 버전 export templates가 현재 고정 후보다. 기존 설치가 있으면 먼저 경로·버전을 확인한다. 본인 PC는 4.7.2.stable.official.ed1daf0bf와 동일 템플릿 실행 준비를 완료했다. 경로·격리 실행법은 docs/ENVIRONMENT.md를 따른다. 팀원 PC는 별도 확인한다. C#/.NET판은 웹 목표에 사용하지 않는다.
 - [Blender 공식 다운로드](https://www.blender.org/download/) 또는 [공식 LTS](https://www.blender.org/download/lts/): 설치된 버전을 우선 확인한다. 없다면 공식 LTS를 설치하고 실제 버전을 기록한다. 최신 번호를 추측하거나 재설치를 강제하지 않는다.
 - [Git Windows](https://git-scm.com/downloads/win), [GitHub CLI](https://cli.github.com/): 명령이 없다면 해당 도구만 준비한다.
 
