@@ -315,3 +315,11 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 사용자 직접 플레이: 제품 커밋 `dccfd11c0074866b2b0265be7e3a2c6305b853b3`의 시작 안내(화면 클릭 → WASD 이동 → E로 단말기 열기 → 시설 배치 → 다음 턴 → 되감기)에 사용자가 “다 작동함.”이라고 확인했다. 이 결과는 앞의 자동 검사 90개와 별도의 수동 확인이다. 실행 환경과 브라우저는 명시되지 않았다.
 - 다음 검증: 목표 브라우저에서 게임 로딩·입력·되감기·같은 턴 비교를 확인한다. 그때까지 #1은 OPEN으로 유지한다. 팀원 Blender 모델 통합은 후속 작업이다.
 - CORE-USER-PLAY-HH001-001: 승인된 `feature/HH-001-core-loop`에서 `WORK.md`만 검토 후 `git add -- WORK.md` → `git commit -m "docs: record HH-001 player verification"` → `git push origin feature/HH-001-core-loop`로 반영하고 원격 SHA를 대조한다. #1의 기존 assignee·OPEN 상태를 확인한 뒤 `gh issue edit 1 --repo NASA-HACKATHON-Mis/Mismatch-3d-Training-Game --body-file <진행 기록>`으로 사용자 직접 확인을 덧붙이고 재조회한다.
+
+## 첫 모델 수령과 이슈 대조 — 2026-11-14
+
+- 최신 원격 `feature/HH-004-assets`의 [자산 커밋 `5e3d0f4`](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/commit/5e3d0f4fa8804e8c8f8567c2fffe9deadb97a441)과 [manifest `1fc5f56`](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/blob/1fc5f5617750390dbd96d139be6bd64a1e453039/assets/ASSET_MANIFEST.md)를 받았다. 실제 Git 객체에 발전기·1m 기준 큐브 GLB 2개(252,068·2,884 B), Blender 원본 2개(136,414·89,523 B), manifest와 `.gdignore`가 있다. 두 GLB의 헤더·SHA-256·치수 메타데이터·삼각형 수(4,532·26)가 manifest와 일치했다.
+- 팀원 PC의 격리 Godot 4.7.2 import·인스턴스화 통과는 manifest와 [#4](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/4)의 보고다. core 게임에서 외관·방향·슬롯·충돌·웹 출력을 확인하는 작업이 남았다.
+- [#1](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/1)은 첫 플레이와 사용자 확인을 완료했고 목표 브라우저 검증이 남았다. [#2](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/2)·[#3](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/3)의 기본 규칙과 되감기·비교는 제품 `dccfd11`에 있고 계약 자동 검사 90개를 통과했다. 각각의 통합 기준·인터페이스 인수 검증은 남았다.
+- [#5](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/5)는 UI/출처 인터페이스 검증, [#6](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/6)은 #2–5 통합 결과, [#7](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7)은 #6 통합 검증을 기다린다. #4의 팀원 담당과 작업 기록을 보존한다. 이슈 7개는 각각의 인수 검증을 위해 OPEN을 유지한다.
+- CORE-ASSET-RECEIPT-001: 승인된 저장소에서 `git fetch origin` 후 원격 자산과 이슈 #1–7을 읽었다. 기존 이슈 #1·2·3·5·6·7의 현재 상태를 `gh issue edit --body-file`로 맞추고 재조회한다. 기준 `b01c0c9`에서 검토한 `WORK.md`만 core 브랜치에 커밋·푸시하고 원격 SHA를 대조한다.
