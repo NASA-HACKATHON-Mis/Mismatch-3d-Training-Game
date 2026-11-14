@@ -8,16 +8,16 @@
 | 현재 단계 / 실제 시작 시각 | 역할별 워크플로·시작 계약 v0.1 작성 및 공개 저장소 반영. 2026-11-14 KST; 24시간 제작 시작 시각 미정. |
 | 시간·인원 / 역할 / 호스트·대상 | 총 24시간 사용자 지정. PM: 부모 에이전트 / 문서 준비 Worker: project_setup. Windows 호스트. 2명·대상 Windows 2대는 기존 기본값이며 명시 재확인 아님. |
 | 주제·자료 / 공식 조사·한계 | DONKI 과거1건·CSA 설명/사용조건 준비 및 독립검증 완료. docs/DATA_SOURCES.md 참조. 행사 전체 규정·마감과 제품 적용은 미완료. |
-| 비교·추천 / 선택·승인 | 사용자 Blender + Godot·GDScript 1인칭 3D·웹 출력 방향 승인. C+A 달 기지·24시간·균형 유지. 규칙 v0.1 고정. 본인 Godot·템플릿·신원/루트·브라우저와 실제 자료 준비 완료. 팀원 PC 증거·claim 미완료. |
+| 비교·추천 / 선택·승인 | 사용자 Blender + Godot·GDScript 1인칭 3D·웹 출력 방향 승인. C+A 달 기지·24시간·균형 유지. 규칙 v0.1 고정. 본인 Godot·템플릿·신원/루트·브라우저와 실제 자료 준비 완료. 팀원 4fa7e0e 환경 증거와 #4 claim 확인 완료. 아래 최신 준비 해제 기록 참조. |
 | 창의성 선호（안정적/균형/실험적/자유 설명）/ 답변 또는 명시한 가정 | 사용자 균형 선택. |
 | Git 루트 / 기존 변경 / 브랜치 | 독립 루트 확인, docs/mission-spec-v2. 시작 계약 410063037ba62da61f9119b4ba8b10cbdadc9ccb를 docs 및 두 feature refs에 push·SHA 확인. 현재 docs에서 후속 기록만 변경. 제품 소스 없음. |
 | 신원 확인 / 인증·권한 확인 상태（개인 값 제외） | PM 읽기 확인: gh 활성 계정 dyhan0528, 저장소 ADMIN. dyhan0528·jsjavsj 각각 admin. 조직 Owner 여부 미검증. 로컬 유효 user.name/user.email 존재, 개인 값 기록 안 함. |
-| 저장소 / origin / 원격 승인 범위 | 사용자 제공 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game.git — 공개 빈 저장소 확인. origin 연결·fetch 성공. 아래 최신 실행 기록에 따른 Git·docs push·MVP 이슈 범위 승인. |
-| 명세 커밋 / 필요한 원격 반영 | 현재 시작 계약 410063037ba62da61f9119b4ba8b10cbdadc9ccb, START_SPEC v0.1. 원격 확인. 초기 초안80ff557과 구분. 구현 준비 완료 아님. |
-| 실제 이슈 URL·상태 / 담당 | #1~#7 생성·본문 대조 완료. 전부 OPEN/blocked. HH-004 jsjavsj, 나머지 dyhan0528. 아래 실제 작업판 참조. |
+| 저장소 / origin / 원격 승인 범위 | 사용자 제공 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game.git — 최초 빈 저장소에서 현재 문서/기능 브랜치 운영 중. origin 연결·fetch 성공. 아래 최신 실행 기록에 따른 Git·docs push·MVP 이슈 범위 승인. |
+| 명세 커밋 / 필요한 원격 반영 | 현재 시작 계약 410063037ba62da61f9119b4ba8b10cbdadc9ccb, START_SPEC v0.1. 원격 확인. 초기 초안80ff557과 구분. 최신 HH-001 구현 준비 해제 기록 참조. |
+| 실제 이슈 URL·상태 / 담당 | #1~#7 생성·본문 대조 완료. 모두 OPEN. #1 core_loop_worker와 #4 assets_worker in-progress; #2/3/5/6/7은 선행 연결본 대기. HH-004 jsjavsj, 나머지 dyhan0528. 아래 실제 작업판 참조. |
 | local-only 예외 / 승인·대체 증거 | |
-| IMPLEMENTATION_READY / 증거 확인 | 미완료. 제품 소스 구현 없음. |
-| 다음 행동 / 막힌 점 / 남은 결정 | 다음은 WORKFLOW 역할별 환경 확인과 START_SPEC v0.1 실행 준비. 저장소 접근 확인 완료. dyhan0528=사용자, jsjavsj=팀원 및 Git·원격 준비 범위 승인. Git·담당·전체 실제 이슈·명세 커밋 준비 뒤 임시 도형 연결본·웹 검증. |
+| IMPLEMENTATION_READY / 증거 확인 | true (HH-001 임시 연결본 구현 시작 범위). 두 PC·계약·이슈 claim 확인. 제품 소스/제품 검증 완료를 뜻하지 않음. |
+| 다음 행동 / 막힌 점 / 남은 결정 | 독립 준비 검토 후 core_loop_worker가 임시 도형 연결본을 구현·검증한다. jsjavsj 자산 작업과 경로 분리. |
 
 ## 승인 MVP 이슈 배치와 공유 작업판（START E）
 
@@ -255,10 +255,10 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 
 | 실제 이슈 | 사람 | 작업 브랜치 | 준비·다음 행동 |
 | --- | --- | --- | --- |
-| [HH-001 #1](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/1) | dyhan0528 | feature/HH-001-core-loop (실제 존재) | blocked; 본인 WORKFLOW·Godot/PC 준비→임시 연결본 |
+| [HH-001 #1](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/1) | dyhan0528 | feature/HH-001-core-loop (실제 존재) | in-progress; dyhan0528 / core_loop_worker claim, 임시 연결본 시작 |
 | [HH-002 #2](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/2) | dyhan0528 | feature/HH-002-simulation (계획) | blocked; HH-001 계약/검증 후 7턴 규칙 |
 | [HH-003 #3](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/3) | dyhan0528 | feature/HH-003-rewind (계획) | blocked; HH-001 상태 계약 후 복원 확장 |
-| [HH-004 #4](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/4) | jsjavsj | feature/HH-004-assets (실제 존재) | blocked; 자기 PC 확인·규격 준비→공통 gate 후 첫 GLB→core import |
+| [HH-004 #4](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/4) | jsjavsj | feature/HH-004-assets (실제 존재) | in-progress; jsjavsj / assets_worker 기존 claim 유지, 첫 GLB 제작→core import |
 | [HH-005 #5](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/5) | dyhan0528 | feature/HH-005-learning-ui (계획) | blocked; 자료/사용조건 검토·UI 계약 |
 | [HH-006 #6](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/6) | dyhan0528 | feature/HH-006-validation (계획) | blocked; 구현자와 다른 Verifier의 통합 검사 |
 | [HH-007 #7](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7) | dyhan0528 | feature/HH-007-submission (계획) | blocked; 검증 결과를 제출 자료로 준비 |
@@ -286,3 +286,18 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 전체 IMPLEMENTATION_READY=false의 남은 사유: 팀원 PC 증거·해당 이슈의 실제 ready/claim·시작 패킷 대조. 현재 본인의 도구 미설치나 수치 미정을 blocker로 반복하지 않는다. 모델링 통합에는 HH-001 인터페이스·core import 검증이 별도 선행한다.
 - ENV-DOCS-001: 환경 결과·필요 ignore·원본 점검 사본·자료파일을 독립 검토 후 docs에 명시 commit/push한다. 제품 코드·모델은 이번 Worker 범위에서 만들지 않았다.
 - ENV-ISSUES-001 completed: #1/#4를 gh issue view로 조회 후 기존 body의 낡은 본인 환경 blocker를 갱신하고 환경/자료 링크를 추가했다. gh issue edit --body-file 후 body 전체·assignee 재조회 일치. #1 dyhan0528/#4 jsjavsj, OPEN/blocked 유지. 규칙 Contract-Commit은 변경하지 않았다.
+
+## 최신 실행 준비 해제 및 HH-001 인계 — 2026-11-14
+
+이 절은 이전 시점의 IMPLEMENTATION_READY=false·팀원 준비 중·claim 없음 기록을 대체한다. 사용자 “좋아 진행하자” 승인 범위에서 구현 시작 준비를 완료한다. 제품 소스는 아직 작성하지 않았다.
+
+- IMPLEMENTATION_READY=true: HH-001 임시 연결본 범위. 본인 환경/자료 독립검증 docs 기준 `776205c21b12ab6369ad04e8b5b3481a71f6331b`, 규칙 계약 `410063037ba62da61f9119b4ba8b10cbdadc9ccb`.
+- 팀원 증거: fresh fetch한 `4fa7e0ec923d529975ca5ec9a35f7fc748806b35`의 [ASSET_MANIFEST](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/blob/4fa7e0ec923d529975ca5ec9a35f7fc748806b35/assets/ASSET_MANIFEST.md)와 #4 최신 claim. jsjavsj 자신의 루트/origin/깨끗한 작업트리·Git 신원·인증·계약 확인, Blender5.3.0 background exit0 및 glTF exporter 보고를 대조했다. manifest의 당시 공통준비 blocked는 이전 시점이다. 상대 PC를 이 PC에서 직접 실행했다고 주장하지 않는다.
+- 실제 역할: #1 dyhan0528 / core_loop_worker in-progress claim, 준비 기록 project_setup, 독립 검증 verify_planning. #4 jsjavsj / assets_worker의 이미 존재하는 in-progress claim은 변경하지 않았다. 완성 GLB는 HH-001 선행조건이 아니다.
+- 실제 루트: C:\Users\USER\Desktop\나사 첼린지\Junior-Astronaut-Mission-Trainer. 시작 관측 docs/mission-spec-v2 HEAD776205c, clean. origin은 승인 저장소와 일치. 최신 준비 기록 커밋을 feature/HH-001-core-loop에 fast-forward하고 현재 브랜치/HEAD/clean 및 원격 SHA를 인계 직전 대조한다. 정확 인계 SHA는 Git 이력과 #1 Execution-Base 기록으로 확인한다.
+- 전체 MVP 실제 작업판 #1~7 유지: #1/#4 실행 중, #2/3/5/6/7 연결본·통합 선행 대기. 공유 씬·project.godot·Godot 설정·충돌 wrapper는 dyhan/core; assets/source·models·textures·manifest는 js/assets. main 변경 및 타인 브랜치 변경 없음, local-only 예외 없음.
+- 패킷 허용 경로: project.godot, export_presets.cfg, scenes/main.tscn, scenes/player/, scenes/world/, scenes/ui/terminal.tscn 및 hud.tscn, scripts/player/, scripts/world/, scripts/ui/, scripts/simulation/ 최소 인터페이스, resources/scenarios/. assets와 하네스·개인파일 변경 금지. 작업 전에 issue1 claim/branch/status 재확인.
+- 첫 인수: 임시 도형 이동→단말기 한 시설 배치→1턴→위치/시선 포함 복원→동일 턴 비교→Web 출력. START_SPEC v0.1 수치·snapshot·이전 attempt 거절 계약 재사용. 최종 5시설 모델 요구 없음.
+- 실행 도구: `.tools/godot-4.7.2/Godot_v4.7.2-stable_win64_console.exe` 실제4.7.2. 자식 프로세스 APPDATA만 `.tools/godot-4.7.2/editor_data/runtime_appdata`로 지정하는 docs/ENVIRONMENT 절차 재사용. 제품 생성 뒤 `--headless --path . --editor --import`; preset/템플릿 충족 뒤 `--headless --path . --export-release Web <출력경로>` 및 실제 브라우저 입력/복원 검증. 현재 제품 파일 없어 이 제품 검사들은 미실행.
+- READY-001 completed: 사용자 승인에 따라 fresh fetch/manifest/#1/#4 읽기, #1 ready→in-progress claim 기록 및 #4 공통 증거만 추가, gh issue view 본문 재대조 일치. 런타임 escalation 승인 응답 확인, 별도 요청 ID 미제공.
+- READY-002: 이 WORK 및 현재 상태 링크 2개를 독립 검토 후 명시 stage/commit, docs push, core branch fast-forward/push/switch 계획. force/reset/stash/main/제품 변경 금지. 최종 SHA·원격·clean 대조 후 core_loop_worker에게 인계하고 준비 Worker 쓰기 종료.
