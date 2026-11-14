@@ -37,7 +37,8 @@ static func cost(kind: String, slot_id: int) -> int:
 static func footprint(kind: String) -> Vector3:
 	match kind:
 		"generator":
-			return Vector3(3.6, 2.2, 3.4)
+			# The solar array is 2.593 m tall. Keep the original floor footprint.
+			return Vector3(3.6, 2.6, 3.4)
 		"battery":
 			return Vector3(2.8, 1.6, 2.7)
 		"greenhouse":

@@ -2,6 +2,7 @@ extends Node3D
 ## Placeholder visual children can be replaced with GLB scenes. Collision stays in the wrapper.
 
 const Rules = preload("res://scripts/simulation/scenario.gd")
+const GENERATOR_MODEL_PATH := "res://assets/models/facility_generator.glb"
 const INK := Color("#121d2d")
 const ALLOY := Color("#c3d0d9")
 const AMBER := Color("#ffc16f")
@@ -14,9 +15,12 @@ const COLORS := {"habitat": CYAN, "generator": AMBER, "battery": VIOLET,
 var console: StaticBody3D
 var _wrappers := Node3D.new()
 var _materials := {}
+var _generator_model: PackedScene
 
 
 func _ready() -> void:
+	if ResourceLoader.exists(GENERATOR_MODEL_PATH, "PackedScene"):
+		_generator_model = ResourceLoader.load(GENERATOR_MODEL_PATH, "PackedScene") as PackedScene
 	_atmosphere()
 	_terrain()
 	_deck()
@@ -155,6 +159,9 @@ func _facility(facility: Dictionary) -> void:
 	var model := Node3D.new()
 	model.name = "Visual"
 	wrapper.add_child(model)
+	if kind == "generator" and _generator_model != null:
+		model.add_child(_generator_model.instantiate())
+		return
 	_box(model, Vector3(0, 0.09, 0), Vector3(size.x, 0.18, size.z), INK)
 	_box(model, Vector3(0, 0.19, size.z * 0.49), Vector3(size.x * 0.84, 0.07, 0.05), tint, true)
 	match kind:
