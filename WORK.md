@@ -10,10 +10,10 @@
 | 주제·자료 / 공식 조사·한계 | 2026-11-14 Asia/Seoul PM이 공식 Details/Resources 브라우저 본문 확인 후 전달. 요구·자료 목록은 PROJECT 참조. 실제 데이터 수집·개별 라이선스·전체 행사 규정·마감 확인 미완료. |
 | 비교·추천 / 선택·승인 | 사용자 Blender + Godot·GDScript 1인칭 3D·웹 출력 방향 승인. C+A 달 기지·24시간·균형 유지. 규칙 수치는 START_SPEC v0.1로 고정. 실제 도구 실행·두 PC·자료·claim·구현 준비 미완료. |
 | 창의성 선호（안정적/균형/실험적/자유 설명）/ 답변 또는 명시한 가정 | 사용자 균형 선택. |
-| Git 루트 / 기존 변경 / 브랜치 | 독립 루트 확인, docs/mission-spec-v2. 재개 HEAD 55de35957a7f988315f9a9c6a82f8f743362690b와 원격 일치·clean 확인 후 문서 변경 중. 새 계약 커밋·feature refs는 검토 후 생성. 제품 소스 없음. |
+| Git 루트 / 기존 변경 / 브랜치 | 독립 루트 확인, docs/mission-spec-v2. 시작 계약 410063037ba62da61f9119b4ba8b10cbdadc9ccb를 docs 및 두 feature refs에 push·SHA 확인. 현재 docs에서 후속 기록만 변경. 제품 소스 없음. |
 | 신원 확인 / 인증·권한 확인 상태（개인 값 제외） | PM 읽기 확인: gh 활성 계정 dyhan0528, 저장소 ADMIN. dyhan0528·jsjavsj 각각 admin. 조직 Owner 여부 미검증. 로컬 유효 user.name/user.email 존재, 개인 값 기록 안 함. |
 | 저장소 / origin / 원격 승인 범위 | 사용자 제공 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game.git — 공개 빈 저장소 확인. origin 연결·fetch 성공. 아래 최신 실행 기록에 따른 Git·docs push·MVP 이슈 범위 승인. |
-| 명세 커밋 / 필요한 원격 반영 | 기획·기술 초안 80ff557316d4204ae3729bcd09068430349e92e3, docs 원격 반영 확인. 구현 준비 완료 명세 아님. |
+| 명세 커밋 / 필요한 원격 반영 | 현재 시작 계약 410063037ba62da61f9119b4ba8b10cbdadc9ccb, START_SPEC v0.1. 원격 확인. 초기 초안80ff557과 구분. 구현 준비 완료 아님. |
 | 실제 이슈 URL·상태 / 담당 | #1~#7 생성·본문 대조 완료. 전부 OPEN/blocked. HH-004 jsjavsj, 나머지 dyhan0528. 아래 실제 작업판 참조. |
 | local-only 예외 / 승인·대체 증거 | |
 | IMPLEMENTATION_READY / 증거 확인 | 미완료. 제품 소스 구현 없음. |
@@ -232,14 +232,38 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 ## 최신 작업: START_SPEC v0.1와 역할별 워크플로
 
 - 사용자 명시 요청: 지금 해야 할 워크플로와 시작할 수 있는 명세를 만들어 Git에 올리기. 기존 docs·이슈 갱신 권한 재사용. 본인 dyhan0528, 모델 담당 jsjavsj.
-- DOC-WORKFLOW-001 executing: README.md, WORKFLOW.md, START_SPEC.md, ASSET_BRIEF.md 작성 및 PROJECT/SPEC/WORK 정합 수정. 제품 코드·모델·설치·main 생성/통합·배포 없음.
+- DOC-WORKFLOW-001 completed: README.md, WORKFLOW.md, START_SPEC.md, ASSET_BRIEF.md 작성 및 PROJECT/SPEC/WORK 정합 수정. 제품 코드·모델·설치·main 생성/통합·배포 없음.
 - 재개 기준: 55de35957a7f988315f9a9c6a82f8f743362690b, docs/mission-spec-v2 clean, fetch 후 같은 원격 확인.
 - START_SPEC v0.1은 사용자 위임 범위의 교육용 설계 결정이다. 5×5/수치/턴/사건/환급/복원/비교/위치/입력 계약과 정상·실패·되돌림 예제를 고정했다. 실제 NASA 측정값이 아니다.
 - rules_review가 메모리 계산으로 정상 7턴 및 무배터리 실패·절전 복원 경로를 검산했다. 제품 테스트·Godot/웹 검증은 미실행이다.
 - 자산 경로 소유권 갱신: jsjavsj는 assets/source, assets/models, assets/textures, assets/ASSET_MANIFEST.md만 담당. source/.gdignore는 Godot 원본 import 제외용으로 Git 추적. core dyhan0528가 Godot 씬·wrapper·충돌·공유 파일을 담당한다.
 - 첫 플레이 가능 통합 대상/책임: feature/HH-001-core-loop / dyhan0528. 모델과 후속 기능은 검토 뒤 core 대상으로 PR 통합하는 운영 계획. 이번 작업에서 PR 생성·merge는 하지 않는다. main 정식 승격·배포는 이후 별도 단계다.
-- DOC-CONTRACT-COMMIT-001 unrequested: Verifier 문서 검토 후 7개 명시 문서만 stage/commit/push. 신규 docs 시작 계약 커밋을 기준으로 아래 두 feature refs를 준비한다.
-- FEATURE-REFS-001 unrequested: feature/HH-001-core-loop, feature/HH-004-assets가 없을 때만 새 시작 계약 커밋에서 생성·push. 기존 ref가 있으면 덮어쓰지 않고 대조한다. 제품 파일 변화 없음. docs 후속 기록 커밋과 feature 기준을 구분한다.
-- ISSUE-CONTRACT-001 unrequested: #1~7의 새 Contract-Commit·문서 링크·구체 선행/소유권을 갱신·재조회. #1/#4 먼저, #4 jsjavsj 및 나머지 dyhan0528 유지. 정확 브랜치 존재 여부 기록.
-- 현재 완료: 문서 초안 작성과 산술 검산. 현재 미완료: 독립 문서 검토·새 계약 push/branch/이슈 갱신·각 PC 도구 실행·자료 검토·claim·제품 구현/검증.
+- DOC-CONTRACT-COMMIT-001 completed: Verifier 문서 검토 후 7개 명시 문서만 stage/commit/push. 신규 docs 시작 계약 커밋을 기준으로 아래 두 feature refs를 준비한다.
+- FEATURE-REFS-001 completed: feature/HH-001-core-loop, feature/HH-004-assets가 없을 때만 새 시작 계약 커밋에서 생성·push. 기존 ref가 있으면 덮어쓰지 않고 대조한다. 제품 파일 변화 없음. docs 후속 기록 커밋과 feature 기준을 구분한다.
+- ISSUE-CONTRACT-001 completed: #1~7의 새 Contract-Commit·문서 링크·구체 선행/소유권을 갱신·재조회. #1/#4 먼저, #4 jsjavsj 및 나머지 dyhan0528 유지. 정확 브랜치 존재 여부 기록.
+- 현재 완료: 독립 문서 검토·산술 검산·시작 계약 push·두 작업 브랜치·7개 이슈 계약 갱신. 현재 미완료: 각 PC 도구 실행·로컬 개인 준비·자료 검토·claim·제품 구현/검증.
 - IMPLEMENTATION_READY=false. 두 사람의 실제 환경 증거는 각 PC에서 확보한다. HH-004 레퍼런스/치수 준비와 모델 제작·게임 통합 gate를 구분하며 공통 준비 요건을 면제하지 않는다.
+
+## 워크플로 공개 반영 결과 — 2026-11-14
+
+- 독립 Verifier: 7문서 검토 통과. 지적된 개인 신원 준비 절차와 stale attempt/turn 요청 거절을 반영하고 재검토 통과했다.
+- 자체 검사: WORKFLOW의 PowerShell 6블록 parser 문법 오류0, git diff --check 통과. 이는 명령 전체 실행/제품 테스트가 아니다. 실제 GitHub #1 본문으로 Contract-Commit 정규식 추출 결과1개·정확 SHA 일치 확인.
+- 시작 계약 커밋: 410063037ba62da61f9119b4ba8b10cbdadc9ccb. 명령 git add -- README.md WORKFLOW.md START_SPEC.md ASSET_BRIEF.md PROJECT.md SPEC.md WORK.md 및 git commit -m 'docs: add role workflows and playable rule contract v0.1'. docs push 후 원격 SHA 일치.
+- FEATURE-REFS-001: 로컬·원격 기존 ref 부재 확인 후 git branch feature/HH-001-core-loop <계약SHA>, git branch feature/HH-004-assets <계약SHA>, git push origin feature/HH-001-core-loop feature/HH-004-assets 성공. 두 원격 ref가 모두 위 계약SHA. 기존 ref 덮어쓰기 없음, docs 작업 유지.
+- ISSUE-CONTRACT-001: #1~7 각각 기존 OPEN/blocked 조회→gh issue edit --body-file→본문 전체/assignee 대조 성공. Contract-Commit 행과 pinned 문서 링크 추가. #4 assets 전용 소유권·독립 준비와 통합 선행 분리. #4 jsjavsj, 나머지dyhan0528 유지.
+- 원격 main ref는 없다. PR 생성·merge·main 생성/push·배포·게임 코드·모델·설치 작업 없음.
+
+| 실제 이슈 | 사람 | 작업 브랜치 | 준비·다음 행동 |
+| --- | --- | --- | --- |
+| [HH-001 #1](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/1) | dyhan0528 | feature/HH-001-core-loop (실제 존재) | blocked; 본인 WORKFLOW·Godot/PC 준비→임시 연결본 |
+| [HH-002 #2](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/2) | dyhan0528 | feature/HH-002-simulation (계획) | blocked; HH-001 계약/검증 후 7턴 규칙 |
+| [HH-003 #3](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/3) | dyhan0528 | feature/HH-003-rewind (계획) | blocked; HH-001 상태 계약 후 복원 확장 |
+| [HH-004 #4](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/4) | jsjavsj | feature/HH-004-assets (실제 존재) | blocked; 자기 PC 확인·규격 준비→공통 gate 후 첫 GLB→core import |
+| [HH-005 #5](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/5) | dyhan0528 | feature/HH-005-learning-ui (계획) | blocked; 자료/사용조건 검토·UI 계약 |
+| [HH-006 #6](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/6) | dyhan0528 | feature/HH-006-validation (계획) | blocked; 구현자와 다른 Verifier의 통합 검사 |
+| [HH-007 #7](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7) | dyhan0528 | feature/HH-007-submission (계획) | blocked; 검증 결과를 제출 자료로 준비 |
+
+모든 이슈의 현재 계약/초기 기준은 410063037ba62da61f9119b4ba8b10cbdadc9ccb다. #2~7의 실제 실행 기준은 필요한 core 통합 결과가 생기면 갱신한다. 이 후속 WORK 기록 커밋은 계약을 바꾸지 않는다.
+
+- DOC-DELIVERY-LOG-001: 이 결과 기록을 독립 검토 후 docs에 명시 commit/push하고 최종 원격 대조한다. 작업 브랜치 기준은 시작 계약에 유지한다.
+- 바로 다음 행동은 README의 본인/팀원 링크다. 두 PC의 실제 환경·준비 조건·claim을 AI가 채우며 사람에게 새 기획이나 동일 정보 재입력을 요구하지 않는다. IMPLEMENTATION_READY=false, 제품 검사는 미실행이다.
