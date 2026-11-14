@@ -10,11 +10,11 @@
 | 주제·자료 / 공식 조사·한계 | 2026-11-14 Asia/Seoul PM이 공식 Details/Resources 브라우저 본문 확인 후 전달. 요구·자료 목록은 PROJECT 참조. 실제 데이터 수집·개별 라이선스·전체 행사 규정·마감 확인 미완료. |
 | 비교·추천 / 선택·승인 | 사용자 Blender + Godot·GDScript 1인칭 3D·웹 출력 방향 승인. C+A 달 기지·24시간·균형 유지. 정확 실행 버전·수치·구현 준비 미완료. |
 | 창의성 선호（안정적/균형/실험적/자유 설명）/ 답변 또는 명시한 가정 | 사용자 균형 선택. |
-| Git 루트 / 기존 변경 / 브랜치 | 독립 루트 확인, docs/mission-spec-v2 unborn. 4문서와 .gitignore 미추적 상태로 초안 검토 대기. 제품 소스 없음. |
+| Git 루트 / 기존 변경 / 브랜치 | 독립 루트 확인, docs/mission-spec-v2. 초안 HEAD 80ff557316d4204ae3729bcd09068430349e92e3; 원격 동일 SHA. 현재 WORK에 이슈 기록 변경, 제품 소스 없음. |
 | 신원 확인 / 인증·권한 확인 상태（개인 값 제외） | PM 읽기 확인: gh 활성 계정 dyhan0528, 저장소 ADMIN. dyhan0528·jsjavsj 각각 admin. 조직 Owner 여부 미검증. 로컬 유효 user.name/user.email 존재, 개인 값 기록 안 함. |
 | 저장소 / origin / 원격 승인 범위 | 사용자 제공 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game.git — 공개 빈 저장소 확인. origin 연결·fetch 성공. 아래 최신 실행 기록에 따른 Git·docs push·MVP 이슈 범위 승인. |
-| 명세 커밋 / 필요한 원격 반영 | |
-| 실제 이슈 URL·상태 / 담당 | |
+| 명세 커밋 / 필요한 원격 반영 | 기획·기술 초안 80ff557316d4204ae3729bcd09068430349e92e3, docs 원격 반영 확인. 구현 준비 완료 명세 아님. |
+| 실제 이슈 URL·상태 / 담당 | #1~#7 생성·본문 대조 완료. 전부 OPEN/blocked. HH-004 jsjavsj, 나머지 dyhan0528. 아래 실제 작업판 참조. |
 | local-only 예외 / 승인·대체 증거 | |
 | IMPLEMENTATION_READY / 증거 확인 | 미완료. 제품 소스 구현 없음. |
 | 다음 행동 / 막힌 점 / 남은 결정 | 다음은 도구 위치·정확 버전 및 게임 수치·인터페이스 확인. 저장소 접근 확인 완료. dyhan0528=사용자, jsjavsj=팀원 및 Git·원격 준비 범위 승인. Git·담당·전체 실제 이슈·명세 커밋 준비 뒤 임시 도형 연결본·웹 검증. |
@@ -196,9 +196,35 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - GIT-INIT-001: completed. 정확 명령 git init --initial-branch=main (위 루트), git switch -c docs/mission-spec-v2, git remote add origin https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game.git. 단계별 성공 후 진행.
 - FETCH-001: completed. git fetch origin 성공. 실제 루트·docs 브랜치·승인 origin 확인. 기존 name/email·author/committer 유효·일치 확인, 값 비공개. 별도 신원 설정·.user_info 생성 없음.
 - DOC-DRAFT-001: unrequested. 독립 검토 후 PROJECT.md SPEC.md WORK.md SUBMISSION.md .gitignore만 명시 stage·기획/기술 계약 초안 commit. 준비 완료 명세로 주장하지 않음.
-- ISSUE-BATCH-001: unrequested. HH-001~007 모두 blocked로 생성·조회. 현재 주사용자 dyhan0528 배정, HH-004 팀원 협의 예정; jsjavsj 임의 배정 없음.
+- ISSUE-BATCH-001: unrequested. HH-001~007 모두 blocked로 생성·조회. 현재 주사용자 dyhan0528 배정으로 준비했으나 생성 전 사용자 확정으로 HH-004는 jsjavsj로 변경.
 - IMPLEMENTATION_READY=false: 도구 실행·수치 확정·두 PC 준비·작업 claim 미완료. 제품 검사 명령 미정·미실행.
 
 - 사전 검토 snapshot: PROJECT/SPEC은 이전 v2 해시 유지. WORK와 최소 .gitignore 추가를 verify_planning이 검토한 뒤 commit한다. .gitignore에 개인 신원·Godot 캐시·환경 비밀·키·빌드 임시 제외.
+
+
+
+- DOC-DRAFT-001 결과: Verifier가 WORK 시점 표현 정정 후 5개 파일 검토 통과. git add -- PROJECT.md SPEC.md WORK.md SUBMISSION.md .gitignore 및 git commit -m 'docs: record reviewed mission planning and technical draft' 성공. 초안 기준 커밋 80ff557316d4204ae3729bcd09068430349e92e3, 준비 완료 명세 아님.
+- PUSH-DRAFT-001 completed: git push -u origin docs/mission-spec-v2 성공, git ls-remote refs/heads/docs/mission-spec-v2가 같은 SHA를 반환. GitHub defaultBranchRef가 첫 push 후 docs/mission-spec-v2로 자동 관측됨; 별도 기본 브랜치 설정 변경 없음. main 생성/push 없음.
+- 최신 사용자 결정: 모델링 담당 jsjavsj 확정. HH-004 assignee·브랜치 owner는 jsjavsj, HH-001/002/003/005/006/007은 dyhan0528. 두 PC 준비와 실제 claim은 아직 미완료.
+- ISSUE-BATCH-001 executing: 임시 본문 파일 HH-001.md~HH-007.md 준비. 이슈별 ISSUE-HH-00N-001 operation으로 stable ID 검색→없으면 gh issue create --repo NASA-HACKATHON-Mis/Mismatch-3d-Training-Game --title '[HH-00N] <작업명>' --body-file <TEMP/mission-issue-batch-20261114/HH-00N.md> --assignee <확정계정>→gh issue view --json url,state,assignees,body 대조. 모두 blocked, Worker/Verifier·경로·의존·인수·초안 기준 SHA 기록. 정확 실행 검사 명령은 미정·미실행.
+
+## 실제 이슈 배치 결과
+
+| 안정 ID / 실제 URL | 사람 / Worker / Verifier | 상태·확인일 | 선행·해제 조건 | 책임 경로 | 브랜치·기준·초안 커밋 | claim |
+| --- | --- | --- | --- | --- | --- | --- |
+| HH-001 / https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/1 | dyhan0528 / core_loop_worker / verify_planning | blocked (OPEN), 2026-11-14 KST 생성·본문 조회 | 명세 초안 보완·도구/버전·전체 이슈·두 PC 준비 | scenes/main.tscn, scenes/player/, scenes/world/, scenes/ui/terminal.tscn, scenes/ui/hud.tscn, scripts/player/, scripts/world/, scripts/ui/, scripts/simulation/의 최소 인터페이스, resources/scenarios/, project.godot, export_presets.cfg | feature/HH-001-core-loop (미생성), 기준 docs/mission-spec-v2 / 80ff557316d4204ae3729bcd09068430349e92e3 (초안) | claim 없음 |
+| HH-002 / https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/2 | dyhan0528 / simulation_worker / verify_planning | blocked (OPEN), 2026-11-14 KST 생성·본문 조회 | HH-001 상태/시설 인터페이스 검증과 통합 기준 확정 | scripts/simulation/simulation.gd, resources/scenarios/, scenes/facilities/의 기능 규약 | feature/HH-002-simulation (미생성), 기준 docs/mission-spec-v2 / 80ff557316d4204ae3729bcd09068430349e92e3 (초안) | claim 없음 |
+| HH-003 / https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/3 | dyhan0528 / rewind_worker / verify_planning | blocked (OPEN), 2026-11-14 KST 생성·본문 조회 | HH-001 snapshot/결과 인터페이스 검증; HH-002 상태필드 계약 협의 | scripts/simulation/snapshot_store.gd, scripts/ui/compare.gd, scenes/ui/compare.tscn | feature/HH-003-rewind (미생성), 기준 docs/mission-spec-v2 / 80ff557316d4204ae3729bcd09068430349e92e3 (초안) | claim 없음 |
+| HH-004 / https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/4 | jsjavsj / assets_worker / verify_planning | blocked (OPEN), 2026-11-14 KST 생성·본문 조회 | HH-001 슬롯/피벗 계약 및 초기 웹 검증 | assets/source/, assets/models/, assets/textures/, scenes/facilities/의 시각·충돌 노드 | feature/HH-004-assets (미생성), 기준 docs/mission-spec-v2 / 80ff557316d4204ae3729bcd09068430349e92e3 (초안) | claim 없음 |
+| HH-005 / https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/5 | dyhan0528 / learning_ui_worker / verify_planning | blocked (OPEN), 2026-11-14 KST 생성·본문 조회 | HH-001 UI/출처 인터페이스 검증 | resources/content/, scenes/ui/help.tscn, scripts/ui/help.gd, assets/data/ | feature/HH-005-learning-ui (미생성), 기준 docs/mission-spec-v2 / 80ff557316d4204ae3729bcd09068430349e92e3 (초안) | claim 없음 |
+| HH-006 / https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/6 | dyhan0528 / validation_worker / verify_planning | blocked (OPEN), 2026-11-14 KST 생성·본문 조회 | HH-002/003/004/005 결과와 실제 통합 snapshot 확보 | 검증 기록 및 tests/ (필요성 검토 뒤), WORK.md; 제품 수정은 별도 fix 범위 확인 | feature/HH-006-validation (미생성), 기준 docs/mission-spec-v2 / 80ff557316d4204ae3729bcd09068430349e92e3 (초안) | claim 없음 |
+| HH-007 / https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7 | dyhan0528 / submission_worker / verify_planning | blocked (OPEN), 2026-11-14 KST 생성·본문 조회 | HH-006 통합 검증 결과 | SUBMISSION.md 및 제출 설명·시연 자료 경로(명세 확정 후) | feature/HH-007-submission (미생성), 기준 docs/mission-spec-v2 / 80ff557316d4204ae3729bcd09068430349e92e3 (초안) | claim 없음 |
+
+- ISSUE-HH-001-001~ISSUE-HH-007-001 completed: 각 stable ID 사전 검색 결과 없음→생성→view의 본문 전체와 assignee 대조 성공. 원격 7개 OPEN, 본문 상태 blocked. HH-004만 jsjavsj, 나머지 dyhan0528. 아직 구현/claim/close 없음.
+- 이슈별 정확 기준·초안 명세 커밋은 80ff557316d4204ae3729bcd09068430349e92e3. feature 브랜치는 계획이며 현재 생성하지 않았다. WORK의 후속 기록 커밋은 이 초안 기준과 별개다.
+- 임시 본문 경로가 샌드박스 호출마다 달라 HH-004 로컬 임시본문 편집 실패를 관측했다. 그 시점 원격 쓰기는 없었고, 실제 생성 실행 안에서 각 TEMP 본문을 새로 작성해 같은 호출에서 사용했다. 중복 원격 생성/재시도 없음.
+- ISSUE-BATCH-001 completed, 7개 배치 생성·본문/담당 확인 성공. 문서·코드 테스트 명령은 실행 도구/수치 미확정으로 미정·미실행. Git/원격 준비 결과만 완료다.
+- LOG-COMMIT-001 unrequested: Verifier가 이 WORK 변경을 읽기 검토한 뒤 git add -- WORK.md, git commit -m 'docs: link approved repository setup and MVP issues', git push origin docs/mission-spec-v2 수행 계획. 이후 원격 SHA와 clean 상태 독립 대조.
+- 다음: 도구 실제 실행/버전, 세부 수치·인터페이스·자료·두 PC 준비를 채워 명세를 확정하고 각 이슈 기준을 갱신한다. IMPLEMENTATION_READY=false 유지. main 통합/push·배포·제품 코드·모델·설치 수행 없음.
 
 
