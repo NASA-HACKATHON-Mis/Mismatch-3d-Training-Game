@@ -1,49 +1,27 @@
-# Asset manifest - HH-004 preparation
+# HH-004 asset manifest
 
-Owner: jsjavsj
-Branch: feature/HH-004-assets
-Contract commit: 410063037ba62da61f9119b4ba8b10cbdadc9ccb
+Owner: `jsjavsj`. Branch: `feature/HH-004-assets`. Contract commit: `410063037ba62da61f9119b4ba8b10cbdadc9ccb`.
 
-Status: PREPARATION ONLY / BLOCKED. No models created, exported, or imported. Repo-local Git author identity is configured from user-provided values. Authenticated GitHub plugin account jsjavsj and supplied identity were verified. Shared implementation readiness and the exclusive task claim must be confirmed before production. Other-PC readiness is not established by this record.
+First handoff for [HH-004](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/4). Both assets passed Blender GLB re-import. Godot import and integration await HH-001 core review.
 
-## Local environment evidence
+| Asset | Blender source | GLB export | Width × depth × height | Triangles | Materials | Source bytes / GLB bytes |
+| --- | --- | --- | --- | ---: | ---: | ---: |
+| Tilted solar generator | [facility_generator.blend](source/facility_generator.blend) | [facility_generator.glb](models/facility_generator.glb) | 3.6 × 3.2 × 2.592986 m | 4,532 | 3 | 136,414 / 252,068 |
+| 1 m reference cube | [scale_reference_1m.blend](source/scale_reference_1m.blend) | [scale_reference_1m.glb](models/scale_reference_1m.glb) | 1 × 1 × 1 m | 26 | 2 | 89,523 / 2,884 |
 
-The coordinating agent ran version and factory-startup background checks on this PC: Blender 5.3.0, build hash 02f0899d78e3, executable `C:\Program Files\Blender Foundation\Blender 5.3\blender.exe`. Background startup exited 0 and the glTF exporter was available. This is not GLB export or Godot import validation.
+## Export settings
 
-## Planned first handoff
+Exported 2026-11-14 with Blender 5.3.0 build `02f0899d78e3` and Khronos glTF Blender I/O v5.3.43. Sources use metric units and scale 1.0. Each GLB has one mesh node, one primitive per material, applied transforms, and an origin at the center of the footprint at ground level. Blender +Y marks the forward direction. glTF maps it to -Z with +Y up. The generator's orange inverter access panel and the cube's orange inlaid arrow mark the front.
 
-Dimensions are design targets, not measured results.
+Binary glTF 2.0 export uses selection only, +Y up, mesh normals, and metallic/roughness materials. The generator uses `alloy_shell`, `photovoltaic_blue`, and `service_amber`. The cube shares `alloy_shell` and `service_amber`. The files have no textures, animations, cameras, lights, or geometry compression. The empty `source/.gdignore` keeps the Blender sources out of Godot's automatic import.
 
-| Asset | Planned source | Planned export | Target width x depth x height | Maximum | Status |
-| --- | --- | --- | --- | --- | --- |
-| facility_generator | assets/source/facility_generator.blend | assets/models/facility_generator.glb | 3.6 x 3.2 x 2.6 m | 4 x 4 x 3 m | Not created |
-| scale_reference_1m | assets/source/scale_reference_1m.blend | assets/models/scale_reference_1m.glb | 1 x 1 x 1 m | 1 x 1 x 1 m | Not created; separate cube |
+## Provenance
 
-Planned setup: Metric, unit scale 1.0, one Blender unit per metre; bottom-centre origins and ground at Blender Z=0; apply rotation/scale before export. Verify Godot front -Z and up +Y after GLB axis conversion. Use ASCII snake_case names and simple metallic/roughness materials. Exclude unrelated objects, cameras, and lights from export. Core owns collision wrappers.
+Both assets were modeled for this project from original geometric primitives. They contain no third-party meshes, materials, textures, logos, or other licensed content. No third-party attribution is required.
 
-Planned provenance: original procedural assets created for this project; no external assets selected. This is an intention, not completed provenance/licence verification.
+## Validation and core handoff
 
-Generator targets: 2,000-5,000 triangles, 1-3 materials. Prefer each GLB below 5 MB and source below 20 MB; every file must be below 100 MB. Texture use/sizes undecided; target 512-1024 px if needed.
-
-## Evidence pending creation
-
-| Field | facility_generator | scale_reference_1m |
-| --- | --- | --- |
-| Export date / Blender version used | Not exported | Not exported |
-| Measured dimensions / origin / facing | Not measured | Not measured |
-| Triangle / material count | Not measured | Not measured |
-| Texture dimensions | Not created | Not created |
-| Source / GLB byte sizes | Not created | Not created |
-| Final provenance / licence | Pending creation | Pending creation |
-| Godot import / scale / axes / materials | Not tested | Not tested |
-| Core acceptance | Pending | Pending |
-
-## Checklist
-
-- [x] Configure user-provided repo-local Git identity and verify the authenticated GitHub plugin account.
-- [ ] Confirm shared readiness gates.
-- [ ] Confirm HH-004 ready status and exclusive claim before production.
-- [ ] Create generator and separate cube; record actual measurements and provenance.
-- [ ] Export GLB; record exact exporter settings, date, and file sizes.
-- [ ] Core validates import, axes, scale, materials, and placement clearance.
-- [ ] Record accepted evidence and eventual feature commit before expanding assets.
+- Blender background validation opened both sources and imported each GLB into a fresh scene. Bounds, pivot, scale, triangle count, and material names matched the source. The GLB header, indexed triangles, and axes were also checked directly.
+- Generator glTF bounds in X/Y/Z metres are `(-1.8, 0, -1.6)` through `(1.8, 2.592986, 1.6)`. The model fits the 4 × 4 × 3 m envelope. Its geometry leaves 2.4 m width and 2.8 m depth between neighboring generators on a 6 m grid.
+- Cube glTF bounds are `(-0.5, 0, -0.5)` through `(0.5, 1, 0.5)`. The inlaid arrow is on the plane `Z = -0.5` m.
+- Core review is pending for Godot import, scale, facing, appearance, wrapper collision and player clearance, and web export. Model the remaining facilities and robot after the first Godot import is accepted.
