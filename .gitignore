@@ -1,0 +1,11 @@
+.user_info
+.godot/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+build/
+dist/
+.tmp/
+*.tmp
