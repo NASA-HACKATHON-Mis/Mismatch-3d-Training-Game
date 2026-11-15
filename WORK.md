@@ -569,3 +569,5 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - #27은 독립검사·PM검토 후 Refs PR 통합하고 OPEN/PE-05 실제 연결 인수 대기로 인계한다. 기존8072빌드/배포 없음/#7 보류 유지.
 
 - 최신 병렬 PE-01/PE-04 main4a38d8b를 일반 merge해 모든 기록을 보존했다. 실제 도움말 열기/닫기 검사로 보강한 jump85/0, mouse_modes23/0, resource_gauges64/0 통과. navigation70/0을 포함한 기존 영향 검사와 별개이며 다른 담당 코드는 수정하지 않았다.
+
+- PE-03 최종source703c0ba64097a31484309505d5f20483a35a8f9f 독립391/0·PMdiff/물리렌더검토PASS. 일반merge로 player.gd/project.godot claim을 #29 담당 dyhan0528에게 반환한다. #27은 OPEN/실제통합인수대기이며 PR·실제mergeSHA는 원격 이슈에서 재조회한다. 이번 후속 기록은 문서만 변경한다.
