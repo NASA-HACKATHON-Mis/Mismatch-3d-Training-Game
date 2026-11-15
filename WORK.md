@@ -381,7 +381,7 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | done / PR #20 검증·main 통합 |
 | UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | done / PR #21 검증·main 통합 |
 | UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | done / PR #22 검증·main 통합 |
-| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | in-progress / 구현·자동 검증, 브라우저 인수 대기 |
+| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | in-progress / PR #23 구현 통합, 브라우저 인수 대기 |
 
 저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
 
@@ -507,3 +507,5 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 
 - 최종 독립4,338 checks/0fail(246+guidance1273+preview635+outcome1117+rewind583+world484), 규칙/기존계산 불변. 실제4크기 world32 PNG(484검사) 및 종료4종관찰16 PNG(outcome렌더1149검사), Web export와 최종HTTP200/본문SHA 일치. 측정 수치·제한은 docs/UX_R06_VERIFICATION.md에 기록했다.
 - UX019 최종localhost실측: wasm39,514,754B, pck7,409,668B, Content-Encoding/Content-Length 없음, no-store/chunked. 원본과수신본문해시일치. GET초는브라우저coldload/wasm초기화시간이 아니다. 배포환경으로 확대하지 않는다.
+
+- 검사 소스 `3d6372ae79e0f4927d1b30eeb222c93024992e69`. [PR #23](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/23)은 `Refs #16` 구현 통합이며 일반 merge한다. #16을 자동 close하지 않고 OPEN 브라우저 인수 대기로 유지한다. 실제 merge SHA·상태는 해당 이슈에 기록한다.

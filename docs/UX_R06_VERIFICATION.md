@@ -51,3 +51,5 @@ wasm 39,514,754 bytes는 약39.5 MB(10진 단위)로 기존 보고값과 규모�
 최종 독립4,338 checks/0fail: 기존 core/generator/facility/learning/navigation246 + guidance1,273 + preview635 + outcome1,117 + rewind583 + world484. 종료4종 readonly 선택/관찰/advance금지 및 최신 종료안내 문구를 포함한다.
 
 실제 world 렌더는484 checks/0fail(당시 world452+PNG32), 이후 초기카메라/방향/종료조회32 assertions를 추가해 최종 headless484를 통과했다. 같은 제품의 종료4종 outcome 렌더1,149 checks/0fail 및 별도 관찰PNG16개를 생성했다. 로컬 logs/ux16에는 총48 PNG가 있으며, 로그·스크린샷은 로컬 증거로 보존한다. 수동 OS 입력 검증과 구분한다.
+
+검사 소스: `3d6372ae79e0f4927d1b30eeb222c93024992e69`. 구현 통합 PR #23은 Refs #16이며, 최종 브라우저 인수 전에는 이슈를 OPEN으로 유지한다. 이후 문서 상태 기록 커밋은 제품 코드를 바꾸지 않는다.
