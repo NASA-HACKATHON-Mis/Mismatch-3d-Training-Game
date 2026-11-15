@@ -356,3 +356,63 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - Godot `4.7.2.stable.official.ed1daf0bf`의 headless import와 기존 161개·새 안내서 검사 15개가 자체·독립 실행에서 통과했다. 별도 Windows 렌더에서 한국어 글자, 시설과 비교 화면, 출처 카드와 키보드 초점 표시를 확인했다. `--headless --path . --export-release Web build/web/index.html` 성공. 최종 PCK 7,378,664 B의 SHA-256은 `ca5193353dbbf7be3fa1a2579dad1727adbfc8ce11bf9bb1cd72fbbc28e0c3ac`이다. 두 PC의 전체 브라우저 플레이는 #6에서 확인한다.
 - 독립 검사에서 최종 PCK만으로 실제 안내서 씬을 열어 한글 글리프, OFL 라이선스, DONKI 원자료와 metadata의 오프라인 로드를 확인했다.
 - 최종 Web 빌드에서 한국어 시작 화면, 안내서 클릭, 실제 자료 탭의 NASA·CSA 카드, Esc로 시작 화면 복귀, H로 다시 열기와 Tab 키 초점 표시를 확인했다.
+
+## 로컬 UX 명세 초안 — 2026-11-15 Asia/Seoul
+
+- 사용자 “백로그에 있는것들을 명세에 올려서 보여줘”에 따라 ux_spec_worker가 [UX_REDESIGN_SPEC v1.0](UX_REDESIGN_SPEC.md)을 작성했다. 기준 HEAD `9907d51d54b0b3a638cd61a6c7de29f46ff46e49`, 브랜치 `docs/HH-007-submission-prep` 유지. UX-001~030의 관찰·목표·수용조건·검사·우선순위·규칙 영향을 연결한 로컬 검토 초안이다.
+- 문서 구조 자체 확인: 30개 ID를 각각 1회 제목으로 포함하고 기존 START_SPEC v0.1 규칙과 예시를 대조했다. 이번 작업에서 게임 구현/실행 재현/사용자 테스트는 수행하지 않았으며 백로그 해결 확인도 하지 않았다. ux_spec_verify의 독립 문서 검토를 통과했고, 기존 게임과 구분되도록 변경이력의 상태를 “UX 개선 미구현/미검증”으로 명확히 했다.
+- 기존 SUBMISSION.md 변경과 Git 제외 LOCAL_BACKLOG.md 원문을 보존한다. 제품 코드·규칙·모델·브랜치 변경, Git stage/commit/push, 이슈 생성·원격 공개는 수행하지 않았다. 다음은 사용자에게 초안 제시이며, 제품 구현 준비 완료를 선언하지 않는다.
+
+## UX 리팩터링 작업판
+
+**현재 역할(v1.2): dyhan0528는 디자인 검토만 담당합니다. 개선 구현 전체와 UX-R01~06 작업 브랜치 소유자는 jsjavsj입니다. 독립 검증은 구현자와 분리하여 착수 때 지정하며 AI는 필요시 보조합니다. 아래 v1.1 담당 기록은 당시 이력이며 이 역할 정정이 우선합니다.**
+
+- 2026-11-15: 사용자 승인에 따라 refactor_docs_worker가 읽기 쉬운 명세 v1.1, 상세 수용 기준, 실제 GitHub 작업 이슈 6개를 준비한다. 사용자는 개발하지 않고 Codex가 구현과 별도 검증을 맡는다. dyhan0528는 제품 Owner이며 개발 assignee로 배정하지 않는다. jsjavsj의 추가 모델 작업도 배정하지 않는다.
+- 현재 기준: `docs/HH-007-submission-prep` / `9907d51d54b0b3a638cd61a6c7de29f46ff46e49`. 기존 SUBMISSION.md dirty와 Git 제외 LOCAL_BACKLOG.md를 보존한다. #1~6 CLOSED, #7 OPEN/제출 보류를 실제 조회했다.
+- UX-DOC-001 completed: UX_REDESIGN_SPEC.md를 쉬운 6묶음으로 개편하고 docs/UX_ACCEPTANCE.md에 상세30항목을 보존, README 진입점을 갱신한다. 독립 Verifier 검토 뒤 명시 파일만 commit한다. 제품 코드는 변경하지 않는다.
+- UX-PUBLISH-001 completed: 승인 저장소 `NASA-HACKATHON-Mis/Mismatch-3d-Training-Game`, 문서 브랜치 `docs/UX-refactoring-plan` 생성 및 명시 문서 commit/push. main·기존 core·모델 브랜치·SUBMISSION·로컬 백로그는 게시 대상이 아니다. 요청 근거는 사용자의 문서 업데이트·이슈 작성 진행 승인이다.
+- UX-ISSUES-001 completed: 같은 저장소에 UX-R01~06 중복 조회 후 create/update, 본문 파일은 logs/ux-refactor/UX-R01.md~UX-R06.md. 응답 후 실제 이슈를 재조회한다. 상태 불명확 시 조회로 대조하고 중복 생성하지 않는다. 기존 완료 이슈와 #7은 수정하지 않는다.
+- 준비 상태: 문서 독립 검토·원격 게시와 이슈6개 등록 완료. 구현 준비 완료나 게임 검증 완료가 아니다. 순서는 R01→R02→R03→R04→R05→R06이며 선행 검증·core 통합 전 후속 이슈는 blocked다. 각 착수 때 실제 Worker/Verifier, claim 및 최신 실행 기준 SHA를 확정한다.
+
+| 작업 | 범위 | 실제 이슈 | 구현 담당 | 상태 |
+| --- | --- | --- | --- | --- |
+| UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | jsjavsj | ready / 착수 claim 전 |
+| UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | blocked / UX-R01 통합 대기 |
+| UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | blocked / UX-R02 통합 대기 |
+| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | blocked / UX-R03 통합 대기 |
+| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | blocked / UX-R04 통합 대기 |
+| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | blocked / UX-R05 통합 대기 |
+
+저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
+
+- refactor_docs_verify 독립 문서 검토 통과: 30 ID 보존, 28 실행+2 보류, 사용자 개발 없음, 규칙 유지, 검사 명령과 상대 링크 확인. 이번 작업은 문서 검사이며 게임 검사는 미실행이다. 게시 후 실제 커밋과 이슈를 다시 대조한다.
+
+- 문서 명세 커밋: ff0b38052f7087e1c3010c558ce230c3a833d67c. docs/UX-refactoring-plan push와 원격 SHA 일치를 확인했다. 이슈 본문은 이 고정 명세 커밋을 참조한다. 이슈 생성 배치는 매 생성 직전 전체 조회로 중복 확인 후 create하고, 생성된 번호/본문/assignee를 조회한다. 런타임 승인 요청 식별자는 제공되지 않았다.
+
+- UX-ISSUES-LINK-001 completed: 실제 생성한 #11~16의 본문을 logs/ux-refactor/UX-R01.md~UX-R06.md로 갱신해 선행 실제 링크와 상태를 맞춘 뒤 재조회한다. 모두 OPEN·assignee 없음이며 명세 ff0b38052f7087e1c3010c558ce230c3a833d67c를 참조한다. 문서 원격 브랜치는 docs/UX-refactoring-plan; 기존 제출 초안은 변경 없이 남아 있다.
+
+- 이슈6개의 실제 본문을 로컬 검토 본문과 정규화해 대조했고 모두 일치했다. R01 ready(착수 claim 전), R02~06 blocked(직전 이슈 검증·core 통합 대기). 제품 수정·게임 검사·main/core 병합·배포·제출은 수행하지 않았다. 다음 작업은 Codex Worker/Verifier를 지정하고 #11에서 실제 환경 재현부터 시작하는 것이다.
+
+- refactor_docs_verify의 원격 독립 대조 통과: #11~16 제목·본문·명세 SHA·assignee 없음·상태·선행 링크 일치, 명세 브랜치 원격 일치, 문서4개만 커밋 및 보호 파일 해시 유지 확인. UX-TRACK-001: 검토한 WORK 작업판만 추가 commit/push하여 최종 인계한다.
+
+## UX 리팩터링 역할 정정 — v1.2
+
+- 사용자 결정: “나는 이번에 디자인만 볼 거야, 나머지 개선사항은 전부 다 팀원이 작업할 거야.” dyhan0528는 디자인 검토만, jsjavsj는 개선 구현 전체와 이슈·작업 브랜치 담당으로 정정한다. 사용자에게 개발·기술 검증 작업을 배정하지 않는다. 구현자의 자체 검사와 별도 독립 검증은 유지하며 독립 담당은 착수 전에 지정한다.
+- UX-ROLE-001 completed: refactor_docs_worker가 README.md, UX_REDESIGN_SPEC.md, docs/UX_ACCEPTANCE.md, WORK.md의 현재 역할을 정정한다. 상세 요구·검사·보류 항목·선행 순서는 유지하며 과거 담당 기록은 이력으로 보존한다. docs/UX-refactoring-plan 기준 e672f9c0a851e51c75c4d660791bb8a6ae040a2d, 기존 SUBMISSION dirty 및 LOCAL_BACKLOG 해시를 보존한다.
+- UX-ROLE-PUBLISH-001 completed: 사용자 역할 정정 승인으로 독립 검토한 문서4개만 같은 문서 브랜치에 commit/push한다. GitHub #11~16 본문을 새 명세 커밋과 역할에 맞추고 실제 assignee를 jsjavsj로 설정한다. 코드·이전 완료 이슈·core/main·배포는 변경하지 않는다.
+- 다음 행동: 팀원 jsjavsj가 자신의 복사본에서 명세·기준·브랜치를 확인하고 #11 claim 및 독립 검증 담당을 확정한 뒤 구현을 시작한다. 이 역할 문서 수정은 팀원의 실제 착수나 검사 완료를 뜻하지 않는다.
+
+- refactor_docs_verify 역할 정정 초안 독립 검토 통과: 문서4개와 이슈6개에서 디자인 검토/팀원 구현/독립 검증 분리 일치. 보호 파일 해시 유지, 게임 검사는 수행하지 않음.
+
+- UX-ROLE-ISSUES-001 completed: 명세 v1.2 커밋 5ccae7f023cc18495b1ba536442bff2be7bb95dc의 원격 반영을 확인했다. #11~16은 검토한 logs/ux-refactor 본문으로 gh issue edit --body-file 및 --add-assignee jsjavsj를 적용하고 각각 실제 본문·담당·상태를 재조회한다.
+
+- 실제 대조 결과: #11~16 모두 OPEN, assignee는 jsjavsj 한 명, 본문은 검토한 v1.2 역할과 명세 5ccae7f023cc18495b1ba536442bff2be7bb95dc에 일치한다. R01 ready/착수 claim 전, R02~06 선행 통합 대기를 유지했다. 기존 SUBMISSION.md 및 LOCAL_BACKLOG.md 해시는 작업 전과 동일하며 제품 구현은 시작하지 않았다.
+
+- refactor_docs_verify 원격 독립 검토 통과: 이슈6개 실제 담당 jsjavsj만, 본문·새 명세 SHA·OPEN 상태·원격 커밋 일치 및 보호 파일 유지. UX-ROLE-TRACK-001: 이 완료 기록만 WORK.md에 commit/push해 인계한다.
+
+## main 통합 정책 — 2026-11-15
+
+- MAIN-BASELINE-001. 사용자의 통합 브랜치 정리 요청에 따라 core_loop_worker가 `NASA-HACKATHON-Mis/Mismatch-3d-Training-Game`의 검증 기준 `9907d51d54b0b3a638cd61a6c7de29f46ff46e49`로 새 원격 `main`을 초기화한다. 원격 `feature/HH-001-core-loop`와 일치하고 `main`은 시작 시 없었다. 기존 기본 브랜치는 `docs/mission-spec-v2`였다.
+- MAIN-UX-DOCS-001. 최신 `docs/UX-refactoring-plan`의 `3b014eb62488239bef1f78b4eb20f12b62362c3d`에서 분리한 `docs/main-integration-policy`를 사용한다. UX 문서 4개 변경과 해당 작업 커밋을 보존하고, README·WORKFLOW·WORK·UX 문서만 최신 상태에 맞춘다. 검증 기준과 실행 코드, 모델, 설정, 원자료의 트리가 같은지 검사한 뒤 `docs/main-integration-policy → main` PR을 일반 merge한다.
+- MAIN-DEFAULT-001. 병합한 `main`과 작업 트리를 대응시킨 뒤 GitHub 기본 브랜치를 `main`으로 바꾼다. 이후 `작업 브랜치 → 검사 → PR → main` 순서로 통합한다. 기존 브랜치는 보존한다. 배포·실제 접수는 별도이며 #6 완료, #7 제출 보류를 유지한다. UX #11–16의 담당·선행 조건은 유지하고 통합 대상만 맞춘다.
+- 현재 사용자 체크아웃 `docs/UX-refactoring-plan`의 미커밋 제출 초안과 로컬 전용 기록은 보존한다. 이번 정책·문서 변경에는 제품 코드나 모델 변경이 없다.

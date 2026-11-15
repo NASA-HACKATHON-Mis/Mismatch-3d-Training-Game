@@ -2,7 +2,9 @@
 
 작은 달 기지를 1인칭으로 탐색하고 단말기에서 시설을 지어요. 7턴 동안 전력·산소·식량을 지킨 뒤, 같은 턴을 되감아 다른 설계와 결과를 비교할 수 있어요.
 
-Godot 4.7.2에서 실행할 수 있습니다. 기지에 발전기, 배터리, 거주실, 온실, 대피소의 Blender 모델이 표시됩니다. 입구 단말기 옆에는 안내 로봇이 서 있습니다. 단일 스레드 Web 빌드를 생성했으며 브라우저에서의 전체 플레이 검증은 남아 있습니다.
+Godot 4.7.2에서 실행할 수 있습니다. 기지에 발전기, 배터리, 거주실, 온실, 대피소의 Blender 모델이 표시됩니다. 입구 단말기 옆에는 안내 로봇이 서 있습니다. 단일 스레드 Web 빌드를 생성했고 기존 통합 검증 이슈 #6은 완료했습니다.
+
+합쳐진 게임과 문서는 [`main`](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/tree/main)에서 보세요. 최신 `main`에서 작업 브랜치를 만들고, 검사 후 PR로 `main`에 병합합니다. 배포와 실제 제출은 별도 결정입니다. [통합 절차](WORKFLOW.md#main에-통합하는-방법)
 
 ## 실행 및 첫 플레이
 
@@ -29,4 +31,4 @@ Windows portable 실행 방법은 [환경 기록](docs/ENVIRONMENT.md)을 따르
 
 [규칙 v0.1](START_SPEC.md) · [작업 기록과 검증 범위](WORK.md) · [팀원 워크플로](WORKFLOW.md) · [모델 제작 규격](ASSET_BRIEF.md) · [GitHub 이슈](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues)
 
-한국어 안내서는 Windows와 Web에서 확인했습니다. 다음 작업은 [#6 두 PC 최종 검증](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/6)과 [#7 제출 준비](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7)입니다. 팀원별 작업은 [WORKFLOW의 현재 담당표](WORKFLOW.md#지금-할-일)에서 확인합니다.
+현재 작업은 [UX 리팩터링 계획 v1.2](UX_REDESIGN_SPEC.md)에 따른 기존 게임 개선입니다. dyhan0528는 디자인만 검토하고, 개선 구현 전체는 jsjavsj가 맡습니다. [작업판](WORK.md#ux-리팩터링-작업판)에서 이슈와 순서를 확인하세요. 기존 #1~6은 완료했으며 #7 제출 준비는 보류 중입니다.
