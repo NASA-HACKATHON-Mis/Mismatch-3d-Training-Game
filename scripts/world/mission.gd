@@ -358,7 +358,7 @@ func _refresh() -> void:
 
 func _edit(action: String, slot_id: int, kind: String) -> void:
 	# Dashboard selections and forged/stale signals cannot edit a remote site.
-	if mode != "field" or not _site_edit_enabled or slot_id != _active_site_slot or not _site_access(slot_id):
+	if mode != "field" or help.visible or not _site_panel.visible or not _site_edit_enabled or slot_id != _active_site_slot or not _site_access(slot_id):
 		var notice := "설치·철거는 해당 위치 가까이에서 1번 메뉴로 해요."
 		terminal.set_notice(notice, true)
 		_site_panel.set_notice(notice, true)

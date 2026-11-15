@@ -179,9 +179,17 @@ func _scene_path() -> void:
 	var t = game.terminal
 	var p = game.player
 	var first_pose := {"position": [0.43, 0.0, 19.8], "yaw": 0.15, "pitch": -0.11}
+	game.set_physics_process(false)
+	p.set_physics_process(false)
+	game._set_mode("explore", "drag")
+	p.position = Rules.slot_position(0) + Vector3(0,0,3)
+	p.camera.look_at(Rules.slot_position(0) + Vector3(0,0.02,0))
+	await physics_frame
+	await physics_frame
+	game._site_action("edit")
+	game._site_panel._place_selected()
 	p.apply_pose(first_pose)
-	t._select_slot(0)
-	t._place_selected()
+	game._set_mode("terminal")
 	_check(game.station.get_node("FacilityWrappers/Slot00_generator") != null, "draft appears on matching 3D pad")
 	t._advance_turn()
 	t._advance_turn()
