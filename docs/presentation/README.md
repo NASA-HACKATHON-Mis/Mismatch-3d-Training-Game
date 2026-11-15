@@ -2,14 +2,16 @@
 
 Updated 15 November 2026. Team Mismatch's English presentation contains seven slides including the cover, with English speaker notes for a 3–5 minute talk. All visible text, native tables and gameplay screenshots are English.
 
-## Open the presentation
+## Download or open the presentation
+
+- **[Download the English PowerPoint file](Lunar-Base-Rewind-English.pptx)** — seven editable slides, English speaker notes and embedded gameplay images. On GitHub, use **View raw** or **Download raw file**.
 
 - [Saved English presentation](https://chatgpt.com/space/page_9e457a7f503c8191b880e1686caf1818)
 - Title: **Lunar Base Rewind · Mismatch**
 - Page ID: `page_9e457a7f503c8191b880e1686caf1818`
-- Download `.pptx` from the ChatGPT/Codex presentation viewer. This is the existing saved deck, updated in place; its account link is not a public judging URL.
+- The GitHub PowerPoint is an export of the saved English deck, sequence 9. The live editor link requires account access; GitHub provides the downloadable snapshot.
 
-The earlier local PowerPoint export in the owner's documents folder is an unchanged Korean snapshot. Download the updated English deck again from the viewer before presenting or submitting it.
+Use the English file linked above. The earlier Korean export in the owner's documents folder is retained as an older local copy. Later edits to the live deck require a new GitHub export.
 
 ## Seven-slide outline
 
@@ -60,3 +62,7 @@ The example uses separate records from the same archive period: X5.8 FLR `2024-0
 - The automatic launcher description carries forward the installation/launch verification for commit `044de24`.
 - The same seven slide IDs, order, native tables, theme and 1280×720 layout were preserved. All seven slides were rendered to PNG and visually checked; slides 4 and 5 were re-rendered after final wording adjustments. A recursive audit of all slide content and speaker notes found no remaining Hangul. The new screenshots were also visually checked for English text and clipping.
 - This validates the saved presentation's renderer output. Desktop PowerPoint, public judging access, actual child usability and continuous browser/iframe controls are separate checks. Creating this deck does not complete public submission.
+
+## GitHub file validation
+
+The exported PPTX retains seven slides, seven English speaker-note pages, three non-empty embedded game images, and native tables on slides 4–6. File-package integrity, layout/heading geometry and first-party re-import checks passed. The slide count, English text and historical-not-live disclosure were checked in the exported package as well. All seven slides were re-imported, rendered and visually checked after export. This does not claim desktop PowerPoint or actual judging submission has been tested.

@@ -1,5 +1,7 @@
 # Lunar Base Rewind
 
+[Separate English README](README_EN.md) · [Download presentation](docs/presentation/Lunar-Base-Rewind-English.pptx)
+
 A first-person lunar base training game for children aged **7–12**, built for **Build a Junior Astronaut Mission Trainer**. Walk to a site, build a small base, manage seven turns, then rewind a decision and compare the result. Power, oxygen and food are limited: every useful facility has a cost.
 
 **NASA data changes the training conditions.** Real DONKI flare, particle-event and coronal-mass-ejection records select the alert and delayed-advice rules. Genuine **8–13 May 2024 historical records** are embedded for offline play and labelled **“Embedded historical data - not live.”** A successful online request is also a single catalogue snapshot, not a continuous live feed. Resource costs, shielding and turn delays are educational rules, not physical predictions.
@@ -81,7 +83,7 @@ The historical case includes an X5.8 flare and observed SEP, giving 6 protection
 
 All nine supplied source captures were reviewed, with **feed_page taking priority over docs_page**. The [image-by-image checklist](docs/SOURCE_REQUIREMENTS_CHECKLIST.md) distinguishes implemented requirements, scope limits and submission tasks. Desktop local play supports the working-prototype route; browser delivery remains a useful separate step.
 
-- **English presentation:** [seven-slide deck and PowerPoint download instructions](docs/presentation/README.md). Seven slides includes the cover. The captured demo rule allows either up to seven slides **or** a video of up to 30 seconds with English subtitles.
+- **English presentation:** [download PowerPoint](docs/presentation/Lunar-Base-Rewind-English.pptx) · [seven-slide overview and sources](docs/presentation/README.md). Seven slides includes the cover. The captured demo rule allows either up to seven slides **or** a video of up to 30 seconds with English subtitles.
 - **English submission draft:** [all nine form fields](docs/SUBMISSION_EN.md), including data, attribution and AI use. The owner-edited `SUBMISSION.md` remains separate.
 - **Before submission:** supply a publicly viewable demo URL and a publicly playable final-project URL, verify the team/form details and actually submit. A local file, private Page or GitHub source URL is not a public playable game. Public deployment and submission are not claimed here.
 - **Manual acceptance remains open:** actual child usability, remaining Native/Web/iframe input cases and host-specific loading. See [issue #29](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/29) and [submission issue #7](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7).
