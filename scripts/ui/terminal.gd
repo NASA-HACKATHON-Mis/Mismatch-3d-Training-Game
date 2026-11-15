@@ -205,6 +205,9 @@ func _refresh_communication() -> void:
 	if pending:
 		var arrival := int(_communication_data.pending.get("reply_turn", response_turn))
 		_communication_label.text = "지구와 통신 중 · T%d 진행 후 답변이 도착해요." % arrival
+		if _session != null and _session.state.phase != "planning":
+			_advice_toggle.text = "통신 중단"
+			_communication_label.text = "훈련이 중단됐어요. 과거 턴으로 되감아 다시 준비해요."
 	elif not message.is_empty():
 		_communication_label.text = "지구의 답변 · T%d\n%s" % [response_turn, message]
 	elif _advice_requested:
@@ -549,7 +552,7 @@ func _refresh_preview(planning: bool, layout: Dictionary) -> void:
 	if not planning:
 		_capacity.text = "현재 전력 %d/%d" % [_session.state.E,Simulation.energy_cap(_session.state)]
 		return
-	var prediction: Dictionary = Preview.inspect(_session.snapshot(_session.state.turn_id),_session.draft,_choice)
+	var prediction: Dictionary = Preview.inspect(_session.snapshot(_session.state.turn_id),_session.draft,_choice,{},_session.advice_requested)
 	if prediction.has("error"):
 		_preview_detail.text = UI.error_text(prediction.error)
 		return
