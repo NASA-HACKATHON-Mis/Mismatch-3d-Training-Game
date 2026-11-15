@@ -145,7 +145,17 @@ func set_weather_context(data: Dictionary) -> void:
 	if not is_instance_valid(_weather_title): return
 	var mode := "최근 API 조회" if str(data.get("mode", "archive")) == "live" else "내장 과거 자료"
 	_weather_title.text = "%s · %s %s" % [mode, str(data.get("record_type", "FLR")), str(data.get("class_type", ""))]
-	_weather_text.text = "관측 %s\n조회 %s\n%s\n%s\n실제 사례를 경보 이해에 참고해요. T4와 게임 피해 수치는 교육용 고정 규칙이며 이 등급에서 계산하지 않아요." % [str(data.get("observed_at", "확인 불가")), str(data.get("fetched_at", "확인 불가")), str(data.get("explanation", "")), str(data.get("status", ""))]
+	var observed := str(data.get("observed_at", ""))
+	var fetched := str(data.get("fetched_at", ""))
+	var status := "보관한 실제 관측 사례를 사용해요."
+	match str(data.get("status", "")):
+		"loading": status = "최근 자료를 찾아보고 있어요. 지금 시작해도 괜찮아요."
+		"recent": status = "최근 자료를 가져왔어요. 오늘 관측된 자료라는 뜻은 아니에요."
+		"frozen_archive": status = "이번 훈련은 보관 자료로 진행해요."
+		"archive_unavailable": status = "관측 자료를 읽지 못했어요. 가상 훈련은 계속할 수 있어요."
+		"timeout", "network_failed", "http_failed", "request_failed", "invalid_data", "no_recent_record", "response_too_large", "unavailable":
+			status = "최근 자료를 가져오지 못해 보관 자료를 사용해요."
+	_weather_text.text = "관측 %s\n조회 %s\n%s\n%s\n실제 사례를 경보 이해에 참고해요. T4와 게임 피해 수치는 교육용 고정 규칙이며 이 등급에서 계산하지 않아요." % [observed if not observed.is_empty() else "확인 불가", fetched if not fetched.is_empty() else "확인 불가", str(data.get("explanation", "")), status]
 	_weather_source.disabled = not str(data.get("source_url", "")).begins_with("https://ccmc.gsfc.nasa.gov/")
 
 
