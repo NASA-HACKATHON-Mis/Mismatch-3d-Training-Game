@@ -26,7 +26,7 @@ func capture(view, name: String) -> void:
 	image.save_png("res://logs/pe02/" + name + ".png")
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute("res://logs/pe02")
-	for dimensions in [Vector2i(1280,720), Vector2i(800,900)]:
+	for dimensions in [Vector2i(1280,800), Vector2i(960,600)]:
 		var view := SubViewport.new()
 		view.size = dimensions
 		view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -36,6 +36,7 @@ func _run() -> void:
 		game.set_physics_process(false)
 		game.player.set_physics_process(false)
 		game._set_mode("explore")
+		game.hud.hide()
 		await settle()
 		var pose: Dictionary = game.player.pose()
 		var camera_transform: Transform3D = game.player.camera.transform
@@ -67,7 +68,8 @@ func _run() -> void:
 		var tag := "%dx%d" % [dimensions.x, dimensions.y]
 		for sample in [["front",0.0,0.0,0],["down",-80.0,0.0,0],["up",80.0,0.0,0],["left",-60.0,90.0,0],["right",-60.0,-90.0,0],["walk",-45.0,0.0,1],["air",-45.0,0.0,2],["land",-45.0,0.0,0]]:
 			game.player.rotation.y = deg_to_rad(sample[2])
-			game.player.camera.rotation.x = deg_to_rad(sample[1])
+			game.player.camera.rotation.x = clampf(deg_to_rad(sample[1]), game.player.MIN_PITCH, game.player.MAX_PITCH)
+			avatar.set_view_pitch(game.player.camera.rotation.x)
 			avatar.update_motion(Vector3(0,0,-3) if sample[3] == 1 else Vector3.ZERO, sample[3] != 2, true, 0.1)
 			game.hud.set_target(game.player.sees_console(game.station.console), game.player.global_position, -game.player.global_basis.z)
 			check(avatar.transform == Transform3D.IDENTITY, "Body root never inherits pitch or shifts")
