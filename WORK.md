@@ -571,3 +571,9 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 최신 병렬 PE-01/PE-04 main4a38d8b를 일반 merge해 모든 기록을 보존했다. 실제 도움말 열기/닫기 검사로 보강한 jump85/0, mouse_modes23/0, resource_gauges64/0 통과. navigation70/0을 포함한 기존 영향 검사와 별개이며 다른 담당 코드는 수정하지 않았다.
 
 - PE-03 최종source703c0ba64097a31484309505d5f20483a35a8f9f 독립391/0·PMdiff/물리렌더검토PASS. 일반merge로 player.gd/project.godot claim을 #29 담당 dyhan0528에게 반환한다. #27은 OPEN/실제통합인수대기이며 PR·실제mergeSHA는 원격 이슈에서 재조회한다. 이번 후속 기록은 문서만 변경한다.
+
+## PE-05 공개 후보 대기·부분 교차 검증 — 2026-11-15
+
+- 사용자 교차검증 요청으로 원격 fetch/main3ea5bbc3c31ebbfb0dfbb0b3e299e04173bbc57c clean 확인. #29 댓글은 dyhan0528의 준비착수 기록이며 공개 PE-05 branch/PR은 조회되지 않았다. 상대 PC 미공개작업을 완료/미착수로 단정하지 않는다.
+- docs/PE-05-cross-verification에서 제품수정 없이 기존 게이지 실렌더70/0(PNG6), PM 시각검토, 독립 resource64/mouse23/navigation70/core90/learning15 합계262/0 완료. GPU/headless 실행을 순차조정했다. 상세범위·환경·미실행·공개후보대기 이유는 docs/PE05_CROSS_VERIFICATION.md 참조.
+- #27 player/project claim은 PR34/main3ea5bbc로 반환 완료. #29 담당은 실제통합후보SHA/PR을 인계하면 팀원교차검증을 계속할 수 있다. 현재결과는 컴포넌트 부분검사이며 통합PASS가 아니다. #29/관련기능OPEN, 기존8072빌드/서버 보존·배포없음·#7보류.
