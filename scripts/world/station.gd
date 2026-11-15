@@ -18,6 +18,9 @@ var console: StaticBody3D
 var _wrappers := Node3D.new()
 var _materials := {}
 var _facility_models: Dictionary[String, PackedScene] = {}
+var _selection: Node3D
+var selected_slot := -1
+var _selection_label: Label3D
 var _guide_collision: StaticBody3D
 
 
@@ -33,6 +36,33 @@ func _ready() -> void:
 	_create_guide_robot()
 	_wrappers.name = "FacilityWrappers"
 	add_child(_wrappers)
+	_create_selection()
+
+
+func _create_selection() -> void:
+	_selection = Node3D.new()
+	_selection.name = "SelectedSlotOverlay"
+	add_child(_selection)
+	for direction in [-1.0,1.0]:
+		_box(_selection,Vector3(0,0.07,direction*2.3),Vector3(4.7,0.12,0.12),CYAN,true)
+		_box(_selection,Vector3(direction*2.3,0.07,0),Vector3(0.12,0.12,4.7),CYAN,true)
+	_selection_label = Label3D.new()
+	_selection_label.font = load("res://resources/fonts/NotoSansKR.ttf")
+	_selection_label.font_size = 48
+	_selection_label.pixel_size = 0.012
+	_selection_label.position = Vector3(0,3.8,0)
+	_selection_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_selection_label.no_depth_test = true
+	_selection_label.modulate = CYAN
+	_selection.add_child(_selection_label)
+	_selection.hide()
+
+func highlight_slot(slot: int, caption: String = "") -> void:
+	selected_slot = slot if slot >= 0 and slot < Rules.SLOT_COUNT else -1
+	_selection.visible = selected_slot >= 0
+	if selected_slot < 0: return
+	_selection.position = Rules.slot_position(slot)
+	_selection_label.text = "%02d · %s" % [slot+1,caption]
 
 
 func _atmosphere() -> void:

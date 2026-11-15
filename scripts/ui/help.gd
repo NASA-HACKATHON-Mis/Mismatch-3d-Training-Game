@@ -76,6 +76,7 @@ func _card(parent: Control, title: String, description: String, color: Color = U
 
 func _build_facilities(parent: Control) -> void:
 	UI.label(parent, "무엇을 지으면 도움이 될까요? 자원과 시간은 게임 단위예요.", 19, UI.MUTED, true)
+	_card(parent,"단말기로 돌아가기와 안내 로봇","단말기는 기지 남쪽 입구의 로봇 옆에 있어요. 시설 사이와 바깥 통로를 따라 돌아와 단말기를 정면으로 보고 E를 눌러요. 이동 중에는 턴이 흐르지 않아요. 로봇은 위치를 알아보는 표식이며 별도 대화·퀘스트는 제공하지 않아요. 안내서는 단말기 또는 일시 정지 화면에서 H로 열어요.")
 	for kind: String in Learning.FACILITIES:
 		_card(parent, UI.name_for(kind), Learning.FACILITIES[kind], UI.FACILITY_COLORS[kind])
 

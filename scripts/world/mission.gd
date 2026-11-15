@@ -19,6 +19,8 @@ var _command_serial := 0
 var _help_focus: Control
 var _capture_elapsed := 0.0
 const CAPTURE_TIMEOUT := 2.0
+var _observation_camera: Camera3D
+var _return_camera: Camera3D
 var _start_camera: Camera3D
 var _has_explored := false
 
@@ -26,6 +28,9 @@ var _has_explored := false
 func _ready() -> void:
 	get_window().focus_exited.connect(_pause)
 	terminal.closed.connect(_pause)
+	terminal.selected_slot_changed.connect(_highlight_selected)
+	terminal.inspect_requested.connect(_inspect_selected)
+	hud.inspection_closed.connect(_close_inspection)
 	terminal.edited.connect(_edit)
 	terminal.cancelled.connect(_cancel_draft)
 	terminal.advanced.connect(_commit)
@@ -40,6 +45,9 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout_start_camera)
 	_layout_start_camera()
 	_start_camera.make_current()
+	_observation_camera = Camera3D.new()
+	_observation_camera.fov = 55
+	add_child(_observation_camera)
 	hud.help_requested.connect(_open_help)
 	terminal.help_requested.connect(_open_help)
 	help.closed.connect(_close_help)
@@ -47,6 +55,26 @@ func _ready() -> void:
 	_refresh()
 	_set_mode("pause")
 
+
+func _highlight_selected(slot: int) -> void:
+	var layout: Dictionary = session.preview().state
+	var facility: Dictionary = preload("res://scripts/simulation/simulation.gd").facility_at(layout,slot)
+	station.highlight_slot(slot,UI.name_for(facility.type) if not facility.is_empty() else "빈 칸")
+
+func _inspect_selected() -> void:
+	if mode != "terminal" or terminal._selected_slot < 0: return
+	_return_camera = get_viewport().get_camera_3d()
+	var slot: int = terminal._selected_slot
+	var target := Rules.slot_position(slot)
+	_observation_camera.position = target + Vector3(7,9,10)
+	_observation_camera.look_at(target + Vector3(0,0.8,0))
+	_observation_camera.make_current()
+	var state_label := "미확정 배치 포함" if not session.draft.is_empty() else "현재 확정 배치"
+	hud.show_inspection("지도 %02d번 칸 · %s · 청록색 테두리와 번호가 선택 위치예요." % [slot+1,state_label])
+	_set_mode("inspect")
+
+func _close_inspection() -> void:
+	if mode == "inspect": _set_mode("terminal")
 
 func _reopen_result() -> void:
 	if help.visible or mode != "pause" or session.state.phase == "planning": return
@@ -78,13 +106,17 @@ func _physics_process(delta: float) -> void:
 				"Mouse capture was released. Click the button to resume."))
 			return
 		_aiming = player.sees_console(station.console)
-		hud.set_target(_aiming)
+		hud.set_target(_aiming,player.global_position,-player.global_basis.z)
 
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE and help.visible:
 			_close_help()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_ESCAPE and mode == "inspect":
+			_close_inspection()
 			get_viewport().set_input_as_handled()
 			return
 		if event.keycode == KEY_ESCAPE and mode != "pause":
@@ -159,8 +191,11 @@ func _pause() -> void:
 
 
 func _set_mode(new_mode: String) -> void:
+	if mode == "inspect" and new_mode != "inspect":
+		if is_instance_valid(_return_camera): _return_camera.make_current()
+		_return_camera = null
 	mode = new_mode
-	if mode == "explore" and not _has_explored:
+	if mode == "explore":
 		_has_explored = true
 		player.camera.make_current()
 	_aiming = false

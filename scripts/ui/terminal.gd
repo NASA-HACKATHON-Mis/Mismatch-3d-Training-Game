@@ -1,5 +1,7 @@
 extends Control
 
+signal selected_slot_changed(slot: int)
+signal inspect_requested
 signal closed
 signal edited(action: String, slot_id: int, kind: String)
 signal cancelled
@@ -69,6 +71,8 @@ var _preview_open := false
 var _candidate_note: Label
 var _candidate_buttons: Array[Button] = []
 var _start_preview: Label
+var _inspect: Button
+var _clear_selection: Button
 var _scroll: ScrollContainer
 var _outcome_card: PanelContainer
 var _outcome_title: Label
@@ -223,6 +227,8 @@ func _build_map(parent: Control) -> void:
 		button.add_theme_font_size_override("font_size", 16)
 		_slots.append(button)
 	_map_help = UI.label(map, "", 18, UI.MUTED, true)
+	_inspect = UI.button(map,"선택 칸 3D 보기",func(): inspect_requested.emit(),UI.CYAN)
+	_clear_selection = UI.button(map,"선택 해제",func(): _selected_slot = -1; refresh(_session),UI.MUTED)
 	var buttons := UI.row(map)
 	_remove = UI.button(buttons, UI.trn("선택 시설 철거", "Remove selected"),
 		func(): edited.emit("remove", _selected_slot, ""), UI.ALERT, 36)
@@ -336,6 +342,9 @@ func refresh(session) -> void:
 	_refresh_guidance(planning, edit_state)
 	_refresh_timeline()
 	_refresh_outcome()
+	_inspect.disabled = _selected_slot < 0
+	_clear_selection.disabled = _selected_slot < 0
+	selected_slot_changed.emit(_selected_slot)
 
 
 func _card_effect(kind: String) -> String:
@@ -434,9 +443,9 @@ func _refresh_map(state: Dictionary, planning: bool) -> void:
 			contents = UI.name_for(kind)
 		button.text = "%02d\n%s\n%s" % [slot_id + 1, contents, marks if not marks.is_empty() else "일반"]
 		button.tooltip_text = marks if kind.is_empty() else UI.description(kind) + " · " + (marks if not marks.is_empty() else "일반 칸")
-		button.disabled = not planning
+		button.disabled = false # Completed layouts can still be inspected.
 		UI.paint_button(button, tint, _selected_slot == slot_id)
-	_map_help.text = "시설을 고르고 빈 칸을 누르면 배치해요. 확정 전에는 이번 변경을 취소할 수 있어요."
+	_map_help.text = "시설을 고르고 빈 칸을 누르면 배치해요. 확정 전에는 이번 변경을 취소할 수 있어요." if planning else "칸을 골라 3D로 살펴봐요. 배치를 바꾸려면 과거 턴으로 돌아가요."
 	var selected := Simulation.facility_at(state, _selected_slot)
 	_remove.disabled = not planning or selected.is_empty() or selected.get("type") == "habitat"
 	if not selected.is_empty() and selected.type != "habitat":
@@ -544,7 +553,7 @@ func _select_slot(slot: int) -> void:
 	clear_notice()
 	_selected_slot = slot
 	var preview: Dictionary = _session.preview()
-	if Simulation.facility_at(preview.state, slot).is_empty():
+	if _session.state.phase == "planning" and Simulation.facility_at(preview.state, slot).is_empty():
 		edited.emit("place", slot, _selected_kind)
 	refresh(_session)
 

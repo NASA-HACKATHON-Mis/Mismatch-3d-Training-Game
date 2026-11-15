@@ -100,6 +100,17 @@ func _run() -> void:
 			game.terminal._advance_turn()
 			game.terminal._advance_turn()
 			check(fingerprint(game) == original,"Closed result cannot commit; UI only unchanged")
+			game.terminal._select_slot(12)
+			game._inspect_selected()
+			await settle()
+			check(game.mode == "inspect" and game.hud._inspection_label.text.contains("현재 확정 배치"),"Ended observation uses confirmed layout")
+			if render:
+				await RenderingServer.frame_post_draw
+				view.get_texture().get_image().save_png("res://logs/ux16/"+tag+"-ended-inspection.png")
+			game._close_inspection()
+			game.terminal._select_slot(1)
+			check(fingerprint(game) == original,"All ended phases allow read-only map selection")
+			check(game.terminal._advance.disabled,"Ended inspection never re-enables advancing")
 			var escape := InputEventKey.new()
 			escape.keycode = KEY_ESCAPE
 			escape.pressed = true
