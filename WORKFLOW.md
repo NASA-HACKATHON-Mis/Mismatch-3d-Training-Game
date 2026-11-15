@@ -1,14 +1,14 @@
 # 두 사람이 이어서 진행하는 워크플로 — 2026-11-15
 
-게임과 시설 5종·안내 로봇이 구현되어 있다. PR #8은 core에 병합됐으며 기준은 `f88cb62c50680db7011c1aaf05aaeb328afa9892`다. 계약·모델 검사 161개가 통과했고 Web 출력 및 모델 패키지 로드를 확인했다. 사용자는 새 모델 배치·이동·되돌리기를 확인했다. 두 PC의 브라우저 전체 7턴과 최종 한국어 화면 검증까지 완료했다는 뜻은 아니다.
+게임과 시설 5종·안내 로봇을 구현했고 한국어 안내서를 추가했다. 모델의 통합 기준은 [PR #8](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/8)의 `f88cb62c50680db7011c1aaf05aaeb328afa9892`다. 계약·모델·안내서 검사 176개가 통과했고 Web에서 한국어와 출처 카드, 키보드 안내서 조작을 확인했다. 두 PC의 브라우저 전체 7턴은 #6에서 확인한다.
 
-공통 IMPLEMENTATION_READY=true. 환경 준비와 모델 제작을 처음부터 반복하지 않는다. 규칙 원계약 `410063037ba62da61f9119b4ba8b10cbdadc9ccb`는 유지한다. 최신 플레이 코드는 `feature/HH-001-core-loop`, 진행 중인 한국어·학습 UI는 `feature/HH-005-learning-ui`다. docs 브랜치는 초기 문서 이력이므로 실행본은 core를 기준으로 한다.
+공통 IMPLEMENTATION_READY=true. 환경 준비와 모델 제작을 처음부터 반복하지 않는다. 규칙 원계약 `410063037ba62da61f9119b4ba8b10cbdadc9ccb`는 유지한다. 한국어 안내서 작업 브랜치는 `feature/HH-005-learning-ui`다. 두 PC에서 같은 빌드를 점검할 때는 core `feature/HH-001-core-loop`로 통합된 실제 커밋 SHA를 기준으로 한다. docs 브랜치는 초기 문서 이력이다.
 
 ## 지금 할 일
 
 | 담당 | 지금 | 다음 전달물 |
 | --- | --- | --- |
-| dyhan0528 / core_loop_worker | #5 한국어 native/Web·NASA 출처·시설/사건 설명 구현, 검사 후 core 통합 | 실행 SHA, 검사 결과, Web 출력 |
+| dyhan0528 | #6 두 PC의 플레이 검증 총괄 및 #7 공식 제출 조건 조사 | 실행 SHA, 검사 결과, 공식 규정과 제출 요건 |
 | jsjavsj | #6 두 번째 Windows에서 현재 core 모델·통로 확인. #5 통합 후 같은 SHA로 한국어와 전체 플레이 검사 | 아래 양식의 실제 검사 결과·결함·화면 증거 |
 | dyhan0528 / 제출 담당 AI | #7 공식 마감·접수 위치·필수자료·공개 조건 조사 병행 | 출처 URL·확인일·미확인 목록 |
 | jsjavsj | #5 안정화 후 시연 화면/짧은 영상 준비 | 같은 빌드 SHA와 시연 자료 위치 |

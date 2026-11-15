@@ -29,4 +29,4 @@ Windows portable 실행 방법은 [환경 기록](docs/ENVIRONMENT.md)을 따르
 
 [규칙 v0.1](START_SPEC.md) · [작업 기록과 검증 범위](WORK.md) · [팀원 워크플로](WORKFLOW.md) · [모델 제작 규격](ASSET_BRIEF.md) · [GitHub 이슈](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues)
 
-현재 작업: [#5 한국어·학습 설명](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/5), [#6 두 PC 최종 검증](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/6), [#7 제출 준비](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7). 팀원은 [WORKFLOW의 현재 담당표](WORKFLOW.md#지금-할-일)를 따릅니다. 모델 추가 제작은 발견된 결함 수정에 한정합니다.
+한국어 안내서는 Windows와 Web에서 확인했습니다. 다음 작업은 [#6 두 PC 최종 검증](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/6)과 [#7 제출 준비](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7)입니다. 팀원별 작업은 [WORKFLOW의 현재 담당표](WORKFLOW.md#지금-할-일)에서 확인합니다.
