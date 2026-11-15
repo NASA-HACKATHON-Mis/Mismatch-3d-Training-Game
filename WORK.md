@@ -376,7 +376,7 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 
 | 작업 | 범위 | 실제 이슈 | 구현 담당 | 상태 |
 | --- | --- | --- | --- | --- |
-| UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | jsjavsj | ready / 착수 claim 전 |
+| UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | jsjavsj | in-progress / 수정·자동검사 완료, 실제 브라우저 인수·main 통합 대기 |
 | UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | blocked / UX-R01 통합 대기 |
 | UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | blocked / UX-R02 통합 대기 |
 | UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | blocked / UX-R03 통합 대기 |
@@ -416,3 +416,14 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - MAIN-UX-DOCS-001. 최신 `docs/UX-refactoring-plan`의 `3b014eb62488239bef1f78b4eb20f12b62362c3d`에서 분리한 `docs/main-integration-policy`를 사용한다. UX 문서 4개 변경과 해당 작업 커밋을 보존하고, README·WORKFLOW·WORK·UX 문서만 최신 상태에 맞춘다. 검증 기준과 실행 코드, 모델, 설정, 원자료의 트리가 같은지 검사한 뒤 `docs/main-integration-policy → main` PR을 일반 merge한다.
 - MAIN-DEFAULT-001. 병합한 `main`과 작업 트리를 대응시킨 뒤 GitHub 기본 브랜치를 `main`으로 바꾼다. 이후 `작업 브랜치 → 검사 → PR → main` 순서로 통합한다. 기존 브랜치는 보존한다. 배포·실제 접수는 별도이며 #6 완료, #7 제출 보류를 유지한다. UX #11–16의 담당·선행 조건은 유지하고 통합 대상만 맞춘다.
 - 현재 사용자 체크아웃 `docs/UX-refactoring-plan`의 미커밋 제출 초안과 로컬 전용 기록은 보존한다. 이번 정책·문서 변경에는 제품 코드나 모델 변경이 없다.
+
+## UX-R01 진행 막힘 수정 — 2026-11-15
+
+- 사용자 요청에 따라 jsjavsj의 복사본에서 원격을 갱신했다. 기준 `main`/`origin/main`은 `c5a95a9638f77b22a6df2557621ba7172814b347`, 시작 시 clean. `fix/UX-R01-navigation`에서 구현 보조 ux11_worker와 독립 ux11_verifier를 지정하고 #11 본문에 claim을 기록·재조회했다. 명세 `5ccae7f023cc18495b1ba536442bff2be7bb95dc`, 원계약 `410063037ba62da61f9119b4ba8b10cbdadc9ccb` 유지.
+- 재현: 기존 deck 윗면 0m와 terrain -0.18m 사이의 턱에서 실제 CharacterBody `move_and_slide` 왕복 검사 8개 중 재진입 4개가 실패했다. 남쪽 z=21.277, 북쪽 z=-15.277, 동서 x=±17.284 부근에 멈췄다. 데크 네 변과 모서리에 폭 1m의 낮은 경사로를 시각·충돌 동일 형상으로 추가했다. 점프·순간이동·시설 원본·규칙 수치는 변경하지 않았다.
+- 입력: Web의 비동기 마우스 잠금을 기다리는 상태를 추가했다. 대기 중 이동을 막고 2초 내 잠금이 오지 않으면 설명과 재시도 버튼을 보여 준다. Esc·포커스 상실·시간 초과 뒤 늦게 도착한 잠금은 일시정지를 해제하지 않는다. 새 드래그 조작이나 서버 설정은 추가하지 않았다.
+- Godot `4.7.2.stable.official.ed1daf0bf`, 이 PC의 `../tools/godot-4.7.2`와 자식 프로세스 전용 `.tmp/runtime_appdata` 사용. headless import 및 기존 core 90 / generator 19 / facility 52 / learning UI 15 검사 모두 통과. 새 `navigation.gd` 70개도 통과: 실제 player 물리·WASD 입력으로 8방향 왕복을 초기/시설 배치/복원 후 반복, 정면·왼쪽 단말기 접근과 E 처리, 2m 밖 접근 거부, 잠금 대기·실패·재시도·취소 상태 검사. 합계 246개. 독립 검증도 기존 176개와 최종 navigation 70개를 통과했고 diff 검토를 마쳤다.
+- headless DisplayServer는 실제 포인터 권한을 제공하지 않는다. 입력 상태 검사는 잠금 결과를 주입하며, E 검사는 실제 물리 ray 결과를 입력 처리기에 공급한다. 이 검사를 실제 브라우저 권한/입력 검사로 표시하지 않는다.
+- PM은 변경 전 Native 화면에서 시작 클릭·E 단말기 열기·Esc 일시정지를 확인했다. Native 정상 시작 정지는 미재현이며 단말기 자체의 별도 충돌 결함도 확인되지 않았다. 최종 Native 화면 및 Chrome/Edge 직접 클릭·잠금 거부·Esc/포커스 복귀·iframe 입력 검사는 미실행이다. Windows Computer Use가 브라우저 URL 정책 확인 불가로 중단되어 추가 UI 조작을 하지 않았다.
+- Web export 성공(exit 0), `build/web/index.pck` SHA-256 `5526aa8f6a61da6915aa0b3f7a7402c99f205ee8e14af86a0644a8fa5b47fba3`. 모델·폰트 import의 줄바꿈만 바뀐 부수 파일 8개는 내용 차이가 없음을 확인하고 작업 전 상태로 복구했다.
+- 검증한 소스 커밋 `78a1affc49938eca9c771a94564f4d87430fcb64`를 작업 브랜치에 push하고 [PR #18](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/18)을 `Refs #11`, OPEN/DRAFT로 생성했다. 독립 Verifier가 커밋과 검증 파일 해시의 일치를 확인했다. #11 본문에도 결과·PR·미실행 조건을 반영했다. #11은 OPEN이며 실제 브라우저 입력 인수 전 main 병합·이슈 종료를 보류한다. #12는 #11 검증·통합 대기 상태를 유지한다. 외부 terrain 위치 복원 시 기존 안전 위치 판정에 따른 spawn 복귀는 기존 계약 그대로다.

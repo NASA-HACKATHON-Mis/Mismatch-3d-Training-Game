@@ -17,6 +17,8 @@ var mode := "pause"
 var _aiming := false
 var _command_serial := 0
 var _help_focus: Control
+var _capture_elapsed := 0.0
+const CAPTURE_TIMEOUT := 2.0
 
 
 func _ready() -> void:
@@ -35,10 +37,18 @@ func _ready() -> void:
 	_set_mode("pause")
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	# A Web permission response can arrive after Esc, focus loss, or timeout.
+	if mode not in ["explore", "capturing"] and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if mode == "capturing":
+		_update_capture(delta, Input.mouse_mode == Input.MOUSE_MODE_CAPTURED)
+		return
 	if mode == "explore":
 		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			_pause()
+			hud.set_input_notice(UI.trn("마우스 잠금이 풀렸어요. 다시 시작하려면 버튼을 눌러요.",
+				"Mouse capture was released. Click the button to resume."))
 			return
 		_aiming = player.sees_console(station.console)
 		hud.set_target(_aiming)
@@ -74,11 +84,30 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _start_exploring() -> void:
 	if mode == "pause" and not help.visible:
+		_capture_elapsed = 0.0
+		hud.set_input_notice(UI.trn("마우스 잠금을 기다리고 있어요. Esc로 취소할 수 있어요.",
+			"Waiting for mouse capture. Press Esc to cancel."))
+		_set_mode("capturing")
+		# Keep the request inside the click/key gesture; Web capture is asynchronous.
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _update_capture(delta: float, captured: bool) -> void:
+	if mode != "capturing":
+		return
+	if captured:
+		hud.set_input_notice("")
 		_set_mode("explore")
+		return
+	_capture_elapsed += delta
+	if _capture_elapsed >= CAPTURE_TIMEOUT:
+		_set_mode("pause")
+		hud.set_input_notice(UI.trn("마우스 잠금을 허용하지 못했어요. 게임 화면을 클릭한 뒤 다시 시작해요.\n계속 막히면 게임을 새 탭에서 열어 주세요.",
+			"Mouse capture was not allowed. Click the game and try again.\nIf it stays blocked, open the game in its own tab."))
 
 
 func _open_help() -> void:
-	if help.visible or mode == "explore":
+	if help.visible or mode in ["explore", "capturing"]:
 		return
 	_help_focus = get_viewport().gui_get_focus_owner()
 	if _help_focus == null:
@@ -99,12 +128,15 @@ func _close_help() -> void:
 func _pause() -> void:
 	if is_node_ready() and not help.visible:
 		_set_mode("pause")
+		hud.set_input_notice("")
 
 
 func _set_mode(new_mode: String) -> void:
 	mode = new_mode
 	_aiming = false
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if mode == "explore" else Input.MOUSE_MODE_VISIBLE
+	var requested_mouse_mode := Input.MOUSE_MODE_CAPTURED if mode == "explore" else Input.MOUSE_MODE_VISIBLE
+	if Input.mouse_mode != requested_mouse_mode:
+		Input.mouse_mode = requested_mouse_mode
 	player.set_exploring(mode == "explore")
 	hud.show_mode(mode)
 	terminal.visible = mode == "terminal"

@@ -14,6 +14,7 @@ var _reticle: Label
 var _footnote: Label
 var help_button: Button
 var _start: Button
+var _input_notice: Label
 
 
 func _ready() -> void:
@@ -66,6 +67,8 @@ func _ready() -> void:
 	UI.label(text, UI.trn("실패해도 되감아 다른 선택을 시험할 수 있어요.",
 		"You can rewind a turn and try a different plan."), 17, UI.MUTED)
 	UI.label(text, "WASD 이동 · 마우스로 둘러보기 · 단말기를 보고 E", 15, UI.MUTED)
+	_input_notice = UI.label(text, "", 16, UI.CYAN)
+	_input_notice.hide()
 	var actions := UI.row(text, 8)
 	_start = UI.button(actions, "훈련 시작", func(): started.emit())
 	help_button = UI.button(actions, "안내서  H", func(): help_requested.emit(), UI.MUTED)
@@ -75,11 +78,18 @@ func _ready() -> void:
 
 func show_mode(mode: String) -> void:
 	visible = mode != "terminal"
-	_intro.visible = mode == "pause"
+	_intro.visible = mode in ["pause", "capturing"]
+	_start.disabled = mode == "capturing"
+	help_button.disabled = mode == "capturing"
 	_reticle.visible = mode == "explore"
 	_status_box.visible = mode == "explore"
-	if _intro.visible:
+	if mode == "pause":
 		_start.grab_focus()
+
+
+func set_input_notice(message: String) -> void:
+	_input_notice.text = message
+	_input_notice.visible = not message.is_empty()
 
 
 func refresh(state: Dictionary) -> void:
