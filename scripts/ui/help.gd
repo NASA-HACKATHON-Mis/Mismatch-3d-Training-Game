@@ -92,7 +92,7 @@ func _build_facilities(parent: Control) -> void:
 		_card(parent, UI.name_for(kind), Learning.FACILITIES[kind], UI.FACILITY_COLORS[kind])
 
 func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
-	_controls.text = "WASD로 걷고 마우스로 둘러봐요. 가까운 빈 칸·건물의 테두리를 확인해요. 1은 설치·철거 메뉴, 2 또는 E는 상세 정보, 3은 3D 관찰이에요. 1을 눌러도 바로 철거되지 않아요. 중앙 단말기는 E 또는 2로 대시보드를 열어요. Esc로 닫거나 멈춰요."
+	_controls.text = "WASD로 걷고 마우스로 둘러봐요. 현장 1은 설치·철거 메뉴, 2 또는 E는 상세, 3은 3D 관찰이에요. 어디서든 4로 기지 격자와 설치 현황을 봐요. 지도에서는 설치나 턴 진행을 할 수 없어요. 중앙 단말기는 E 또는 2로 열어요. 메뉴에서 Esc를 누르면 탐색으로 돌아가요. 탐색 중 Esc는 잠시 멈춤이에요."
 	if jump_enabled:
 		_controls.text += " Space로 점프해요. 바닥에 내려온 뒤 다시 누르면 또 점프할 수 있어요."
 	if drag_available:
