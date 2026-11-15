@@ -154,12 +154,20 @@ func _refresh_context() -> void:
 	for kind: String in TYPES:
 		if _sources[kind].mode == "live": live_count += 1
 	var mode := "live" if live_count == TYPES.size() else ("archive" if live_count == 0 else "mixed")
+	# `live` is a legacy transport value: this app makes one catalogue fetch,
+	# never a continuous live feed. Keep public presentation semantics explicit.
+	var source_label: String = {
+		"archive":"Embedded historical data - not live",
+		"live":"Fetched NASA records - not a live feed",
+		"mixed":"Mixed fetched and historical records - not a live feed"
+	}[mode]
 	var flares: Array = _records.get("FLR", [])
 	var chosen: Dictionary = flares.back() if not flares.is_empty() else {}
 	_context = {"mode":mode, "record_type":"FLR", "event_id":chosen.get("event_id", ""), "observed_at":chosen.get("observed_at", ""),
 		"fetched_at":_sources.FLR.fetched_at, "class_type":chosen.get("class_type", ""), "source_url":chosen.get("source_url", ENDPOINT),
 		"status":_sources.FLR.status, "records":_records.duplicate(true), "sources":_sources.duplicate(true),
-		"explanation":"NASA DONKI의 FLR·SEP·CME 기록을 사용해요. 종류별 조회 기간과 출처가 다를 수 있어요. 게임 효과는 교육용 규칙이며 실제 달의 피폭량이나 통신 장애를 계산한 결과가 아니에요."}
+		"source_label":source_label, "is_live_feed":false, "snapshot_frozen":_frozen,
+		"explanation":"Real NASA DONKI FLR, SEP and CME catalogue records. Embedded records are historical observations from 8-13 May 2024, not current space weather. Each product keeps its own observation period, retrieval date and source. Online records are fetched once and frozen for this run. Power costs and reply delays are educational rules, not measurements of lunar dose or communications loss."}
 
 func _normalize_array(raw: Variant, kind: String, start_date: String, end_date: String) -> Dictionary:
 	if not raw is Array: return {"error":"invalid_data"}
