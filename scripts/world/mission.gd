@@ -31,6 +31,7 @@ func _ready() -> void:
 	terminal.advanced.connect(_commit)
 	terminal.rewound.connect(_restore)
 	hud.started.connect(_start_exploring)
+	hud.result_requested.connect(_reopen_result)
 	hud.guidance_changed.connect(_set_guidance)
 	terminal.guidance_changed.connect(_set_guidance)
 	_start_camera = Camera3D.new()
@@ -46,6 +47,11 @@ func _ready() -> void:
 	_refresh()
 	_set_mode("pause")
 
+
+func _reopen_result() -> void:
+	if help.visible or mode != "pause" or session.state.phase == "planning": return
+	_refresh()
+	_set_mode("terminal")
 
 func _set_guidance(enabled: bool) -> void:
 	hud.set_guidance(enabled)
@@ -202,6 +208,10 @@ func _commit(event_choice: String) -> void:
 	station.sync_facilities(session.state)
 	terminal.on_result(result.turn_id)
 	_refresh()
+	if result.phase == "turn_complete":
+		terminal.set_notice("T%d 완료! 전력·산소·식량을 지켰어요. 다음 턴을 준비해요." % result.turn_id)
+	else:
+		terminal.scroll_to_outcome()
 
 
 func _restore(turn_id: int) -> void:

@@ -379,8 +379,8 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | jsjavsj | in-progress / 수정·자동검사 완료, 실제 브라우저 인수·main 통합 대기 |
 | UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | done / PR #19 검증·main 통합 |
 | UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | done / PR #20 검증·main 통합 |
-| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | ready / UX-R03 완료, 착수 claim 전 |
-| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | blocked / UX-R04 통합 대기 |
+| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | done / PR #21 검증·main 통합 |
+| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | ready / UX-R04 완료, 착수 claim 전 |
 | UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | blocked / UX-R05 통합 대기 |
 
 저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
@@ -461,3 +461,18 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 
 - 검사 소스 `c47ac0677918a26243faed15f951136e62160746`. PM은 최종 Native PID9724에서 시작/E, 배터리12 배치(현재20/20·배치용량40)와 취소, 발전기01+배터리12+재배실14의 T1 예상28/40·O62·F30 및 확정 실제값 일치를 확인했다. T2 조건부 재배 유지18/40·절전22/40, 절전 선택의 단일 예상22/40·O64·F24와 확정 실제값, T3까지 지속되는 정지 안내를 확인했다. 미리보기·지도·스크롤도 정상이다.
 - PM은 독립2,070개 및 실제 GUI로 #13 인수 충족을 확인했다. Web export와 HTTP200/PCK 확인을 완료했으며 실제 Chrome/Edge 전체 행렬은 이번에 실행하지 않았다. [PR #20](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/20)을 일반 merge하며 이 완료 작업판을 함께 반영한다. 이후 실제 merge SHA·#13 CLOSED 재조회는 이슈에 기록한다. #14는 ready/미착수이며 구현하지 않았다.
+
+
+## UX-R04 성공·실패 결과 — 2026-11-15
+
+- 시작 패킷: 최신 main/origin/main `f5cc874cadd06a9e0c80ada531817525d45d84a7` clean에서 `feature/UX-R04-outcome` 생성. 실제 #14/댓글(없음), UX003/005와 규칙 계약을 대조하고 claim/in-progress를 갱신했다. 사람 담당 jsjavsj, Worker ux12_worker, 독립 Verifier ux11_verifier, PM root.
+- 성공은 ‘7턴 훈련 완료!’ 축하와 현재 분기의 실제 턴 기록 요약, 중단은 턴·전력/생명 유지/안전 원인과 기록으로 재시도하는 행동을 구분했다. 상세 7턴 요약은 접어서 시작하며 previous_attempt나 예상 결과를 합산하지 않는다. 선택/배치/턴 완료 피드백은 구분한다.
+- 결과를 닫은 HUD는 완료/중단 제목, 결과 다시 보기·기지 둘러보기를 유지한다. 첫 안내는 종료 상태에서 숨기고 되감아 planning이 되면 결과 표시를 해제한다. 새 게임·자동 리셋·새 보상·성장 시스템은 추가하지 않았다. 기존 UI 0.42초 이중 클릭 방어를 보존하고 종료 상태의 추가 확정을 막았다.
+- 자체 신규 outcome UI 1,069개 통과: 기존 계산으로 성공7턴/전력T3/식량T6/안전T4 도달, 실제 기록만 요약, 닫기/재열기/Esc/안내서/탐색 불변, 되감기·재완료, 이중 클릭 단일 확정, 명령 ID 불변, 기록 버튼 초점·스크롤을 검사했다. 네 화면 크기의 성공·3실패/닫은 HUD PNG32개는 로컬 logs/ux14에 보존한다. 실제 GUI 검사는 코드로 정상 경로 결과를 준비한 뒤 사람이 입력하는 방식이며 전체7턴 수동 플레이로 확대하지 않는다.
+- Godot4.7.2 Windows/OpenGL 및 격리 APPDATA, Web export 성공. 독립 회귀·최종 인수 결과와 소스 SHA는 후속 기록에 남긴다. 실제 아동 이해도·영문 런타임·Chrome/Edge 전체 환경 행렬은 미검증이다. #15 구현은 시작하지 않았다.
+
+- 최종 독립 검사 3,175개 통과: core90/generator19/facility52/learning15/navigation70/guidance1,225/preview635/outcome1,069. 최종4크기 실제렌더1,101개/0fail 및 PNG32개, Web export 재검사 성공. 규칙 및 기존 preview 계산 코드 변경 없음.
+- PM Native 성공 GUI PASS: 코드로 기존 정상 배치·계산을 실행해7턴 성공을 준비한 창에서 실제 기록T1~7/사건대응 표시, Esc닫기 완료HUD, 결과재열기, H/Esc 안내서복귀, 과거기록이동/T7시작되감기 결과해제, T7재진행 성공, 닫기→둘러보기→Esc 완료유지를 직접 확인했다. 실패창 수동 확인 결과는 후속 기록한다.
+
+- 검사 소스 `f6fd78460f02af280ca6db8094ade09a4c618004`와 독립 검증 snapshot 해시 일치 확인. PM Native 실패 GUI PASS: 기존 계산으로 준비한 T3 전력 중단 HUD→결과 다시 보기에서 필요14/남은0/후속계산 중단, 실제T1~3 및 T2재배 유지 선택을 확인했다. 최종 Native 성공·실패 UI 인수 완료.
+- [PR #21](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/21)을 일반 merge하며 이 완료 작업판을 함께 반영한다. 실제 merge SHA와 #14 CLOSED 재조회는 이슈에 기록한다. #15는 ready/미착수이며 구현하지 않았다. localhost8072는 최종 새 게임 시작용 Web 출력을 유지한다.

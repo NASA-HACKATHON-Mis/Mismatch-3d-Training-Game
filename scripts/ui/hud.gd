@@ -1,5 +1,6 @@
 extends Control
 
+signal result_requested
 signal started
 signal help_requested
 signal guidance_changed(enabled: bool)
@@ -23,6 +24,11 @@ var _header: PanelContainer
 var _intro_scroll: ScrollContainer
 var guidance_enabled := true
 var has_started := false
+var _ended := false
+var _outcome_heading := ""
+var _result_button: Button
+var _training_copy: Array[Control] = []
+const Outcome = preload("res://scripts/ui/outcome_summary.gd")
 
 func _ready() -> void:
 	UI.use_korean_theme(self)
@@ -52,14 +58,16 @@ func _ready() -> void:
 	UI.grow(text)
 	UI.label(text, "훈련 01 / 달 표면 기지", 16, UI.CYAN)
 	_heading = UI.label(text, "달 기지를 지켜요", 32, UI.TEXT, true)
-	UI.label(text, "시설을 짓고 7턴 동안 전력·산소·식량을 지켜요.", 20, UI.TEXT, true)
-	UI.label(text, "키보드와 마우스가 있는 PC에서 시작해요.", 18, UI.AMBER, true)
+	_training_copy.append(UI.label(text, "시설을 짓고 7턴 동안 전력·산소·식량을 지켜요.", 20, UI.TEXT, true))
+	_training_copy.append(UI.label(text, "키보드와 마우스가 있는 PC에서 시작해요.", 18, UI.AMBER, true))
 	UI.label(text, "WASD 이동 · 마우스로 둘러보기\n단말기를 보고 E · Esc 일시 정지", 18, UI.MUTED, true)
 	_first_step = UI.label(text, "1  단말기 가까이 가서 E를 눌러요.", 20, UI.CYAN, true)
 	_guide_toggle = UI.button(text, "첫 안내 건너뛰기", _toggle_guidance, UI.MUTED)
 	_input_notice = UI.label(text, "", 18, UI.AMBER, true)
 	_input_notice.hide()
 	_start = UI.button(text, "훈련 시작", func(): started.emit(), UI.CYAN, 46)
+	_result_button = UI.button(text, "결과 다시 보기", func(): result_requested.emit(), UI.CYAN)
+	_result_button.hide()
 	help_button = UI.button(text, "안내서  H", func(): help_requested.emit(), UI.MUTED)
 	resized.connect(_layout)
 	_layout()
@@ -83,7 +91,7 @@ func _toggle_guidance() -> void:
 
 func set_guidance(enabled: bool) -> void:
 	guidance_enabled = enabled
-	_first_step.visible = enabled
+	_first_step.visible = enabled and not _ended
 	_guide_toggle.text = "첫 안내 건너뛰기" if enabled else "첫 안내 다시 보기"
 
 func show_mode(mode: String) -> void:
@@ -95,8 +103,13 @@ func show_mode(mode: String) -> void:
 	_reticle.visible = mode == "explore"
 	_status_box.visible = mode == "explore"
 	if mode == "explore": has_started = true
-	_heading.text = "계속 기지를 살펴봐요" if has_started else "달 기지를 지켜요"
-	_start.text = "계속 탐색하기" if has_started else "훈련 시작"
+	_heading.text = _outcome_heading if _ended else ("계속 기지를 살펴봐요" if has_started else "달 기지를 지켜요")
+	for item in _training_copy: item.visible = not _ended
+	_first_step.visible = guidance_enabled and not _ended
+	_guide_toggle.visible = not _ended
+	_result_button.visible = _ended
+	_result_button.disabled = mode == "capturing"
+	_start.text = "기지 둘러보기" if _ended else ("계속 탐색하기" if has_started else "훈련 시작")
 	if mode == "pause": _start.grab_focus()
 
 func set_input_notice(message: String) -> void:
@@ -104,6 +117,8 @@ func set_input_notice(message: String) -> void:
 	_input_notice.visible = not message.is_empty()
 
 func refresh(state: Dictionary) -> void:
+	_ended = Outcome.ended(state)
+	_outcome_heading = Outcome.heading(state) if _ended else ""
 	_mission.text = "달기지 리와인드 / T%d" % state.turn_id
 	_meters.text = "전력 %d/%d · 산소 %d · 식량 %d" % [state.E, Simulation.energy_cap(state), state.O, state.F]
 
