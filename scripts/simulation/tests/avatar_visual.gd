@@ -42,8 +42,8 @@ func _run() -> void:
 		var state: Dictionary = game.session.state.duplicate(true)
 		var ray_before: bool = game.player.sees_console(game.station.console)
 		check(ray_before, "Fixture initially faces console within E reach")
-		var avatar = Avatar.instantiate()
-		game.player.add_child(avatar)
+		var avatar = game.player.avatar
+		check(is_instance_valid(avatar), "Actual player scene includes avatar")
 		await settle()
 		check(avatar.find_children("*", "CollisionObject3D", true, false).is_empty(), "No visual collision bodies")
 		check(avatar.find_children("*", "CollisionShape3D", true, false).is_empty(), "No visual collision shapes")

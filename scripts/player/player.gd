@@ -10,10 +10,24 @@ const Rules = preload("res://scripts/simulation/scenario.gd")
 @export_range(0.1, 2.0) var jump_height := 0.8
 
 @onready var camera: Camera3D = $Camera3D
+@onready var avatar = get_node_or_null("AvatarVisual")
 var exploring := false
+var look_mode := "disabled"
+var _dragging := false
 var _wait_for_release: Array[StringName] = []
 var _jump_was_pressed := false
 var _needs_ground_refresh := false
+
+func _ready() -> void:
+	get_window().mouse_exited.connect(_cancel_drag)
+	get_window().focus_exited.connect(_cancel_drag)
+
+func _cancel_drag() -> void:
+	_dragging = false
+
+func set_look_mode(value: String) -> void:
+	look_mode = value if value in ["captured", "drag"] and exploring else "disabled"
+	_cancel_drag()
 
 
 func set_exploring(enabled: bool) -> void:
@@ -23,6 +37,7 @@ func set_exploring(enabled: bool) -> void:
 			if Input.is_action_pressed(action):
 				_wait_for_release.append(action)
 	exploring = enabled
+	set_look_mode("disabled")
 	velocity = Vector3.ZERO
 	_jump_was_pressed = Input.is_action_pressed(&"jump")
 
@@ -49,15 +64,34 @@ func _physics_process(delta: float) -> void:
 	_needs_ground_refresh = false
 	if global_position.y < -3.0:
 		apply_pose({"position": [Rules.SPAWN.x, Rules.SPAWN.y, Rules.SPAWN.z], "yaw": 0.0, "pitch": 0.0})
+	if is_instance_valid(avatar):
+		avatar.update_motion(global_basis.inverse() * velocity, is_on_floor(), exploring, delta)
 
 
 func _strength(action: StringName) -> float:
 	return 0.0 if _wait_for_release.has(action) else Input.get_action_strength(action)
 
 
+func _input(event: InputEvent) -> void:
+	# Release must be observed even when a UI control consumes the event.
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		_cancel_drag()
+	if event is InputEventMouseMotion and not get_viewport().get_visible_rect().has_point(event.position):
+		_cancel_drag()
+
 func _unhandled_input(event: InputEvent) -> void:
-	if exploring and event is InputEventMouseMotion:
+	if not exploring or look_mode == "disabled": return
+	if look_mode == "drag" and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		_dragging = event.pressed and get_viewport().get_visible_rect().has_point(event.position)
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseMotion:
 		var motion := event as InputEventMouseMotion
+		if look_mode == "captured" and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED: return
+		if look_mode == "drag":
+			if not motion.button_mask & MOUSE_BUTTON_MASK_LEFT or not get_viewport().get_visible_rect().has_point(motion.position):
+				_cancel_drag()
+			if not _dragging: return
 		rotation.y = wrapf(rotation.y - motion.screen_relative.x * MOUSE_SENSITIVITY, -PI, PI)
 		camera.rotation.x = clampf(camera.rotation.x - motion.screen_relative.y * MOUSE_SENSITIVITY,
 			-MAX_PITCH, MAX_PITCH)
@@ -82,6 +116,8 @@ func apply_pose(saved: Dictionary) -> void:
 	rotation.y = saved.yaw
 	camera.rotation.x = clampf(saved.pitch, -MAX_PITCH, MAX_PITCH)
 	velocity = Vector3.ZERO
+	_cancel_drag()
+	if is_instance_valid(avatar): avatar.update_motion(Vector3.ZERO, true, true, 0.0)
 	_wait_for_release.clear()
 	_jump_was_pressed = Input.is_action_pressed(&"jump")
 	_needs_ground_refresh = true
