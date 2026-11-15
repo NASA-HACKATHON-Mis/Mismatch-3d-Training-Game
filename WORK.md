@@ -381,7 +381,7 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | done / PR #20 검증·main 통합 |
 | UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | done / PR #21 검증·main 통합 |
 | UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | done / PR #22 검증·main 통합 |
-| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | in-progress / PR #23 구현 통합, 브라우저 인수 대기 |
+| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | done / 구현·Chrome/Edge 후속 인수, 검증 문서 PR 통합 |
 
 저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
 
@@ -509,3 +509,30 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - UX019 최종localhost실측: wasm39,514,754B, pck7,409,668B, Content-Encoding/Content-Length 없음, no-store/chunked. 원본과수신본문해시일치. GET초는브라우저coldload/wasm초기화시간이 아니다. 배포환경으로 확대하지 않는다.
 
 - 검사 소스 `3d6372ae79e0f4927d1b30eeb222c93024992e69`. [PR #23](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/23)은 `Refs #16` 구현 통합이며 일반 merge한다. #16을 자동 close하지 않고 OPEN 브라우저 인수 대기로 유지한다. 실제 merge SHA·상태는 해당 이슈에 기록한다.
+
+
+## UX-R06 후속 Edge 브라우저 검증 기록 — 2026-11-15 (진행 중)
+
+- 사용자 승인 새 turn에서 문서 작업 브랜치 `docs/UX-R06-browser-verification` 생성. 최신 main/origin `042ea34e61d4b5b06590d0a4890a7a59e56ba307` clean, 제품 소스3d6372a·서버8072 PCK/WASM 바이트·SHA 일치를 재확인했다. 설치 파일 버전은 Edge157.0.4341.46/Chrome157.0.8103.51. 제품 변경 없음.
+- PM Edge 실제 UI: 최신 새로고침/#16 버튼 확인, 시작 pointer lock, 발전기01 미확정 관찰→H 안내서→Esc 관찰→Esc 단말기 상태 불변, 정상4시설 배치/T1 진행을 확인했다. T4 안전 실패 E8/O66/F36→T4복원/대피 E20/O68/F30→T5 E28/O70/F24→T6 E36/O72/F18→T7 성공 E40/O74/F42를 관찰했다. 성공 뒤 실제 Alt-Tab/창복귀의 pause·자원 보존, 둘러보기 재잠금/E 힌트/Esc 해제를 확인했다.
+- Edge DevTools Disable cache/No throttling 새로고침: wasm200/39.5MB/398ms, pck200/7.4MB/101ms. 전체18요청47,763,950B는 확장 요청 포함이라 순수게임합계가 아니다. DOMContentLoaded166ms/Load252ms/Finish4.56s는 정확한 게임 초기화 완료시간이 아니다. 스플래시→T1 화면 로딩 관찰, Disable cache 원복 후 닫음.
+- 사용자 입력/Windows 작업 보기 겹침으로 PM은 추가 UI 검증을 잠시 중단했다. Chrome은 이전 빌드라 최종 검증 불인정. Edge 전력·식량 실패/완전한 동일턴 비교/inspect Alt-Tab/정확한 초기화 측정은 남았다. 상세 증거·한계는 docs/UX_R06_VERIFICATION.md에 추가한다. #16 OPEN, 독립검사4,338개와 #7보류 유지. 이 기록은 아직 커밋·PR하지 않고 PM 후속 증거를 기다린다.
+
+- 후속 PM 확인: Edge T2 완료 E18/O64/F24와 T3 완료 E8/O66/F36도 직접 관찰한 값으로 진행표에 추가했다. 새 turn에서 사용자가 Chrome 조작을 맡겼고 PM이 Chrome 새로고침/Godot 스플래시를 확인했으나, 이 시점에는 Chrome 최종 게임 흐름 PASS로 기록하지 않는다. 추가 증거를 기다리며 문서 브랜치·미커밋 상태를 유지한다.
+
+
+- Chrome 최종빌드 실제검증 추가: noBattery 발전기01/재배실14/대피소25(토큰2), 미확정3D관찰/H/Esc 및 inspect Alt-Tab→pause/원래camera→재개/E 상태유지. T3전력실패0/64/24→T2복원절전→T3완료8/66/18 및 실제양측비교(+8/+2/-6,선택/시작전력/성장차이), T4안전실패8/66/18→복원대피→T7성공20/74/24 확인. Edge battery포함40/74/42 성공경로와 구분한다.
+- Chrome 별도noGreen 경로 generator01/battery12/shelter25(토큰3): T1 32/62/30→T2 26/64/24→T3 20/66/18→T4대피32/68/12→T5확인40/70/6→T6식량실패40/72/0 및계산완료문구 확인.
+- Chrome Network cache disabled/No throttling/All: 8요청47,242,657B, wasm200/39,515kB/271ms, pck200/7,410kB/50ms, DOM171ms/Load172ms/Finish3.89s(init아님). 별도Performance record&reload trace0–5.23s에서 약3.941s부근 스플래시→실제T1시작화면을 확대확인했다. 약4초 시각적준비시점이며 샘플간격/프로파일러오버헤드가 있는 관찰이지 정밀init계측이 아니다. cache disabled해제/DevTools닫음. Edge남은검증진행중, 제품변경/문서커밋/PR없음, 자동4338과#16OPEN유지.
+
+- Edge 후속 실제검증: noBattery01/14/25(토큰2) T1 20/62/30→T2재배유지10/64/24→T3전력0/64/24→T2후보복원절전14/64/24→T3완료8/66/18 및양측비교(+8/+2/-6,유지→절전,시작10→14/성장2→1) 확인. fresh noGreen01/12/25(토큰3), 미확정E20/60/36의25번3D관찰→실제Alt-Tab→pause/원래playercamera→재개/E 동일자원·토큰·배치 확인. 이후 T1 32/62/30→T2 26/64/24→T3 20/66/18→T4대피32/68/12→T5확인40/70/6→T6식량실패40/72/0 및계산끝남문구 확인.
+- Edge 시각적 로딩 준비시간·로봇 실제접근 관찰 추가증거를 기다린다. #16OPEN·자동4,338개 유지, 문서미커밋/PR대기. 최종판에서는 Native/Chrome/Edge/코드검사 및 Esc·Alt-Tab 시작모드별 범위를 분리하고 README/WORKFLOW/이슈 상태를 함께 정합하게 갱신한다.
+
+- Edge 로봇 실제접근 추가: T6식량중단40/72/0→Esc/둘러보기→D짧은누름120회(소량이동)/마우스회전. 로봇정면E는별도대화없음, 단말기왼쪽(북쪽)약2m/로봇옆정면안내 표시. 단말기로시선돌리자E힌트전환/E단말기/H안내서 정상. 안내서중Alt-Tab/창복귀에도안내서유지→Esc단말기복귀. 전과정40/72/0불변, 전체시설충돌주행으로확대하지않음. 검증문서에환경·시작모드별실제입력/코드검사matrix추가. Edge시각적로딩증거대기, 커밋/PR미실행.
+
+- Edge 별도 Performance(cache-disabled/No throttling/screenshots) trace0–5.31초,3.912초눈금이후 첫T1화면 약4~4.5초를확대해20/60/36·훈련시작확인. 샘플간격/프로파일러오버헤드가있는시각적준비시점이며정밀init아님, 이전Network와별도run. 이번16요청47.8MB/Finish3.91초는확장포함참고값. Disablecache해제/DevTools닫음.
+- 최종문서를 인수완료후보로 정리하고독립검토요청. Chrome/Edge성공·3실패·복원·실제비교와모드별실제입력범위를구분한다. Windows Native최종전체수동, Chrome로봇실제접근, 모든모드AltTab조합·정밀init·외부배포·아동/영문runtime은미실행으로명시하고자동4338PASS로대체하지않는다. README/WORKFLOW현재상태정합, 제품변경없음. 최종검토뒤문서PR/일반merge/#16상태정리예정, #7보류.
+
+- 추가 핵심실측: Edge/Chrome 각각 T1 20/60/36 captured explore→실제Alt-Tab/창복귀pause→게임클릭없이W/D각10회후구도·자원불변→재개버튼클릭pointerlock/E힌트→Esc pause 확인. pause배경좌클릭재개도 기존계약이며 Edge초기drag에포함된좌클릭재개는코드대조정상동작이다. ‘버튼만재개’로주장하지않음. 비클릭마우스hover미제공으로단독시선잠김수동시험은미실행명시. 최종matrix추가후독립승인요청.
+
+- 최종 인수 정리: #16 요구 범위의 Chrome/Edge 실제 성공·3종중단·복원·비교·관찰/포커스 입력·로딩 증거와 미실행 환경을 함께 정리했다. 제품 소스3d6372a/main042ea34는 그대로이며 독립자동검사4,338개를 새로 재실행한 것으로 기록하지 않는다. 후속 검증은 문서4개만 PR 일반merge하고 #16 상태를 완료로 동기화한다. 앞선 미커밋/OPEN/검증대기 문구는 당시 진행 이력이다. #7보류/배포없음 유지.
