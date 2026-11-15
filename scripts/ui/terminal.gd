@@ -5,10 +5,12 @@ signal edited(action: String, slot_id: int, kind: String)
 signal cancelled
 signal advanced(choice: String)
 signal rewound(turn_id: int)
+signal help_requested
 
 const UI = preload("res://scripts/ui/ui_style.gd")
 const Rules = preload("res://scripts/simulation/scenario.gd")
 const Simulation = preload("res://scripts/simulation/simulation.gd")
+const Learning = preload("res://resources/content/learning.gd")
 const GLYPHS := {"habitat": "HAB", "generator": "SOL", "battery": "BAT", "greenhouse": "GROW", "shelter": "SAFE"}
 
 var _session
@@ -22,6 +24,7 @@ var _slots: Array[Button] = []
 var _timeline: Array[Button] = []
 var _facilities := {}
 var _close: Button
+var help_button: Button
 var _advance: Button
 var _remove: Button
 var _cancel: Button
@@ -42,18 +45,25 @@ var _delta: Label
 
 
 func _ready() -> void:
+	UI.use_korean_theme(self)
 	var shade := ColorRect.new()
 	shade.color = Color("#06101de9")
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
+	var scroll := ScrollContainer.new()
+	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scroll.offset_left = 24
+	scroll.offset_right = -24
+	scroll.offset_top = 20
+	scroll.offset_bottom = -18
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.follow_focus = true
+	add_child(scroll)
 	var outer := VBoxContainer.new()
-	outer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	outer.offset_left = 24
-	outer.offset_right = -24
-	outer.offset_top = 20
-	outer.offset_bottom = -18
+	outer.size_flags_horizontal = SIZE_EXPAND_FILL
+	outer.size_flags_vertical = SIZE_EXPAND_FILL
 	outer.add_theme_constant_override("separation", 10)
-	add_child(outer)
+	scroll.add_child(outer)
 	_build_header(outer)
 	var working := UI.row(outer, 12)
 	working.size_flags_vertical = SIZE_EXPAND_FILL
@@ -69,10 +79,10 @@ func _build_header(parent: Control) -> void:
 	var contents := UI.row(panel, 18)
 	var left := UI.column(contents, 0)
 	UI.grow(left)
-	UI.label(left, "SELENE    /    OPERATIONS CONSOLE", 13, UI.CYAN)
 	UI.label(left, UI.trn("기지 운영 단말기", "Mission console"), 26)
 	_summary = UI.label(contents, "", 18, UI.TEXT)
 	_summary.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	help_button = UI.button(contents, "안내서  H", func(): help_requested.emit(), UI.CYAN)
 	_close = UI.button(contents, UI.trn("닫기  Esc", "Close  Esc"), func(): closed.emit(), UI.MUTED)
 	_close.custom_minimum_size.x = 105
 
@@ -82,7 +92,7 @@ func _build_map(parent: Control) -> void:
 	UI.grow(card)
 	card.size_flags_stretch_ratio = 0.94
 	var map := UI.column(card, 8)
-	UI.label(map, UI.trn("01   /   배치 지도", "01   /   BUILD MAP"), 16, UI.CYAN)
+	UI.label(map, "배치 지도", 16, UI.CYAN)
 	UI.label(map, UI.trn("북쪽 ↑   ·   일조 + 발전   ·   차폐 + 할인", "NORTH ↑   ·   SUN = more power   ·   SHIELD = cheaper shelter"),
 		15, UI.MUTED)
 	var grid := GridContainer.new()
@@ -112,7 +122,7 @@ func _build_controls(parent: Control) -> void:
 	UI.grow(card)
 	card.size_flags_stretch_ratio = 1.06
 	var controls := UI.column(card, 6)
-	UI.label(controls, UI.trn("02   /   시설 고르기", "02   /   CHOOSE A MODULE"), 16, UI.CYAN)
+	UI.label(controls, "시설 고르기", 16, UI.CYAN)
 	var facility_grid := GridContainer.new()
 	facility_grid.columns = 2
 	facility_grid.add_theme_constant_override("h_separation", 6)
@@ -125,7 +135,7 @@ func _build_controls(parent: Control) -> void:
 		button.tooltip_text = UI.description(kind)
 		_facilities[kind] = button
 	_event_title = UI.label(controls, "", 18, UI.AMBER)
-	_event_text = UI.label(controls, "", 15, UI.MUTED, true)
+	_event_text = UI.label(controls, "", 17, UI.TEXT, true)
 	_options = UI.row(controls, 6)
 	_options.custom_minimum_size.y = 34
 	for i in 2:
@@ -142,7 +152,7 @@ func _build_timeline(parent: Control) -> void:
 	var panel := UI.panel(parent, Color("#0d192b"), 12)
 	var content := UI.column(panel, 6)
 	var top := UI.row(content, 7)
-	var kicker := UI.label(top, UI.trn("03   /   되감기", "03   /   REWIND"), 16, UI.CYAN)
+	var kicker := UI.label(top, "되감기", 16, UI.CYAN)
 	kicker.custom_minimum_size.x = 140
 	for turn in range(1, 8):
 		var button := UI.button(top, "T%d" % turn, _select_turn.bind(turn), UI.CYAN, 35)
@@ -153,11 +163,11 @@ func _build_timeline(parent: Control) -> void:
 	_rewind.custom_minimum_size.x = 190
 	_compare_title = UI.label(content, "", 16, UI.CYAN)
 	var sides := UI.row(content, 12)
-	_prior = UI.label(sides, "", 15, UI.MUTED, true)
-	_current = UI.label(sides, "", 15, UI.TEXT, true)
+	_prior = UI.label(sides, "", 16, UI.TEXT, true)
+	_current = UI.label(sides, "", 16, UI.TEXT, true)
 	UI.grow(_prior)
 	UI.grow(_current)
-	_delta = UI.label(content, "", 14, UI.AMBER, true)
+	_delta = UI.label(content, "", 15, UI.AMBER, true)
 
 
 func refresh(session) -> void:
@@ -226,29 +236,24 @@ func _refresh_map(state: Dictionary, planning: bool) -> void:
 func _refresh_event(turn: int, planning: bool, draft_state: Dictionary) -> void:
 	_event_values.clear()
 	var captions: Array[String] = []
-	_event_title.text = UI.trn("오늘의 임무", "TODAY'S EXERCISE")
+	_event_title.text = "오늘의 임무"
 	_event_text.text = UI.trn("건설 후 턴을 확정해요. 승무원은 산소와 식량을 각각 6씩 써요.",
 		"Confirm the layout to run a turn. The crew uses 6 oxygen and 6 food each turn.")
 	if not planning:
 		_event_text.text = UI.trn("아래에서 지난 턴을 골라 되감고 다른 설계를 시험해요.",
 			"Choose an earlier turn below to rewind and try a different plan.")
 	elif turn == 2:
-		_event_title.text = UI.trn("T2   /   발전기 고장", "T2   /   GENERATORS OFFLINE")
-		_event_text.text = UI.trn("T2·T3 발전량이 0이에요. 절전하면 재배실의 전력 사용과 성장을 멈춰요.",
-			"No generation in T2 or T3. Conserve power to pause greenhouse use and growth.")
 		_event_values.assign(["normal", "conserve"])
 		captions.assign([UI.trn("재배 유지", "Keep farms on"), UI.trn("절전", "Conserve power")])
 	elif turn == 4:
-		_event_title.text = UI.trn("T4   /   우주날씨 경보", "T4   /   SPACE WEATHER ALERT")
-		_event_text.text = UI.trn("대피소에서 대피하면 훈련을 계속해요. 재배실은 이번 턴에 멈춰요.",
-			"A shelter protects the crew. Greenhouses pause for this turn.")
 		_event_values.assign(["shelter", "continue"])
 		captions.assign([UI.trn("대피하기", "Take shelter"), UI.trn("대피 없이 진행", "Continue without shelter")])
 	elif turn == 5:
-		_event_title.text = UI.trn("T5   /   보급 지연", "T5   /   SUPPLY DELAY")
-		_event_text.text = UI.trn("예정됐던 식량 12는 T7에 한 번 도착해요.", "The shipment of 12 food will arrive in T7.")
 		_event_values.assign(["acknowledge"])
 		captions.assign([UI.trn("확인", "Acknowledge")])
+	if planning and Learning.EVENTS.has(turn):
+		_event_title.text = Learning.EVENTS[turn][0] + " · 훈련용 가상 사건"
+		_event_text.text = Learning.EVENTS[turn][1]
 	if turn == 4 and _choice == "shelter" and Simulation.count_kind(draft_state, "shelter") == 0:
 		_choice = ""
 	for i in _event_buttons.size():
@@ -282,15 +287,12 @@ func _refresh_timeline() -> void:
 		_delta.text = UI.trn("되감아 같은 턴을 다시 실행하면 두 결과를 비교해요.",
 			"Rewind and replay this turn to compare both results.")
 		return
-	_prior.text = UI.trn("이전  /  ", "PREVIOUS  /  ") + _result_line(compared.previous)
-	_current.text = UI.trn("현재  /  ", "CURRENT  /  ") + _result_line(compared.current)
+	_prior.text = "이전  /  " + _result_line(compared.previous) + "\n" + Learning.attempt_note(compared.previous)
+	_current.text = "현재  /  " + _result_line(compared.current) + "\n" + Learning.attempt_note(compared.current)
 	var difference: Dictionary = compared.delta
-	_delta.text = UI.trn("변화   전력 %s   ·   산소 %s   ·   식량 %s",
-		"CHANGE   Power %s   ·   Oxygen %s   ·   Food %s") % [
+	_delta.text = "변화   전력 %s   ·   산소 %s   ·   식량 %s" % [
 		UI.signed_delta(difference.E), UI.signed_delta(difference.O), UI.signed_delta(difference.F)]
-	if not compared.previous.not_applied_steps.is_empty() or not compared.current.not_applied_steps.is_empty():
-		_delta.text += UI.trn("   /   중단된 계산은 결과에 반영되지 않았어요.",
-			"   /   Calculations after a stop were skipped.")
+	_delta.text += "\n" + Learning.comparison_prompt(compared)
 
 
 func _result_line(result: Dictionary) -> String:

@@ -10,11 +10,13 @@ const UI = preload("res://scripts/ui/ui_style.gd")
 @onready var player = $Player
 @onready var hud = $Interface/HUD
 @onready var terminal = $Interface/Terminal
+@onready var help = $Interface/Help
 
 var session = Session.new(Scenario)
 var mode := "pause"
 var _aiming := false
 var _command_serial := 0
+var _help_focus: Control
 
 
 func _ready() -> void:
@@ -24,6 +26,10 @@ func _ready() -> void:
 	terminal.cancelled.connect(_cancel_draft)
 	terminal.advanced.connect(_commit)
 	terminal.rewound.connect(_restore)
+	hud.started.connect(_start_exploring)
+	hud.help_requested.connect(_open_help)
+	terminal.help_requested.connect(_open_help)
+	help.closed.connect(_close_help)
 	station.sync_facilities(session.state)
 	_refresh()
 	_set_mode("pause")
@@ -39,14 +45,20 @@ func _physics_process(_delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-		if mode != "pause":
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE and help.visible:
+			_close_help()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_ESCAPE and mode != "pause":
 			_pause()
 			get_viewport().set_input_as_handled()
-	elif mode == "pause" and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_set_mode("explore")
-		get_viewport().set_input_as_handled()
-	elif mode == "explore" and event.is_action_pressed(&"open_terminal", false):
+			return
+		if not help.visible and mode != "explore" and (event.keycode == KEY_H or event.physical_keycode == KEY_H):
+			_open_help()
+			get_viewport().set_input_as_handled()
+			return
+	if mode == "explore" and event.is_action_pressed(&"open_terminal", false):
 		if _aiming:
 			terminal.clear_notice()
 			_refresh()
@@ -54,8 +66,38 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not help.visible and mode == "pause" and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_start_exploring()
+		get_viewport().set_input_as_handled()
+
+
+func _start_exploring() -> void:
+	if mode == "pause" and not help.visible:
+		_set_mode("explore")
+
+
+func _open_help() -> void:
+	if help.visible or mode == "explore":
+		return
+	_help_focus = get_viewport().gui_get_focus_owner()
+	if _help_focus == null:
+		_help_focus = terminal.help_button if mode == "terminal" else hud.help_button
+	hud.hide()
+	terminal.hide()
+	help.open(0)
+
+
+func _close_help() -> void:
+	help.hide()
+	_set_mode(mode)
+	if is_instance_valid(_help_focus) and _help_focus.is_visible_in_tree():
+		_help_focus.grab_focus()
+	_help_focus = null
+
+
 func _pause() -> void:
-	if is_node_ready():
+	if is_node_ready() and not help.visible:
 		_set_mode("pause")
 
 

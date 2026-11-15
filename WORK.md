@@ -345,3 +345,14 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - `--headless --path . --export-release Web build/web/index.html` 성공. PCK 629,248 B의 SHA-256은 `dc530de4912d061fbb82bf666caf983c45f27b7317f2c0a2b91552c0eb35579e`다. 독립 검사에서 프로젝트 소스 없이 PCK만 실행해 시설·로봇·기준 큐브의 모델 리소스 7개를 로드했고, 배포 패키지에서 원본 Blender 파일과 내부 기록이 빠진 것을 확인했다. 브라우저의 마우스 캡처와 전체 플레이는 별도 확인이 남았다.
 - 검증한 통합 소스는 로컬 커밋 `b234e7653a7be98d29c62d3adbd91b03cb07a187`이다. [로컬 Web 빌드](http://127.0.0.1:8062/)의 HTML·WASM·PCK가 HTTP 200을 반환했고, 내려받은 PCK의 SHA-256이 위와 일치했다.
 - CORE-ASSET-INTEGRATION-002 원격 작업은 자동 승인 검토에서 거절됐다. 이 검토는 이전 발전기 업로드 및 이슈 관리 승인이 이번 통합 파일의 같은 GitHub 저장소 업로드와 PR 생성까지 포괄하는지 명확하지 않다고 판단했다. 원격 push·PR 생성·merge는 실행되지 않았다. `logs/hh004-expanded-pr.md`에 검토할 PR 본문을 준비했다. 남은 단계는 이번 소스와 문서의 업로드 및 `feature/HH-004-model-integration → feature/HH-001-core-loop` PR 생성·merge 범위를 승인받는 것이다.
+- 후속 결과: 사용자가 원격 작업을 명시적으로 승인했고 [PR #8](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/8)이 core `f88cb62c50680db7011c1aaf05aaeb328afa9892`에 병합됐다. 사용자는 새 모델 배치·이동·되감기를 확인했다. 이 증거는 두 PC에서의 전체 브라우저 인수 검증을 대신하지 않는다.
+
+## 한국어 안내서와 현재 문서 — 2026-11-15
+
+- HH005-LEARNING-UI-001. 사용자 지시에 따라 [#5](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/5)를 dyhan0528/core_loop_worker가 `feature/HH-005-learning-ui`에서 작업했다. 시작 기준은 원격 core와 일치한 `f88cb62c50680db7011c1aaf05aaeb328afa9892`이며 변경 사항이 없는 상태에서 시작했다. 규칙 계약 `410063037ba62da61f9119b4ba8b10cbdadc9ccb`는 유지했다. 독립 검사는 verify_planning이 맡았다.
+- 시작 화면과 단말기에 안내서를 연결했다. 한국어로 시설 역할, 사건 선택, 같은 턴 비교 및 출처를 보여 준다. Tab·Enter·Esc로 열고 닫을 수 있으며, 닫을 때 이전 초점으로 돌아간다. 실제 NASA DONKI 과거 관측 1건과 CSA 출처를 게임 자체 규칙과 구분했다. 기존 자료는 수정하지 않았다. [Noto Sans KR](resources/fonts/README.md)의 공식 원본과 OFL 1.1을 번들로 사용한다.
+- DOC-ISSUE-CLEANUP-001. 사용자 요청에 따라 project_setup이 현황 문서 6개와 작업 이슈를 대조했다. PR #8, 검사 161개, 사용자의 새 모델 배치·이동·되감기 확인을 근거로 #1–4를 닫았다. #6·#7은 OPEN이다. #6에서 팀원 jsjavsj가 두 번째 Windows의 전체 7턴·실패 복원·같은 턴 비교·충돌·한국어를 확인한다. #7의 제출 조건 확인과 시연 준비는 별도로 진행한다.
+- 같은 저장소의 `feature/HH-005-learning-ui`에서 `feature/HH-001-core-loop`로 PR을 만든다. 확인한 결과와 문서 변경을 함께 올리며 사용자 요청에 따라 리뷰 요청 없이 검증한 커밋을 병합한다.
+- Godot `4.7.2.stable.official.ed1daf0bf`의 headless import와 기존 161개·새 안내서 검사 15개가 자체·독립 실행에서 통과했다. 별도 Windows 렌더에서 한국어 글자, 시설과 비교 화면, 출처 카드와 키보드 초점 표시를 확인했다. `--headless --path . --export-release Web build/web/index.html` 성공. 최종 PCK 7,378,664 B의 SHA-256은 `ca5193353dbbf7be3fa1a2579dad1727adbfc8ce11bf9bb1cd72fbbc28e0c3ac`이다. 두 PC의 전체 브라우저 플레이는 #6에서 확인한다.
+- 독립 검사에서 최종 PCK만으로 실제 안내서 씬을 열어 한글 글리프, OFL 라이선스, DONKI 원자료와 metadata의 오프라인 로드를 확인했다.
+- 최종 Web 빌드에서 한국어 시작 화면, 안내서 클릭, 실제 자료 탭의 NASA·CSA 카드, Esc로 시작 화면 복귀, H로 다시 열기와 Tab 키 초점 표시를 확인했다.

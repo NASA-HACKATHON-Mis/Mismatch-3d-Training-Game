@@ -14,9 +14,22 @@ const LINE := Color("#304764")
 const FACILITY_COLORS := {"habitat": CYAN, "generator": AMBER, "battery": PURPLE,
 	"greenhouse": GREEN, "shelter": Color("#95c2ff")}
 
+static var _korean_theme: Theme
 
-static func trn(ko: String, en: String) -> String:
-	return en if OS.has_feature("web") or not OS.get_locale_language().begins_with("ko") else ko
+
+static func use_korean_theme(panel_root: Control) -> void:
+	if _korean_theme == null:
+		var font := FontVariation.new()
+		font.base_font = load("res://resources/fonts/NotoSansKR.ttf")
+		font.variation_opentype = {"wght": 500}
+		font.variation_embolden = 0.55
+		_korean_theme = Theme.new()
+		_korean_theme.default_font = font
+	panel_root.theme = _korean_theme
+
+
+static func trn(ko: String, _en: String) -> String:
+	return ko
 
 
 static func name_for(kind: String) -> String:

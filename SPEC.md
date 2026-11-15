@@ -1,13 +1,13 @@
 # 달기지 리와인드 — 1인칭 3D 기술 설계 v2
 
-현재 본인 PC의 실제 도구·템플릿·신원 준비는 [ENVIRONMENT](docs/ENVIRONMENT.md), NASA/CSA 자료 준비는 [DATA_SOURCES](docs/DATA_SOURCES.md)에 기록했다. 아래 초기 환경 관측은 과거 이력이다. 팀원 PC 증거·claim은 WORK의 최신 준비 해제 기록에서 확인했다. 제품 실행 검증은 별도 미완료다.
+본인 PC 도구와 템플릿은 [ENVIRONMENT](docs/ENVIRONMENT.md), 한국어 안내서의 NASA/CSA 출처는 [DATA_SOURCES](docs/DATA_SOURCES.md)에 기록했다. 아래 초기 환경 관측은 과거 이력이다. 제품 계약·모델·안내서 검사 176개와 Web 출력을 확인했고, 두 PC에서의 브라우저 전체 플레이는 #6에서 수행한다.
 
 이 파일은 전체 기술 구조 문서다. **현재 초기 규칙·인터페이스의 단일 기준은 [START_SPEC v0.1](START_SPEC.md)**이며 이전 초안의 수치 미정 표현을 갱신한다. 역할별 실행 순서는 [WORKFLOW](WORKFLOW.md), 자산 소유권·규격은 [ASSET_BRIEF](ASSET_BRIEF.md)를 따른다. C 기지 건설 + A 되돌리기 및 Blender + Godot·GDScript의 1인칭 3D·웹 출력 방향은 사용자 승인 사항이다. 초기 수치는 START_SPEC에 고정했다. 실제 버전 설치·두 PC 준비·claim·제품 검증은 별도 증거가 필요하다. 빈 항목은 미정이며 구현 준비 증거가 아니다.
 
 - 승인된 제품 형태 / 아키텍처: Blender 모델링 + Godot·GDScript 1인칭 3D, 웹 출력. Compatibility 렌더러·단일스레드 웹 권장.
 - 디렉터리 구조 / 경로 소유자 / 통합 담당:
 - 이슈 ID별 feature/fix 브랜치 / 소유자 / 기준 브랜치·커밋 / 명세 커밋 / 허용 경로:
-- 첫 통합 계획: 모델·후속 기능 PR target feature/HH-001-core-loop, 책임 dyhan0528. 실제 PR/merge는 이번 문서 준비에서 미실행. main은 최종 승격 별도 단계.
+- 첫 통합 계획: 모델·후속 기능 PR target feature/HH-001-core-loop, 책임 dyhan0528. PR #8 병합 완료. 이후에도 검사→PR→일반 merge, PR 리뷰 대기는 생략한다. main은 최종 승격 별도 단계.
 - 호스트·대상 OS / 도구·브라우저·런타임 버전 / 공식 근거:
 - 승인된 의존성과 정확 버전 / 설치·오프라인·권한 조건:
 - 데이터 원본·버전·라이선스 / mock 표시 / 변환·결측·오류 처리:
@@ -23,13 +23,13 @@
 ## 선택된 기술과 공식 근거
 
 - 선택: Blender 제작 → GLB 전달 → Godot·GDScript 1인칭 3D → 단일스레드 웹 출력. Compatibility 렌더러 사용 권장.
-- Godot 4.7.2 일반판 x86_64와 동일 버전 export templates를 고정 후보로 권장한다. PM이 https://godotengine.org/download/windows/ 공식 페이지에서 해당 표기와 압축 해제 실행 방식을 확인했다. 실제 다운로드·설치·실행은 미확인이다.
-- Blender 정확 버전은 미확인이다. PM의 공식 다운로드 페이지 조회가 403으로 실패하여 최신 버전을 추측하지 않는다.
+- Godot 4.7.2 일반판 x86_64와 동일 export templates를 실제 설치·실행했다. 공식 출처/해시/portable 실행은 docs/ENVIRONMENT.md 참조.
+- 팀원 Blender 5.3.0 실제 실행·GLB 제작/검사 증거는 assets/ASSET_MANIFEST.md에 기록했다.
 - 3D 형식: https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_3d_scenes/available_formats.html — glTF 2.0 권장, .blend 직접 import에는 Blender 설치 필요. 팀 전달 파일은 GLB로 제안한다.
 - 웹 출력: https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_web.html — WebAssembly/WebGL2 필요, Godot 4 C# 웹 출력 미지원. GDScript·Compatibility·단일스레드로 초기 검증한다.
-- 위 공식 근거는 2026-11-14 Asia/Seoul PM 확인·전달 사항이다. 실제 브라우저 출력 성공 증거는 아직 없다.
+- 위 공식 근거는 2026-11-14 Asia/Seoul PM 확인·전달 사항이다. 현재 Web 출력·로딩 증거는 WORK의 후속 기록 참조.
 - 과거 후보는 TypeScript+Vite DOM/SVG, Phaser, Godot였으나 최신 선택은 Godot+GDScript다. 이전 후보를 현재 미선택 상태로 재사용하지 않는다.
-- 지원 브라우저 정확 버전·정적 호스팅 조건·모델 용량·실행/빌드/검사 명령은 실제 환경을 확인한 뒤 고정한다.
+- 설치된 브라우저 버전·실행 조건은 docs/ENVIRONMENT.md, 모델 용량은 자산 manifest, 실행·검사 명령은 README를 따른다. 최종 브라우저별 결과는 #6에 기록한다.
 ## 초기 환경 관측 이력 — 현재 Git 상태는 WORK 참조
 
 - 호스트 Windows. git 2.56.0.windows.4, gh 2.103.3, node v24.22.1.
@@ -39,7 +39,7 @@
 - Git init·원격·신원 점검·설치 미수행. 해당 초기 관측 이후 docs 브랜치·초안 커밋·실제 이슈 7개를 준비했다. 현재 Git/기준은 WORK 참조. 구현 준비 미완료.
 - 데이터 출처·검토 상태와 교육용 모델 구분 원칙은 PROJECT.md 참조. 데이터 수집과 개별 라이선스 검토 미완료.
 
-## 게임 계약 초안 — 구현 전 확정 필요
+## 게임 계약 — START_SPEC v0.1로 확정
 
 선택된 기획은 달 기지의 격자 건설과 시간 되돌리기 비교다. 시설 5종은 발전기·배터리·거주실·재배실·방사선 대피소이고 지속 자원은 전력·산소·식량이다. 7턴, 5~8분 체험을 목표로 한다. 5×5 좌표·일조/차폐 슬롯·건설 예산과 시설 비용은 START_SPEC v0.1에 고정했다.
 
@@ -87,7 +87,7 @@
 
 ### 검증할 핵심 조건
 
-전체 snapshot 복원, 결정적 재현, 반복 되돌리기의 자원/성장/보상 중복 방지, 같은 턴 비교, 예산 취소, 턴 중복 확정 방지, 0자원 중단과 복구, 7턴 완료, 데이터 표시·설명, 목표 Windows 흐름을 독립 검증한다. 현재 제품 코드와 실행 검사는 없으며 이 목록은 완료 증거가 아니다.
+전체 snapshot 복원, 결정적 재현, 반복 되돌리기의 자원/성장/보상 중복 방지, 같은 턴 비교, 예산 취소, 턴 중복 확정 방지, 0자원 중단과 복구, 7턴 완료, 데이터 표시·설명, 목표 Windows 흐름을 독립 검증한다. 현재 기본 규칙·복원 및 모델 통합 검사는 통과했다. 남은 최종 브라우저/한국어/두 번째 PC 검사는 #6에 기록한다.
 
 ## 씬·스크립트 구조 계획
 
