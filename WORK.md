@@ -560,3 +560,14 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 최신 main 738ef431cb70ecf1c0fb9e8bbca16297762c536b clean에서 feature/PE-02-avatar 생성, 실제 #26 담당 jsjavsj·claim 충돌 없음 및 착수 기록 확인. Worker ux12_worker / 독립 AI Verifier ux11_verifier / PM root.
 - 허용된 신규 시각 씬·스크립트·전용 검사와 인계 문서만 작성. player.gd/player.tscn·규칙·기존 모델·HUD·mission 무수정. 독립 fixture 렌더 60 checks/0 failures, 2크기×8시야/자세 PNG. 상세 계약·미실행은 docs/PE02_AVATAR_HANDOFF.md 참조.
 - 독립 검증·PM 이미지 검토 후 Refs PR로 main 통합하고 #26은 OPEN/PE-05 연결 대기로 인계한다. 사람 dyhan0528 교차 검증과 AI 검사는 구분하며 #27은 별도 최신 main에서 착수한다. #7 제출 보류 유지.
+
+## PE-02 통합 및 PE-03 점프 — 2026-11-15
+
+- PE-02 source 7fc3913b780a609f481aaa0ae13057b504c9c4cd 독립 headless44/0·PM 최종이미지 PASS 후 PR #31 일반 merge, main280c0469e3b0f535628d3a2148e738e9be083527/로컬 동일 clean 확인. #26 OPEN/PE-05 실제 연결 인수 대기, 시각 파일 claim 반환. 사람 교차 검증·실제 게임 장착/브라우저 조작은 미실행으로 유지.
+- 위 최신 main에서 feature/PE-03-jump 생성, 실제 #27 jsjavsj claim/in-progress 기록. Worker ux12_worker / 독립 AI Verifier ux11_verifier / PM root. player.gd·project.godot의 점프 액션과 전용 검사·인계 문서만 작성, 다른 담당 mission/HUD/player.tscn·규칙·모델은 유지.
+- 중력9.8/목표높이0.8·새 입력만 점프, UI/공중/복원 held 억제 및 복원 첫 틱 stale 접지 차단. 최종 자체 headless85/0, 렌더97/0(물리30/60/120Hz, PNG12), core90/learning15/avatar44 PASS. 물리 높이0.86740/0.83414/0.81658m, 목표대비오차8.42/4.27/2.07%. 실제 displayFPS 검사와 구분. 계약·미실행은 docs/PE03_JUMP_HANDOFF.md 참조.
+- #27은 독립검사·PM검토 후 Refs PR 통합하고 OPEN/PE-05 실제 연결 인수 대기로 인계한다. 기존8072빌드/배포 없음/#7 보류 유지.
+
+- 최신 병렬 PE-01/PE-04 main4a38d8b를 일반 merge해 모든 기록을 보존했다. 실제 도움말 열기/닫기 검사로 보강한 jump85/0, mouse_modes23/0, resource_gauges64/0 통과. navigation70/0을 포함한 기존 영향 검사와 별개이며 다른 담당 코드는 수정하지 않았다.
+
+- PE-03 최종source703c0ba64097a31484309505d5f20483a35a8f9f 독립391/0·PMdiff/물리렌더검토PASS. 일반merge로 player.gd/project.godot claim을 #29 담당 dyhan0528에게 반환한다. #27은 OPEN/실제통합인수대기이며 PR·실제mergeSHA는 원격 이슈에서 재조회한다. 이번 후속 기록은 문서만 변경한다.

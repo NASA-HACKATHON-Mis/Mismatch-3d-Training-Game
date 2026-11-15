@@ -6,9 +6,14 @@ const MAX_PITCH := deg_to_rad(80.0)
 const WALK_ACTIONS := [&"walk_left", &"walk_right", &"walk_forward", &"walk_back"]
 const Rules = preload("res://scripts/simulation/scenario.gd")
 
+@export_range(0.1, 30.0) var gravity := 9.8
+@export_range(0.1, 2.0) var jump_height := 0.8
+
 @onready var camera: Camera3D = $Camera3D
 var exploring := false
 var _wait_for_release: Array[StringName] = []
+var _jump_was_pressed := false
+var _needs_ground_refresh := false
 
 
 func set_exploring(enabled: bool) -> void:
@@ -19,6 +24,7 @@ func set_exploring(enabled: bool) -> void:
 				_wait_for_release.append(action)
 	exploring = enabled
 	velocity = Vector3.ZERO
+	_jump_was_pressed = Input.is_action_pressed(&"jump")
 
 
 func _physics_process(delta: float) -> void:
@@ -32,9 +38,15 @@ func _physics_process(delta: float) -> void:
 	var direction := transform.basis * Vector3(axis.x, 0.0, axis.y)
 	velocity.x = direction.x * SPEED
 	velocity.z = direction.z * SPEED
-	if not is_on_floor():
-		velocity.y -= 9.8 * delta
+	var jump_pressed := Input.is_action_pressed(&"jump")
+	var jump_started := jump_pressed and not _jump_was_pressed
+	_jump_was_pressed = jump_pressed
+	if _needs_ground_refresh or not is_on_floor():
+		velocity.y -= gravity * delta
+	elif jump_started:
+		velocity.y = sqrt(2.0 * gravity * jump_height)
 	move_and_slide()
+	_needs_ground_refresh = false
 	if global_position.y < -3.0:
 		apply_pose({"position": [Rules.SPAWN.x, Rules.SPAWN.y, Rules.SPAWN.z], "yaw": 0.0, "pitch": 0.0})
 
@@ -71,4 +83,6 @@ func apply_pose(saved: Dictionary) -> void:
 	camera.rotation.x = clampf(saved.pitch, -MAX_PITCH, MAX_PITCH)
 	velocity = Vector3.ZERO
 	_wait_for_release.clear()
+	_jump_was_pressed = Input.is_action_pressed(&"jump")
+	_needs_ground_refresh = true
 	reset_physics_interpolation()
