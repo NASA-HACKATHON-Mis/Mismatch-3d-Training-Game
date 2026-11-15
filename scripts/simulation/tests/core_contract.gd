@@ -181,6 +181,7 @@ func _scene_path() -> void:
 	var first_pose := {"position": [0.43, 0.0, 19.8], "yaw": 0.15, "pitch": -0.11}
 	p.apply_pose(first_pose)
 	t._select_slot(0)
+	t._place_selected()
 	_check(game.station.get_node("FacilityWrappers/Slot00_generator") != null, "draft appears on matching 3D pad")
 	t._advance_turn()
 	t._advance_turn()
