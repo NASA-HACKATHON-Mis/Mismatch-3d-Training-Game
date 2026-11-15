@@ -377,8 +377,8 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | 작업 | 범위 | 실제 이슈 | 구현 담당 | 상태 |
 | --- | --- | --- | --- | --- |
 | UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | jsjavsj | in-progress / 수정·자동검사 완료, 실제 브라우저 인수·main 통합 대기 |
-| UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | in-progress / 첫 안내·화면 개선 |
-| UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | blocked / UX-R02 통합 대기 |
+| UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | done / PR #19 검증·main 통합 |
+| UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | ready / #13 착수 claim 전 |
 | UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | blocked / UX-R03 통합 대기 |
 | UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | blocked / UX-R04 통합 대기 |
 | UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | blocked / UX-R05 통합 대기 |
@@ -445,3 +445,5 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 최종 검증 소스 `12f7f962ce04f5b2ec9b88c498d7b57bd446a200`. PM의 실제 Native 검사: 시작→플레이어 카메라/E 안내→단말기→01 발전기(토큰12→9)→이번 턴 진행(T2, E20/O62/F30)→사건 대응 안내→첫 안내 건너뛰기/다시보기(자원 불변)→H/Esc 안내서 복귀→절전 선택→다음 행동 안내를 확인했다. 스크롤·과거 기록 펼침·T1 비교/되감기 버튼 접근도 확인했다.
 - IAB Web에서 첫 안내 건너뛰기/다시보기와 H/Esc 안내서가 동작했다. IAB Chromium은 pointer lock UnknownError를 반환했고 게임은 대기 후 실패 안내로 정상 복구했다. 일반 Chrome/Edge의 전체 권한/입력 행렬 통과라고 기록하지 않는다. 실제 아동 이해도 관찰·영문 런타임·터치 전용 게임 지원도 주장하지 않는다.
 - PM은 네 크기 렌더, 자체·독립861개 검사와 실제 Native 흐름을 근거로 #12의 구현 인수를 확인하고 일반 merge를 진행하도록 했다. 다음 #13은 최신 main에서 착수 준비만 하며 이번 작업에서 코딩하지 않는다.
+
+- UX-R02 PR [#19](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/19)을 `main` 대상으로 생성했다. 검증 소스는 위 `12f7f96`이며 이후 커밋은 문서만 바꾼다. 이 완료 작업판은 PR #19의 일반 merge와 함께 main에 반영한다. 실제 merge SHA와 #12 CLOSED 확인은 해당 이슈에 기록한다. #13은 ready/미착수이고 제품 코딩은 진행하지 않았다.
