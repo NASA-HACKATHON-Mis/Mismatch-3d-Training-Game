@@ -8,11 +8,15 @@ signal guidance_changed(enabled: bool)
 
 const UI = preload("res://scripts/ui/ui_style.gd")
 const Simulation = preload("res://scripts/simulation/simulation.gd")
+const ResourceMeter = preload("res://scripts/ui/resource_meter.gd")
 var _inspection: PanelContainer
 var _inspection_label: Label
 var _inspection_back: Button
 var _mission: Label
-var _meters: Label
+var _meters: GridContainer
+var _energy: ResourceMeter
+var _oxygen: ResourceMeter
+var _food: ResourceMeter
 var _hint: Label
 var _status_box: PanelContainer
 var _intro: PanelContainer
@@ -40,7 +44,20 @@ func _ready() -> void:
 	var heading := UI.column(_header, 3)
 	UI.label(heading, "달 표면 훈련 기지", 16, UI.CYAN)
 	_mission = UI.label(heading, "달기지 리와인드", 26)
-	_meters = UI.label(heading, "", 18, UI.TEXT, true)
+	_meters = GridContainer.new()
+	_meters.columns = 3
+	_meters.add_theme_constant_override("h_separation", 14)
+	_meters.add_theme_constant_override("v_separation", 8)
+	heading.add_child(_meters)
+	_energy = ResourceMeter.new()
+	_oxygen = ResourceMeter.new()
+	_food = ResourceMeter.new()
+	for meter in [_energy, _oxygen, _food]:
+		_meters.add_child(meter)
+	_energy.set_color(UI.AMBER)
+	_oxygen.set_color(UI.CYAN)
+	_food.set_color(UI.GREEN)
+	_header.minimum_size_changed.connect(_layout)
 	_reticle = UI.label(self, "+", 31, UI.CYAN)
 	_reticle.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_reticle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -85,9 +102,12 @@ func _layout() -> void:
 	if not is_instance_valid(_intro): return
 	var narrow := size.x < 960
 	_header.position = Vector2(20, 18)
+	_meters.columns = 1 if size.x < 520 else 3
 	_header.size = Vector2(minf(size.x - 40, 490), 0)
 	var width := minf(560, size.x - 40) if narrow else minf(560, size.x * 0.47)
 	var height := minf(440, size.y - 170) if narrow else minf(540, size.y - 174)
+	# Keep the start/pause card below the actual resource header at short heights.
+	height = minf(height, maxf(80, size.y - _header.get_combined_minimum_size().y - 72))
 	_intro.position = Vector2((size.x - width) / 2 if narrow else 28, size.y - height - 38)
 	_intro.size = Vector2(width, height)
 	_status_box.position = Vector2(20, size.y - 150)
@@ -133,7 +153,9 @@ func refresh(state: Dictionary) -> void:
 	_ended = Outcome.ended(state)
 	_outcome_heading = Outcome.heading(state) if _ended else ""
 	_mission.text = "달기지 리와인드 / T%d" % state.turn_id
-	_meters.text = "전력 %d/%d · 산소 %d · 식량 %d" % [state.E, Simulation.energy_cap(state), state.O, state.F]
+	_energy.set_values("전력", state.E, Simulation.energy_cap(state))
+	_oxygen.set_values("산소", state.O, 100)
+	_food.set_values("식량", state.F, 100)
 
 func show_inspection(caption: String) -> void:
 	_inspection_label.text = caption + "\n관찰 화면이에요. 이동하거나 턴을 진행하지 않아요."

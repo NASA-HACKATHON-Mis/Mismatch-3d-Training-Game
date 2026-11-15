@@ -546,3 +546,11 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 팀원 jsjavsj: [#26 팔·다리](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/26), [#27 점프·중력](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/27), 최종 통합 교차 검증.
 - 실제 이슈 5개 생성 후 OPEN 상태와 assignee를 재조회했다. #25/#26 → #28/#27 병렬 진행 후 #29에서 연결한다. 공통 파일은 소유권 반환 후 순차 수정한다.
 - 문서 게시 브랜치 docs/play-experience-plan, 최초 명세 커밋 988a44b. 변경은 명세/README/WORKFLOW/WORK뿐이다. 게임 구현·실행 검증·배포·제출은 이번 작업 범위가 아니다. #7 제출 보류 및 기존 완료 이슈는 유지한다.
+
+## PE-01 자원 게이지 구현 — 2026-11-15
+
+- 담당 dyhan0528 / Codex, 기준 main 738ef431cb70ecf1c0fb9e8bbca16297762c536b, feature/PE-01-resource-gauges, 이슈 #25에 파일 claim 기록.
+- resource_meter.gd를 읽기 전용 공용 컴포넌트로 추가하고 HUD의 전력/산소/식량을 이름·현재/상한·막대로 표시했다. 배터리 용량은 energy_cap을 사용하며 미확정 배치가 HUD의 확정값을 바꾸지 않는다. 화면이 좁으면 세로 배치하고 시작/정지 카드와의 겹침을 막았다.
+- Godot 4.7.2 Windows: import exit 0; 신규 resource_gauges headless 64개/실제 OpenGL 렌더 70개 검사 실패 0. 1280×800, 960×600, 480×800의 시작/탐색 PNG 6개 생성, 대표 3개를 직접 열어 숫자·막대·카드 배치를 확인했다. 로그·이미지: logs/pe01/, logs/pe01-*-stdout.log 및 stderr.log (로컬 전용).
+- 기존 회귀 검사: core_contract 90, guidance_ui 1075, turn_preview 635, outcome_ui 1149, rewind_ui 583, world_ui 532, learning_ui 15 — 총 4079개 모두 실패 0, exit 0. 신규 64개까지 headless 합계 4143개 통과. Web release export는 build/pe01/index.html에 성공(exit 0); 실제 브라우저 조작은 이번 검사에서 수행하지 않았다.
+- 단말기 게이지 연결은 #29의 범위다. 팀원 jsjavsj의 교차 검증은 아직 미실행이므로 #25는 구현 통합 후에도 OPEN으로 인계한다. 원래 SUBMISSION.md 초안은 보존하고 Godot가 재기록한 import 메타데이터는 원복했다.
