@@ -14,6 +14,8 @@ const UI = preload("res://scripts/ui/ui_style.gd")
 
 var session = Session.new(Scenario)
 var mode := "pause"
+var look_mode := "disabled"
+signal look_mode_changed(value: String)
 var _aiming := false
 var _command_serial := 0
 var _help_focus: Control
@@ -94,13 +96,13 @@ func _layout_start_camera() -> void:
 
 func _physics_process(delta: float) -> void:
 	# A Web permission response can arrive after Esc, focus loss, or timeout.
-	if mode not in ["explore", "capturing"] and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+	if mode != "capturing" and (mode != "explore" or look_mode != "captured") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if mode == "capturing":
 		_update_capture(delta, Input.mouse_mode == Input.MOUSE_MODE_CAPTURED)
 		return
 	if mode == "explore":
-		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		if look_mode == "captured" and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			_pause()
 			hud.set_input_notice(UI.trn("마우스 잠금이 풀렸어요. 다시 시작하려면 버튼을 눌러요.",
 				"Mouse capture was released. Click the button to resume."))
@@ -160,6 +162,11 @@ func _update_capture(delta: float, captured: bool) -> void:
 		return
 	_capture_elapsed += delta
 	if _capture_elapsed >= CAPTURE_TIMEOUT:
+		# PE-05 supplies the actual drag input implementation. Until then keep
+		# the existing safe retry screen instead of enabling unrestricted look.
+		if player.has_method("set_look_mode"):
+			_set_mode("explore", "drag")
+			return
 		_set_mode("pause")
 		hud.set_input_notice(UI.trn("마우스 잠금을 허용하지 못했어요. 게임 화면을 클릭한 뒤 다시 시작해요.\n계속 막히면 게임을 새 탭에서 열어 주세요.",
 			"Mouse capture was not allowed. Click the game and try again.\nIf it stays blocked, open the game in its own tab."))
@@ -190,20 +197,30 @@ func _pause() -> void:
 		hud.set_input_notice("")
 
 
-func _set_mode(new_mode: String) -> void:
+func _set_mode(new_mode: String, requested_look_mode: String = "captured") -> void:
+	if new_mode == "explore" and requested_look_mode not in ["captured", "drag"]:
+		new_mode = "pause"
+	if new_mode == "explore" and requested_look_mode == "drag" and not player.has_method("set_look_mode"):
+		new_mode = "pause"
 	if mode == "inspect" and new_mode != "inspect":
 		if is_instance_valid(_return_camera): _return_camera.make_current()
 		_return_camera = null
 	mode = new_mode
+	look_mode = requested_look_mode if mode == "explore" else "disabled"
 	if mode == "explore":
 		_has_explored = true
 		player.camera.make_current()
 	_aiming = false
-	var requested_mouse_mode := Input.MOUSE_MODE_CAPTURED if mode == "explore" else Input.MOUSE_MODE_VISIBLE
+	var requested_mouse_mode := Input.MOUSE_MODE_CAPTURED if look_mode == "captured" else Input.MOUSE_MODE_VISIBLE
 	if Input.mouse_mode != requested_mouse_mode:
 		Input.mouse_mode = requested_mouse_mode
 	player.set_exploring(mode == "explore")
+	# Apply after set_exploring: input reset must not overwrite the chosen mode.
+	if player.has_method("set_look_mode"):
+		player.set_look_mode(look_mode)
 	hud.show_mode(mode)
+	# The HUD can bind this in PE-05 to show persistent drag guidance.
+	look_mode_changed.emit(look_mode)
 	terminal.visible = mode == "terminal"
 	if terminal.visible:
 		terminal.focus_primary()
