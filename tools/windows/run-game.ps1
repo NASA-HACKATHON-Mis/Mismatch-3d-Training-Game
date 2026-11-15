@@ -158,7 +158,7 @@ try {
         exit 0
     }
     $gameLog = Join-Path $logRoot ('game-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.log')
-    Write-Status 'Opening Lunar Base Rewind. Click Start Training in the game window. Close the game to finish.'
+    Write-Status 'Opening Lunar Base Rewind. Click Start mission in the game window. Close the game to finish.'
     $gameInfo = New-GodotStartInfo $gui @('--path', $ProjectRoot, '--windowed', '--log-file', $gameLog)
     $game = [Diagnostics.Process]::Start($gameInfo)
     Write-Status ('Game PID ' + $game.Id + '. Log: ' + $gameLog)

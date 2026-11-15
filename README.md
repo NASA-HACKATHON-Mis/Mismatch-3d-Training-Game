@@ -1,62 +1,116 @@
-# 달기지 리와인드
+# Lunar Base Rewind
 
-작은 달 기지를 1인칭으로 탐색하고 해당 부지에서 시설을 지어요. 중앙 단말기는 기지 상태를 보고 턴을 진행하는 대시보드예요. 7턴 동안 전력·산소·식량을 지킨 뒤, 같은 턴을 되감아 다른 설계와 결과를 비교할 수 있어요.
+A first-person lunar base training game for children aged **7–12**, built for **Build a Junior Astronaut Mission Trainer**. Walk to a site, build a small base, manage seven turns, then rewind a decision and compare the result. Power, oxygen and food are limited: every useful facility has a cost.
 
-**7~12세를 위한 우주 기지 운영 학습 게임**입니다. 시설의 비용과 효과를 경험하고, NASA DONKI의 실제 FLR·SEP·CME 기록으로 정해지는 경보·대피·통신 조건에 대응합니다. 실패하면 되감아 같은 턴의 다른 선택을 비교합니다. 자원과 위험 변환 수치는 교육용 게임 규칙입니다.
+**NASA data changes the training conditions.** Real DONKI flare, particle-event and coronal-mass-ejection records select the alert and delayed-advice rules. Genuine **8–13 May 2024 historical records** are embedded for offline play and labelled **“Embedded historical data - not live.”** A successful online request is also a single catalogue snapshot, not a continuous live feed. Resource costs, shielding and turn delays are educational rules, not physical predictions.
 
-Godot 4.7.2에서 실행할 수 있습니다. 기지에 발전기, 배터리, 거주실, 온실, 대피소의 Blender 모델이 표시됩니다. 입구 단말기 옆에는 안내 로봇이 서 있습니다. 단일 스레드 Web 빌드를 생성했고 기존 통합 검증 이슈 #6은 완료했습니다.
+## Run locally
 
-합쳐진 게임과 문서는 [`main`](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/tree/main)에서 보세요. 최신 `main`에서 작업 브랜치를 만들고, 검사 후 PR로 `main`에 병합합니다. 배포와 실제 제출은 별도 결정입니다. [통합 절차](WORKFLOW.md#main에-통합하는-방법)
+**Windows 10/11, 64-bit:** download the repository ZIP, extract the **entire** folder, and double-click **[RUN_GAME.cmd](RUN_GAME.cmd)**. The launcher installs the pinned official Godot 4.7.2 engine inside the project if missing, verifies its SHA256, imports assets and starts the game. No administrator access, Git, Python, Blender or export templates are needed to play. The first engine installation needs internet; subsequent play can be offline.
 
-## 실행 및 첫 플레이
-
-**Windows 10/11 64비트:** 저장소를 내려받아 전체 압축을 풀고 **[RUN_GAME.cmd](RUN_GAME.cmd)를 더블클릭**하세요. Godot가 없으면 공식 패키지를 자동으로 내려받아 검증·설치하고 게임을 실행합니다. Git·Python·Blender를 따로 설치할 필요가 없습니다. 관리자 권한도 필요하지 않습니다. 첫 설치에만 인터넷이 필요하며 이후 오프라인에서도 내장 NASA 자료로 플레이할 수 있습니다. [실행기 상세·오류 해결](docs/LOCAL_RUN.md)
-
-1. 열린 `Lunar Base Rewind` 창에서 **훈련 시작**을 누릅니다. 창이 뒤에 있으면 **Alt+Tab**으로 찾으세요.
-2. **WASD**로 걷고 마우스로 둘러봅니다. **Space**는 점프입니다. **4**로 어디서든 읽기 전용 격자 지도를 열어 설치 현황을 확인합니다. 현장 창·대시보드·지도를 **Esc**로 닫으면 탐색으로 돌아갑니다. 도움말·3D 관찰은 열기 전 화면으로 돌아갑니다. 탐색 중 Esc는 일시 정지합니다.
-3. **01**번 일조 부지로 걸어가 가까이서 바닥을 바라보고 **1**을 누릅니다. 발전기를 선택하고 설치 버튼을 누른 뒤 중앙 단말기로 돌아와 **이번 턴 진행 · T1**을 누릅니다. 단말기 격자로는 설치·철거할 수 없습니다. **과거 기록 · 되감기와 비교**에서 **T1 → 선택 턴 시작으로** 돌아가 발전기 없이 같은 턴을 비교할 수 있습니다.
-4. 7턴을 모두 도전하려면 첫 턴에 각 현장을 찾아가 발전기 **01**, 배터리 **12**, 재배실 **14**, 대피소 **25**를 놓으세요. 중앙 대시보드에서 턴을 진행하며 T2는 **재배 유지**, T4는 **대피하기**, T5는 **확인**을 선택합니다.
-
-시작 화면과 단말기의 **첫 안내 건너뛰기 / 첫 안내 다시 보기**는 설명만 숨기거나 다시 보여 줍니다. 좁은 창에서는 대시보드 지도와 상세가 세로로 배치되며 스크롤로 모든 항목을 볼 수 있습니다. 키보드와 마우스가 있는 PC에서 실행하세요.
-
-시설 카드는 비용·효과를 보여 주며, 예산이 부족해도 선택해서 설명을 읽을 수 있습니다. 단말기의 **이번 턴 예상 보기**에서 현재 저장 전력, 배치 후 저장 용량과 이번 턴 진행 후 예상 자원을 구분해 확인하세요. 사건 대응을 아직 고르지 않았다면 선택별 예상이 나옵니다. 미리보기만 열어서는 자원이나 기록이 바뀌지 않습니다.
-
-빈 부지나 건물을 가까이서 바라보면 하이라이트와 네모 메뉴가 나타납니다. **1 설치·철거 / 2 상세 / 3 3D 보기 / 4 기지 지도**를 사용하며 **E**도 상세를 엽니다. 설치·철거는 해당 현장에서만 가능하고 1을 누르는 것만으로 실행되지 않습니다. 중앙 단말기의 **2 또는 E**는 턴 운영 대시보드를 엽니다. 4번 지도에서는 원격 건설이나 턴 진행을 하지 않습니다. 상단에는 **전력 / 생명유지 / 차폐 준비**가 표시됩니다. 차폐는 대피소 준비 상태이며 실제 방사선 수치가 아닙니다. [현장 조작 명세](docs/URGENT_FIELD_INTERACTION.md)
-
-**지구에 조언 요청**은 턴 확정 때 전력 1을 씁니다. NASA CME 기록을 사용하는 통신 장애 훈련에서는 2턴 뒤, 그 외에는 1턴 뒤 확정 때 답장이 도착합니다. 확정 전에는 취소할 수 있습니다. 답장은 자원 보상을 주지 않으며, 되감기는 요청과 답장도 함께 복원합니다. T7까지 답장을 받을 수 없는 새 요청은 막습니다.
-
-7턴을 마치면 **7턴 훈련 완료!**와 실제 선택·자원 기록을 볼 수 있습니다. 중단되면 해당 턴과 원인을 확인하고 **과거 기록에서 다시 시도하기**로 되감을 턴을 고르세요. 결과를 닫아도 완료·중단 상태는 유지되며 **결과 다시 보기**, **기지 둘러보기**를 사용할 수 있습니다.
-
-과거 기록에서는 저장된 시작 상태를 살펴보고 **선택 턴 시작으로** 복원할 수 있습니다. 실패 때의 탐색 후보는 남아 있는 시작 기록에 근거하며 성공을 보장하지 않습니다. 후보 클릭은 내용을 선택할 뿐 즉시 되감지 않습니다. 이전 시도의 기록만 남은 턴은 조회 전용입니다. 같은 턴을 다시 실행하면 양쪽 시작 자원·재배 기록, 대응·배치와 실제 결과 차이를 비교할 수 있습니다.
-
-지도의 칸을 고른 뒤 **선택 칸 3D 보기**를 누르면 같은 번호의 청록색 테두리를 볼 수 있습니다. 현장 **3**으로도 관찰할 수 있습니다. 관찰은 플레이어 위치와 턴을 바꾸지 않으며 복귀 버튼이나 **Esc**로 이전 화면에 돌아옵니다. 미확정 배치 포함 여부도 표시합니다. 현장 대상이 없는 탐색 중에는 단말기 방향·거리를 짧게 안내합니다. 단말기는 남쪽 입구 로봇 옆에 있고, 로봇의 별도 대화·퀘스트는 제공하지 않습니다.
-
-#16 구현의 자동 검사·렌더와 실제 브라우저 인수 범위는 [통합 검증 기록](docs/UX_R06_VERIFICATION.md)을 참고하세요. Chrome/Edge의 실제 게임 경로·관찰/Esc·일부 Alt-Tab·로딩을 확인했습니다. Native 전체 수동 흐름과 모든 모드 조합 등 미실행 범위는 검증 기록에 구분했습니다.
-
-시작 화면이나 단말기에서 **안내서**를 누르거나 **H**를 누르면 시설, 사건과 되감기, 실제 자료를 볼 수 있습니다. **Tab**과 **Enter**로 항목을 선택하고 **Esc**로 돌아갑니다. Windows와 Web 모두 [Noto Sans KR](resources/fonts/README.md) 글꼴을 번들로 사용해 한국어를 표시합니다.
-
-화면의 칸 번호는 01–25이며 코드의 슬롯 ID는 0–24입니다. 자원과 사건은 교육용 가상 규칙입니다. 안내서에 보관한 NASA 과거 관측 및 CSA 교육 설명의 근거는 [자료 출처](docs/DATA_SOURCES.md)를 참고하세요.
-
-시작할 때 NASA DONKI의 최근 30일 FLR·SEP·CME 기록을 각각 한 번씩 병렬 조회합니다. 오류가 나거나 조회 전에 플레이를 시작하면 실제 2024년5월 자료를 내장 대체로 사용합니다. 정상 빈 SEP/CME 응답은 최근 기록 없음으로 표시합니다. 자료는 최초 탐색/턴 확정에 고정되고 되감아도 같습니다.
-
-FLR 등급과 관측 포함 SEP 기록이 **T4 대피 필요 여부와 추가 전력(0/2/4, SEP가 있으면+2)**을 정합니다. CME 기록은 **통신 장애 훈련의 답장 대기(2턴)**를 정합니다. 낮은 경보에서는 계속 재배할 수 있고, 높은 경보에서는 대피소와 보호 전력을 준비해야 합니다. 화면과 안내서에서 조건을 고른 NASA 대표 기록·관측일·조회일·원문을 확인할 수 있습니다. 이 변환은 교육용 규칙이며 실제 달의 피폭량·통신 장애를 예측하지 않습니다. [NASA 연결 명세와 검증](docs/NASA_GAMEPLAY_FIX.md)
-
-## Web 출력과 검사
-
-개발자가 수동으로 실행하려면 **Godot 4.7.2 일반판**에서 `project.godot`를 열고 **F6이 아닌 F5**를 누르세요. macOS/Linux는 해당 OS의 Godot를 직접 설치해야 하며 Windows 자동 실행기 검증에는 포함하지 않았습니다. 기존 Windows portable 위치는 [환경 기록](docs/ENVIRONMENT.md)에 있습니다.
-
-`Web` preset과 Godot 4.7.2용 export templates를 사용합니다. 편집기의 **프로젝트 → 내보내기**에서 Web을 선택하고 `build/web/index.html`로 출력하세요. 이 폴더는 Git 추적에서 제외됩니다. WebGL2 브라우저에서 로컬 정적 서버로 열어 주세요. 예를 들어 Python이 있는 PC라면 저장소 폴더에서 `python -m http.server 8061 --bind 127.0.0.1 --directory build/web`를 실행한 다음 [로컬 게임](http://127.0.0.1:8061/)을 열 수 있습니다.
-
-Windows portable 실행 방법은 [환경 기록](docs/ENVIRONMENT.md)을 따르고, 인자에 아래 명령의 옵션을 전달합니다.
-
-```text
---headless --path . --editor --import
---headless --path . --script res://scripts/simulation/tests/core_contract.gd
---headless --path . --export-release Web build/web/index.html
+```powershell
+.\RUN_GAME.cmd
+.\RUN_GAME.cmd -Offline
+.\RUN_GAME.cmd -NoLaunch
+.\RUN_GAME.cmd -SmokeTest
 ```
 
-[규칙 v0.3](START_SPEC.md) · [작업 기록과 검증 범위](WORK.md) · [팀원 워크플로](WORKFLOW.md) · [모델 제작 규격](ASSET_BRIEF.md) · [GitHub 이슈](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues)
+`-Offline` skips NASA requests. `-NoLaunch` prepares/imports without opening the game; `-SmokeTest` also runs a short headless check. Use **Alt+Tab → Lunar Base Rewind** if the window opens behind another app. See [setup and troubleshooting](docs/LOCAL_RUN.md).
 
-[4번 기지 지도·Esc 후속 명세](docs/PLAYTEST_FOLLOWUP.md) · [7장 발표 자료와 PPTX 다운로드 안내](docs/presentation/README.md)
+**Other operating systems / existing editor:** install standard Godot 4.7.2 for your OS, open `project.godot`, and press **F5**. Automatic installation is Windows-only; macOS/Linux play has not been verified in this pass. A keyboard, mouse and compatible graphics device are required. Blender is only needed to edit source models.
 
-기존 UX 리팩터링 #11~16과 플레이 경험 개선의 게이지·캐릭터·점프·마우스 연결을 구현했습니다. Space로 점프하며, 마우스 잠금이 실패하면 왼쪽 버튼 드래그로 둘러봅니다. [통합 후보 인계](docs/PE05_INTEGRATION_HANDOFF.md)에 구현자 검사와 jsjavsj의 최종 교차 검증 절차가 있습니다. 환경별 실조작 인수는 아직 남아 있으며 #7 제출 준비는 보류 중입니다.
+## Play in a minute
+
+1. Choose **Start mission**. Use **WASD** to walk, the mouse to look and **Space** to jump. If pointer capture is unavailable, hold the left mouse button and drag to look.
+2. Walk close to a site and look at its floor or building. Press **1** for **Build / Remove**. Choose a facility and confirm at that site. The shortcut alone never spends resources.
+3. Return to the operations terminal beside the entrance robot and press **E** or **2**. Review resource bars, base map and turn preview; choose an event response and advance the turn.
+4. Open history to rewind to the start of a recorded turn. Change a decision, run it again and compare actual results. Previewing or inspecting history does not change the simulation.
+
+For a seven-turn practice route, build a **Solar array at 01, Battery at 12, Greenhouse at 14 and Shelter at 25** before advancing T1. Keep growing at T2, take shelter if required at T4 and acknowledge the delivery delay at T5. The embedded historical case requires shelter; a different fetched dataset can change that condition. All resources and turns are game units.
+
+| Input | Action |
+| --- | --- |
+| WASD / mouse / Space | Walk / look / jump |
+| 1 near a site | Local Build / Remove menu; confirmation required |
+| 2 or E near a site | Read-only details |
+| 3 near a site | Inspect that site's 3D view |
+| 4 while exploring | Read-only 5×5 base map, including current and planned facilities |
+| E or 2 near the central terminal | Operations dashboard and turn controls |
+| H in a menu or pause / Tab / Enter | Guide / move UI focus / activate a focused control |
+| Esc | Close the panel to its previous context; pause when exploring |
+
+**Building and removal are allowed only at the physical site.** The central dashboard and global map cannot construct remotely. Displayed slots are 01–25; internal IDs are 0–24. Inspection does not move the player or advance time. The robot is a landmark, not a separate quest character. Closing a panel resumes exploration without repeating the welcome instructions.
+
+## Decisions and tradeoffs
+
+Start with 12 construction tokens, 20 power, 60 oxygen and 36 food. The habitat is already built. Icons, names, bars and short actions carry the main instructions; numbers provide detail. The HUD groups information as **Power / Life support / Shelter readiness**. Shelter readiness reports shelter preparation, **not radiation dose**. Water is not separately simulated.
+
+| Facility | Construction tokens | Benefit and cost |
+| --- | --- | --- |
+| Solar array | 3 | Generates 18 power on a sunny site, otherwise 12; unavailable during the T2–T3 fault |
+| Battery | 2 | Adds 20 storage capacity; building one does not create power |
+| Greenhouse | 3 | Uses 4 power per active turn; produces 18 food after three active turns |
+| Shelter | 3 on a shielded site; otherwise 4 | Enables protection; sheltering pauses growth and can use protection power |
+| Habitat | Already installed | Uses 6 power to produce 8 oxygen per turn; the crew consumes 6 oxygen and 6 food |
+
+The fixed training schedule introduces a solar-array fault at T2–T3, a data-selected space-weather alert at T4 and a delivery delay at T5, with 12 food delivered at T7. Failure explains the stopping point and supports rewind. Completion shows seven turns of choices and resources. Closing the result does not restart the mission.
+
+**Ask Earth for advice** costs 1 power when committed. The reply arrives after one turn, or two in the CME-based communications exercise. Requests can be cancelled before commit and give no free resources. Rewind restores requests and replies. New requests that cannot receive a reply by T7 are blocked. Delays represent compressed training time, not Moon/Earth signal travel time.
+
+## Real NASA data and honest offline use
+
+At startup the game requests **FLR, SEP and CME once each in parallel**, for the preceding 30 days, with an eight-second deadline and a 2 MiB response limit. A failed or unfinished product falls back to its historical response. Valid empty SEP/CME responses remain empty; no current event is invented. Empty/unusable FLR uses the labelled historical case. Beginning exploration or committing a turn freezes the dataset for that run and its rewinds.
+
+| In-game source label | Meaning |
+| --- | --- |
+| Embedded historical data - not live | Original embedded records from 8–13 May 2024 |
+| Fetched NASA records - not a live feed | One successful fetch; records retain their observation dates |
+| Mixed fetched and historical records - not a live feed | Fetched and archived products are identified individually |
+
+The guide separates **observation period, retrieval timestamp, product source, representative event and original link**. The archive was retrieved on **15 November 2026 UTC**; that does not make its 2024 observations current. Original bytes and provenance live in [research/nasa-2024-05](research/nasa-2024-05): **87 FLR, 14 SEP and 21 CME records**, with URLs, timestamps and SHA256 metadata.
+
+| Required product | Record → educational game effect |
+| --- | --- |
+| DONKI FLR | Strongest flare selects protection power: A/B/C → 0, M → 2, X → 4; M/X require shelter |
+| DONKI SEP | Observation-backed particle records add 2 protection power and require shelter; model-only entries are excluded from this observation rule |
+| DONKI CME | Records select a two-turn advice-delay exercise; no record selects one turn |
+
+The historical case includes an X5.8 flare and observed SEP, giving 6 protection power. Records in one interval are **not claimed to be one causally linked event**. The game does not estimate astronaut exposure or forecast real lunar outages. See [source provenance and mapping](docs/DATA_SOURCES.md).
+
+## Challenge coverage and submission
+
+All nine supplied source captures were reviewed, with **feed_page taking priority over docs_page**. The [image-by-image checklist](docs/SOURCE_REQUIREMENTS_CHECKLIST.md) distinguishes implemented requirements, scope limits and submission tasks. Desktop local play supports the working-prototype route; browser delivery remains a useful separate step.
+
+- **English presentation:** [seven-slide deck and PowerPoint download instructions](docs/presentation/README.md). Seven slides includes the cover. The captured demo rule allows either up to seven slides **or** a video of up to 30 seconds with English subtitles.
+- **English submission draft:** [all nine form fields](docs/SUBMISSION_EN.md), including data, attribution and AI use. The owner-edited `SUBMISSION.md` remains separate.
+- **Before submission:** supply a publicly viewable demo URL and a publicly playable final-project URL, verify the team/form details and actually submit. A local file, private Page or GitHub source URL is not a public playable game. Public deployment and submission are not claimed here.
+- **Manual acceptance remains open:** actual child usability, remaining Native/Web/iframe input cases and host-specific loading. See [issue #29](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/29) and [submission issue #7](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7).
+
+**Scope limits:** no separate water model, measured radiation dose, RadLab integration, OSDR research cards, Mars Trek terrain, mobile/touch controls, procedural event schedule or persistent save/resume. The world is a designed lunar training board. Restarting begins a new session; rewind works within the current session. These extensions are not described as complete.
+
+## Sources, attribution and AI
+
+NASA Goddard Space Flight Center's **Community Coordinated Modeling Center (CCMC)** provides the [DONKI catalogue](https://ccmc.gsfc.nasa.gov/tools/DONKI/) and [API reference](https://ccmc.gsfc.nasa.gov/DONKI/api/). The Canadian Space Agency's [food-production education resources](https://www.asc-csa.gc.ca/eng/youth-educators/toolkits/food-production/) inform project-written learning summaries about food and resupply. These summaries and rules are not official agency translations, endorsements or safety advice. The in-game guide includes source links and dates.
+
+Blender model sources and exported game assets are included in this repository. The bundled [Noto Sans KR font and license](resources/fonts/README.md) also support English. See [data attribution](docs/DATA_SOURCES.md) and asset documentation for specific materials. **OpenAI Codex** assisted code implementation, English UI/documentation, checks and presentation preparation; the team remains responsible for verification and submission. No unverified AI tool is attributed to the team.
+
+## Development and verification
+
+Built with **Godot 4.7.2 / GDScript** and Blender-authored models. The current user-facing game, guide, README and presentation are English; earlier Korean planning records remain historical development records.
+
+With Godot on your path, run from the project root:
+
+```text
+godot --headless --path . --editor --import --quit
+godot --headless --path . --script res://scripts/simulation/tests/core_contract.gd
+godot --headless --path . --script res://scripts/simulation/tests/nasa_data.gd
+godot --headless --path . --script res://scripts/simulation/tests/nasa_integration.gd
+godot --headless --path . --script res://scripts/simulation/tests/operations_integration.gd
+godot --headless --path . --script res://scripts/simulation/tests/map_navigation.gd
+```
+
+Automated checks cover rules, provenance/fallback, frozen data, rewind, local-only construction, maps and panel returns. Render checks at 1280×800 and 960×600 are distinct from actual child acceptance. The Windows launcher has been exercised from an empty engine folder through download, checksum, import and game startup, plus installed-engine reuse and outside-project path rejection.
+
+For Web, install matching Godot export templates and use the **Web** preset to export `build/web/index.html`. Serve that folder over HTTP(S), not `file://`. If Python is already installed, a local preview is `python -m http.server 8061 --bind 127.0.0.1 --directory build/web`. Templates and Python are developer tools, not local-play prerequisites. A Web build still needs hosting and browser acceptance before it is a submission link.
+
+[Current source](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/tree/main) · [Issues](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues) · [Source review](docs/SOURCE_REQUIREMENTS_CHECKLIST.md) · [Historical rules](START_SPEC.md)
