@@ -4,10 +4,14 @@ const Mission = preload("res://scenes/main.tscn")
 var checks := 0
 var failures := 0
 var render := false
+var preview_mode := false
+var capture_directory := "res://logs/ux12/"
 const UI = preload("res://scripts/ui/ui_style.gd")
 
 func _initialize() -> void:
 	render = "--render" in OS.get_cmdline_user_args()
+	preview_mode = "--preview" in OS.get_cmdline_user_args()
+	if preview_mode: capture_directory = "res://logs/ux13/"
 	call_deferred("_run")
 
 func check(ok: bool, message: String) -> void:
@@ -25,7 +29,7 @@ func capture(view: SubViewport, name: String) -> void:
 	await RenderingServer.frame_post_draw
 	var image := view.get_texture().get_image()
 	check(not image.is_empty(), "Rendered image " + name)
-	image.save_png("res://logs/ux12/" + name + ".png")
+	image.save_png(capture_directory + name + ".png")
 
 func _geometry(view: SubViewport, ui: Control, phase: String) -> void:
 	var area := Rect2(Vector2.ZERO, Vector2(view.size))
@@ -52,8 +56,8 @@ func _run() -> void:
 	for text_color in [UI.TEXT, UI.MUTED, UI.CYAN, UI.AMBER, UI.PURPLE, UI.ALERT]:
 		check((luminance(text_color) + 0.05) / (luminance(UI.CARD) + 0.05) >= 4.5, "Shared text contrast at least 4.5:1")
 	check((luminance(Color("#9aaec8")) + 0.05) / (luminance(Color("#111c2d")) + 0.05) >= 4.5, "Disabled label contrast")
-	DirAccess.make_dir_recursive_absolute("res://logs/ux12")
-	for dimensions in [Vector2i(1920,1080), Vector2i(1280,720), Vector2i(1024,768), Vector2i(800,900)]:
+	DirAccess.make_dir_recursive_absolute(capture_directory)
+	for dimensions in [Vector2i(1920,1080), Vector2i(1280,720), Vector2i(1024,768), Vector2i(800,900), Vector2i(1100,720), Vector2i(1152,720)]:
 		var view := SubViewport.new()
 		view.size = dimensions
 		view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -93,6 +97,17 @@ func _run() -> void:
 		await settle()
 		_geometry(view, game.terminal, tag + " T2 event")
 		await capture(view, tag + "-event")
+		if preview_mode:
+			var cell_height: float = game.terminal._slots[0].size.y
+			game.terminal._toggle_preview()
+			await settle()
+			_geometry(view,game.terminal,tag + " conditional preview")
+			check(is_equal_approx(game.terminal._slots[0].size.y, cell_height), tag + " preview keeps map cells compact")
+			var scroll: ScrollContainer = game.terminal.find_children("*","ScrollContainer",true,false)[0]
+			scroll.ensure_control_visible(game.terminal._preview_detail)
+			await settle()
+			await capture(view,tag + "-preview")
+			scroll.scroll_vertical = 0
 		game.terminal._toggle_history()
 		await settle()
 		_geometry(view, game.terminal, tag + " history")
@@ -100,7 +115,7 @@ func _run() -> void:
 		check(game.terminal._guide_text.text.begins_with("3"), "T2 selected next action")
 		game._restore(1)
 		check(game.session.state.turn_id == 1 and game.terminal._choice.is_empty(), "Rewind clears event choice")
-		var interrupted := {"turn_id":3,"phase":"failed_power","state_after":{"E":0,"O":60,"F":24}, "stats":{"generation":0,"demand":10,"harvest":0,"supply":0}, "not_applied_steps":["growth","supply"]}
+		var interrupted := {"turn_id":3,"phase":"failed_power","state_after":{"E":0,"O":60,"F":24,"facilities":[]}, "stats":{"generation":0,"demand":10,"harvest":0,"supply":0}, "not_applied_steps":["growth","supply"]}
 		var explanation: String = game.terminal._result_text(interrupted)
 		check(explanation.contains("전력 생산") and explanation.contains("계산 전 중단") and not explanation.contains("수확 0"), "Named results do not turn skipped values into zero")
 		game._open_help()
