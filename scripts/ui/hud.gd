@@ -29,6 +29,7 @@ var _intro: PanelContainer
 var _reticle: Label
 var _footnote: Label
 var _wayfinding: Label
+var _map_shortcut: Button
 var help_button: Button
 var _start: Button
 var _input_notice: Label
@@ -90,12 +91,16 @@ func _ready() -> void:
 	_hint = UI.label(site_column, "", 18, UI.TEXT, true)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_site_actions = UI.row(site_column, 8)
-	for action: String in ["edit", "details", "inspect"]:
+	for action: String in ["edit", "details", "inspect", "map"]:
 		var card := UI.button(_site_actions, "", _request_site_action.bind(action), UI.CYAN, 64)
 		card.custom_minimum_size.x = 116
 		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		card.focus_mode = Control.FOCUS_NONE
 		_site_buttons[action] = card
+	_site_buttons.map.text = "[ 4 ]\n기지 지도"
+	_map_shortcut = UI.button(self, "4  기지 지도", func(): site_action_requested.emit("map"), UI.CYAN, 44)
+	_map_shortcut.custom_minimum_size.x = 150
+	_map_shortcut.focus_mode = Control.FOCUS_NONE
 	_status_box.minimum_size_changed.connect(_layout)
 	_footnote = UI.label(self, "교육용 가상 훈련 · 수치는 게임 단위", 16, UI.MUTED)
 	_wayfinding = UI.label(self, "", 17, UI.CYAN)
@@ -115,7 +120,7 @@ func _ready() -> void:
 	_training_copy.append(UI.label(text, "키보드와 마우스가 있는 PC에서 시작해요.", 18, UI.AMBER, true))
 	_controls = UI.label(text, "", 18, UI.MUTED, true)
 	configure_controls(false, false)
-	_first_step = UI.label(text, "빈 칸 앞에서 1 · 건물 정보는 2 · 크게 보려면 3", 20, UI.CYAN, true)
+	_first_step = UI.label(text, "현장 1 설치 · 2 정보 · 3 관찰 · 4 기지 지도", 20, UI.CYAN, true)
 	_guide_toggle = UI.button(text, "첫 안내 건너뛰기", _toggle_guidance, UI.MUTED)
 	_input_notice = UI.label(text, "", 18, UI.AMBER, true)
 	_input_notice.hide()
@@ -139,14 +144,17 @@ func _layout() -> void:
 	_header.size = Vector2(minf(size.x - 40, 660), 0)
 	var width := minf(560, size.x - 40) if narrow else minf(560, size.x * 0.47)
 	var height := minf(440, size.y - 170) if narrow else minf(540, size.y - 174)
+	if has_started and not _ended: height = minf(238, size.y - 100)
 	# Keep the start/pause card below the actual resource header at short heights.
 	height = minf(height, maxf(80, size.y - _header.get_combined_minimum_size().y - 72))
 	_intro.position = Vector2((size.x - width) / 2 if narrow else 28, size.y - height - 38)
 	_intro.size = Vector2(width, height)
-	_status_box.size = Vector2(minf(448, maxf(1, size.x - 40)), _status_box.get_combined_minimum_size().y)
+	_status_box.size = Vector2(minf(592, maxf(1, size.x - 40)), _status_box.get_combined_minimum_size().y)
 	_status_box.position = Vector2((size.x - _status_box.size.x) * 0.5, size.y - _status_box.size.y - 42)
 	_footnote.position = Vector2(20, size.y - 30)
 	_wayfinding.position = Vector2(20, size.y - 62)
+	_map_shortcut.position = Vector2(size.x - 174, 20)
+	_map_shortcut.size = Vector2(154,44)
 	_inspection.position = Vector2(20,size.y-180)
 	_inspection.size = Vector2(maxf(1,size.x-40),140)
 
@@ -156,13 +164,13 @@ func _toggle_guidance() -> void:
 
 func set_guidance(enabled: bool) -> void:
 	guidance_enabled = enabled
-	_first_step.visible = enabled and not _ended
+	_first_step.visible = enabled and not _ended and not has_started
 	_guide_toggle.text = "첫 안내 건너뛰기" if enabled else "첫 안내 다시 보기"
 
 func show_mode(mode: String) -> void:
 	_mode = mode
-	visible = mode != "terminal"
-	_intro.visible = mode in ["pause", "capturing"]
+	visible = mode not in ["terminal", "grid"]
+	_intro.visible = mode == "pause" or (mode == "capturing" and not has_started)
 	_inspection.visible = mode == "inspect"
 	if mode == "inspect": _inspection_back.grab_focus()
 	_start.disabled = mode == "capturing"
@@ -171,15 +179,18 @@ func show_mode(mode: String) -> void:
 	_reticle.visible = mode == "explore"
 	_status_box.visible = mode == "explore" and _site_target.get("kind", "none") != "none"
 	_wayfinding.visible = mode == "explore" and _site_target.get("kind", "none") == "none"
+	_map_shortcut.visible = mode == "explore" and _site_target.get("kind", "none") == "none"
 	if mode == "explore": has_started = true
-	_heading.text = _outcome_heading if _ended else ("계속 기지를 살펴봐요" if has_started else "달 기지를 지켜요")
-	for item in _training_copy: item.visible = not _ended
-	_first_step.visible = guidance_enabled and not _ended
-	_guide_toggle.visible = not _ended
+	_heading.text = _outcome_heading if _ended else ("잠시 멈췄어요" if has_started else "달 기지를 지켜요")
+	for item in _training_copy: item.visible = not _ended and not has_started
+	_controls.visible = not has_started
+	_first_step.visible = guidance_enabled and not _ended and not has_started
+	_guide_toggle.visible = not _ended and not has_started
 	_result_button.visible = _ended
 	_result_button.disabled = mode == "capturing"
 	_start.text = "기지 둘러보기" if _ended else ("계속 탐색하기" if has_started else "훈련 시작")
 	if mode == "pause": _start.grab_focus()
+	_layout()
 
 func set_input_notice(message: String) -> void:
 	_input_notice.text = message
@@ -189,7 +200,7 @@ func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
 	_jump_enabled = jump_enabled
 	_drag_available = drag_available
 	_controls.text = "WASD 이동" + (" · Space 점프" if _jump_enabled else "")
-	_controls.text += " · 마우스로 둘러보기\n현장 1 설치·철거 / 2 상세 / 3 관찰 · 단말기 E\nEsc 닫기·일시 정지"
+	_controls.text += " · 마우스로 둘러보기\n현장 1 설치·철거 / 2 상세 / 3 관찰 / 4 기지 지도\n단말기 E · Esc 창 닫고 탐색 / 탐색 중 잠시 멈춤"
 	if _drag_available:
 		_controls.text += "\n마우스 잠금이 안 되면 왼쪽 버튼 드래그로 둘러봐요."
 
@@ -237,6 +248,8 @@ func set_site_target(target: Dictionary, state: Dictionary) -> void:
 	_reticle.modulate = UI.CYAN if kind != "none" else UI.MUTED
 	_status_box.visible = _mode == "explore" and kind in ["slot", "console"]
 	_wayfinding.visible = _mode == "explore" and kind == "none"
+	_map_shortcut.visible = _mode == "explore" and kind == "none"
+	_site_buttons.map.visible = kind in ["slot", "console"]
 	_site_buttons.edit.visible = kind == "slot"
 	_site_buttons.inspect.visible = kind == "slot"
 	_site_buttons.details.visible = kind in ["slot", "console"]

@@ -9,6 +9,11 @@ const SiteInteraction = preload("res://scripts/world/site_interaction.gd")
 const SpaceWeather = preload("res://scripts/data/space_weather.gd")
 const WeatherRules = preload("res://scripts/simulation/weather_rules.gd")
 const SitePanel = preload("res://scripts/ui/site_panel.gd")
+const GridView = preload("res://scripts/ui/grid_view.gd")
+var _grid_view = GridView.new()
+var _menu_look_mode := "captured"
+var _resume_capture := false
+var _capture_release_grace := 0.0
 var _site_interaction = SiteInteraction.new()
 var _site_panel = SitePanel.new()
 var _active_site_slot := -1
@@ -44,16 +49,19 @@ func _ready() -> void:
 	add_child(_site_interaction)
 	_site_interaction.configure(station)
 	$Interface.add_child(_site_panel)
+	$Interface.add_child(_grid_view)
+	_grid_view.closed.connect(_close_panel)
+	_grid_view.inspect_requested.connect(_inspect_grid)
 	_site_panel.hide()
 	_site_panel.edited.connect(_edit)
-	_site_panel.closed.connect(_pause)
+	_site_panel.closed.connect(_close_panel)
 	_site_panel.inspect_requested.connect(_inspect_site)
 	hud.site_action_requested.connect(_site_action)
 	add_child(_weather)
 	_weather.updated.connect(_on_weather_updated)
 	terminal.advice_request_changed.connect(_set_advice_request)
 	get_window().focus_exited.connect(_pause)
-	terminal.closed.connect(_pause)
+	terminal.closed.connect(_close_panel)
 	terminal.selected_slot_changed.connect(_highlight_selected)
 	terminal.inspect_requested.connect(_inspect_selected)
 	hud.inspection_closed.connect(_close_inspection)
@@ -111,6 +119,7 @@ func _freeze_weather() -> bool:
 
 
 func _set_advice_request(enabled: bool) -> void:
+	if _remote_map_active(): return
 	var result: Dictionary = session.set_advice_request(enabled)
 	_refresh()
 	if result.has("error"):
@@ -139,6 +148,18 @@ func _inspect_site(slot: int) -> void:
 	if mode != "field" or slot != _active_site_slot or not _site_access(slot): return
 	_begin_inspection(slot, "field")
 
+func _inspect_grid(slot: int) -> void:
+	if mode == "grid" and not help.visible: _begin_inspection(slot, "grid")
+
+func _remote_map_active() -> bool:
+	return mode == "grid" or (mode == "inspect" and _inspection_return_mode == "grid")
+
+func _open_grid() -> void:
+	if mode != "explore" or help.visible: return
+	var target: Dictionary = _site_interaction.resolve_target(player.camera)
+	_grid_view.open_map(session, player.position, int(target.get("slot_id", -1)))
+	_set_mode("grid")
+
 func _begin_inspection(slot: int, return_mode: String) -> void:
 	_inspection_return_mode = return_mode
 	_inspection_look_mode = look_mode if mode == "explore" else "drag"
@@ -149,18 +170,25 @@ func _begin_inspection(slot: int, return_mode: String) -> void:
 	_observation_camera.make_current()
 	var state_label := "미확정 배치 포함" if not session.draft.is_empty() else "현재 확정 배치"
 	hud.show_inspection("지도 %02d번 칸 · %s · 청록색 테두리와 번호가 선택 위치예요." % [slot+1,state_label])
-	hud.set_inspection_return({"terminal":"대시보드로 돌아가기 · Esc", "field":"현장 메뉴로 돌아가기 · Esc", "explore":"탐색으로 돌아가기 · Esc"}.get(return_mode, "돌아가기 · Esc"))
+	hud.set_inspection_return({"terminal":"대시보드로 돌아가기 · Esc", "field":"현장 메뉴로 돌아가기 · Esc", "grid":"기지 지도로 돌아가기 · Esc", "explore":"탐색으로 돌아가기 · Esc"}.get(return_mode, "돌아가기 · Esc"))
 	_set_mode("inspect")
 	station.highlight_slot(slot, "3D 관찰")
 
 func _close_inspection() -> void:
-	if mode == "inspect": _set_mode(_inspection_return_mode, _inspection_look_mode)
+	if mode != "inspect": return
+	if _inspection_return_mode == "explore":
+		_resume_capture = true
+		_resume_exploring(_inspection_look_mode)
+	else: _set_mode(_inspection_return_mode)
 
 func _site_access(slot: int) -> bool:
 	return slot >= 0 and slot < Rules.SLOT_COUNT and _site_interaction.can_access_slot(player.camera, slot)
 
 func _site_action(action: String) -> void:
 	if mode != "explore" or help.visible: return
+	if action == "map":
+		_open_grid()
+		return
 	# Every shortcut/click queries the current scene, never a cached HUD target.
 	var target: Dictionary = _site_interaction.resolve_target(player.camera)
 	if target.kind == "console":
@@ -206,10 +234,16 @@ func _physics_process(delta: float) -> void:
 		_site_panel.set_access_allowed(_site_access(_active_site_slot), "해당 위치 가까이에서 작업해요.")
 	if mode == "explore":
 		if look_mode == "captured" and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+			if _capture_release_grace > 0.0:
+				# Web Esc may release a newly acquired lock one event later.
+				_capture_release_grace = 0.0
+				_set_mode("explore", "drag")
+				return
 			_pause()
 			hud.set_input_notice(UI.trn("마우스 잠금이 풀렸어요. 다시 시작하려면 버튼을 눌러요.",
 				"Mouse capture was released. Click the button to resume."))
 			return
+		_capture_release_grace = maxf(0.0, _capture_release_grace - delta)
 		var target: Dictionary = _site_interaction.resolve_target(player.camera)
 		_aiming = target.kind != "none"
 		hud.set_target(_aiming,player.global_position,-player.global_basis.z,target.prompt)
@@ -227,6 +261,15 @@ func _input(event: InputEvent) -> void:
 			_close_inspection()
 			get_viewport().set_input_as_handled()
 			return
+		if event.keycode == KEY_ESCAPE and mode in ["field", "terminal", "grid"]:
+			_close_panel()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_ESCAPE and mode == "pause" and _has_explored:
+			_resume_capture = true
+			_resume_exploring(_menu_look_mode)
+			get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_ESCAPE and mode != "pause":
 			_pause()
 			get_viewport().set_input_as_handled()
@@ -237,7 +280,8 @@ func _input(event: InputEvent) -> void:
 			return
 	if mode == "explore":
 		var action := ""
-		if event.is_action_pressed(&"site_edit", false): action = "edit"
+		if event.is_action_pressed(&"base_map", false): action = "map"
+		elif event.is_action_pressed(&"site_edit", false): action = "edit"
 		elif event.is_action_pressed(&"site_details", false) or event.is_action_pressed(&"open_terminal", false): action = "details"
 		elif event.is_action_pressed(&"site_inspect", false): action = "inspect"
 		if not action.is_empty():
@@ -254,12 +298,24 @@ func _unhandled_input(event: InputEvent) -> void:
 func _start_exploring() -> void:
 	if mode == "pause" and not help.visible:
 		if not _freeze_weather(): return
-		_capture_elapsed = 0.0
-		hud.set_input_notice(UI.trn("마우스 잠금을 기다리고 있어요. Esc로 취소할 수 있어요.",
-			"Waiting for mouse capture. Press Esc to cancel."))
-		_set_mode("capturing")
-		# Keep the request inside the click/key gesture; Web capture is asynchronous.
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		_resume_capture = false
+		_resume_exploring("captured")
+
+func _close_panel() -> void:
+	if help.visible or mode not in ["field", "terminal", "grid"]: return
+	_resume_capture = true
+	_resume_exploring(_menu_look_mode)
+
+func _resume_exploring(preferred: String) -> void:
+	# Only user Esc / close / resume gestures call this. Focus restoration never does.
+	if preferred == "drag":
+		hud.set_input_notice("")
+		_set_mode("explore", "drag")
+		return
+	_capture_elapsed = 0.0
+	hud.set_input_notice("마우스 잠금을 기다리고 있어요. Esc로 취소할 수 있어요.")
+	_set_mode("capturing")
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _update_capture(delta: float, captured: bool) -> void:
@@ -268,6 +324,8 @@ func _update_capture(delta: float, captured: bool) -> void:
 	if captured:
 		hud.set_input_notice("")
 		_set_mode("explore")
+		_capture_release_grace = 0.35 if _resume_capture else 0.0
+		_resume_capture = false
 		return
 	_capture_elapsed += delta
 	if _capture_elapsed >= CAPTURE_TIMEOUT:
@@ -290,6 +348,7 @@ func _open_help() -> void:
 	hud.hide()
 	terminal.hide()
 	_site_panel.hide()
+	_grid_view.hide()
 	help.open(0)
 
 
@@ -303,11 +362,15 @@ func _close_help() -> void:
 
 func _pause() -> void:
 	if is_node_ready() and not help.visible:
+		_capture_release_grace = 0.0
+		_resume_capture = false
 		_set_mode("pause")
 		hud.set_input_notice("")
 
 
 func _set_mode(new_mode: String, requested_look_mode: String = "captured") -> void:
+	if mode == "explore" and new_mode in ["field", "terminal", "grid", "pause"]:
+		_menu_look_mode = look_mode
 	if new_mode == "explore" and requested_look_mode not in ["captured", "drag"]:
 		new_mode = "pause"
 	if new_mode == "explore" and requested_look_mode == "drag" and not player.has_method("set_look_mode"):
@@ -336,10 +399,12 @@ func _set_mode(new_mode: String, requested_look_mode: String = "captured") -> vo
 	look_mode_changed.emit(look_mode)
 	terminal.visible = mode == "terminal"
 	_site_panel.visible = mode == "field"
+	_grid_view.visible = mode == "grid"
 	if mode != "explore":
 		hud.set_site_target({"kind":"none", "slot_id":-1}, _layout_state)
 		station.show_interaction_target({"kind":"none", "slot_id":-1}, _layout_state)
 	if mode not in ["terminal", "inspect", "field"]: station.highlight_slot(-1)
+	if mode == "grid": _grid_view.refresh(session, player.position)
 	if mode == "field":
 		station.highlight_slot(_active_site_slot, "현장 작업" if _site_edit_enabled else "현장 상세")
 		_site_panel.refresh(session)
@@ -354,6 +419,7 @@ func _refresh() -> void:
 	terminal.refresh(session)
 	terminal.set_communication_state(session.state.get("communication", {}), session.advice_requested)
 	if is_instance_valid(_site_panel) and _site_panel.is_node_ready(): _site_panel.refresh(session)
+	if is_instance_valid(_grid_view) and _grid_view.is_node_ready() and mode == "grid": _grid_view.refresh(session, player.position)
 
 
 func _edit(action: String, slot_id: int, kind: String) -> void:
@@ -374,6 +440,7 @@ func _edit(action: String, slot_id: int, kind: String) -> void:
 
 
 func _cancel_draft() -> void:
+	if _remote_map_active(): return
 	# A dashboard cancellation may cancel a question, never undo remote builds.
 	session.set_advice_request(false)
 	_refresh()
@@ -381,6 +448,7 @@ func _cancel_draft() -> void:
 
 
 func _commit(event_choice: String) -> void:
+	if _remote_map_active(): return
 	if not _freeze_weather(): return
 	_command_serial += 1
 	var command := {"attempt_id": session.attempt_id, "turn_id": session.state.turn_id,
@@ -400,6 +468,7 @@ func _commit(event_choice: String) -> void:
 
 
 func _restore(turn_id: int) -> void:
+	if _remote_map_active(): return
 	var restored: Dictionary = session.restore_turn(turn_id)
 	if restored.has("error"):
 		terminal.set_notice(UI.error_text(restored.error), true)
