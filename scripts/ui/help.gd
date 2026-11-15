@@ -152,7 +152,7 @@ func _build_sources(parent: Control) -> void:
 func set_weather_context(data: Dictionary) -> void:
 	_weather_context = data.duplicate(true)
 	if not is_instance_valid(_weather_title): return
-	var mode: String = {"live":"Fetched NASA records", "archive":"Embedded historical data · not live", "mixed":"Mixed: fetched + historical"}.get(str(data.get("mode", "archive")), "Embedded historical data · not live")
+	var mode: String = str(data.get("source_label", {"live":"Fetched NASA records · not a live feed", "archive":"Embedded historical data · not live", "mixed":"Mixed: fetched + historical · not a live feed"}.get(str(data.get("mode", "archive")), "Embedded historical data · not live")))
 	_weather_title.text = "Mission records · NASA DONKI · " + mode
 	var observed := str(data.get("observed_at", ""))
 	var fetched := str(data.get("fetched_at", ""))
@@ -176,13 +176,13 @@ func _refresh_source_card(kind: String, data: Dictionary, profile: Dictionary) -
 	var representative: Dictionary = records[0] if not records.is_empty() else {}
 	for record: Dictionary in records:
 		if record.get("event_id", "") == profile.get(id_key, ""): representative = record
-	var mode: String = {"live":"Fetched NASA records", "archive":"Embedded historical data · not live", "mixed":"Mixed: fetched + historical"}.get(str(source.get("mode", "archive")), "Historical data")
+	var mode: String = str(source.get("source_label", {"live":"Fetched NASA records · not a live feed", "archive":"Embedded historical data · not live", "mixed":"Mixed: fetched + historical · not a live feed"}.get(str(source.get("mode", "archive")), "Embedded historical data · not live")))
 	var status := "Check retrieval status"
 	match str(source.get("status", "")):
 		"recent", "ok", "success": status = "Fetched NASA records"
 		"loading": status = "Fetching records"
 		"archive", "frozen_archive", "offline", "ready", "": status = "Using historical data"
-		"no_recent_record", "empty": status = "Fetched NASA records · No records"
+		"no_recent_record", "empty": status = "Recent query empty · using historical data" if source.get("mode", "archive") == "archive" else "Fetched NASA records · No records"
 		_: status = "Fetch failed · Embedded historical data · not live" if source.get("mode", "archive") == "archive" else "Check retrieval status"
 	var description := "%d records · %s\n%s" % [records.size(), mode, status]
 	var request_url := str(source.get("request_url", ""))

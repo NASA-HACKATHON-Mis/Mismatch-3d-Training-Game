@@ -18,7 +18,7 @@ func settle() -> void:
 	for i in 5: await process_frame
 func requested(id: String) -> void: received.append(id)
 func vm() -> Dictionary:
-	return {"slot_id":11,"kind":"battery","title":"배터리","summary":"남는 전력을 담아 두는 저장고예요.","cost_text":"건설 비용 · 토큰 2개","effects":[{"icon_id":"storage","label":"저장 공간","value_text":"전력 저장 한도 +20"},{"icon_id":"energy","label":"전력 만들기","value_text":"전력은 만들지 않아요."}],"details":"배터리를 지으면 기지 전체의 전력 저장 공간이 늘어나요. 현재 전력은 그대로이며, 이번 턴 진행 후 예상값은 운영 화면에서 확인해요.","actions":[{"id":"inspect","label":"3D로 살펴보기","enabled":true,"reason":""},{"id":"remove","label":"철거하기","enabled":false,"reason":"현재 턴이 끝났어요. 과거 기록으로 돌아가면 배치를 바꿀 수 있어요."}]}
+	return {"slot_id":11,"kind":"battery","title":"Battery","summary":"Store spare power for later.","cost_text":"Build cost · 2 tokens","effects":[{"icon_id":"storage","label":"Storage","value_text":"Power storage limit +20"},{"icon_id":"energy","label":"Generation","value_text":"Does not generate power."}],"details":"A battery increases your base's power capacity. Current power stays the same. Check the dashboard for the next-turn forecast.","actions":[{"id":"inspect","label":"Inspect in 3D","enabled":true,"reason":""},{"id":"remove","label":"Remove","enabled":false,"reason":"This turn has ended. Rewind to change the layout."}]}
 func labels(card) -> String:
 	var text := ""
 	for node in card.find_children("*","Label",true,false): text += node.text + "\n"
@@ -41,7 +41,7 @@ func _run() -> void:
 	var card = Card.new()
 	root.add_child(card)
 	card.action_requested.connect(requested)
-	check(labels(card).contains("칸을 고르면"),"Missing data produces safe empty state")
+	check(labels(card).contains("Select a pad"),"Missing data produces safe empty state")
 	for malformed in [{"effects":null,"actions":null},{"effects":[null,5,"bad",{}, {"label":7}],"actions":[false,{}, {"id":"explode","enabled":true}]},{"slot_id":"bad","title":7,"summary":[],"cost_text":true,"details":{},"effects":"bad","actions":{}}]:
 		card.set_view_model(malformed)
 		check(card._action_buttons.is_empty(),"Malformed child data produces no unsafe action")
@@ -52,8 +52,8 @@ func _run() -> void:
 	data.effects[0].value_text = "caller mutation"
 	check(card._model.effects[0].value_text == original.effects[0].value_text and not labels(card).contains("caller mutation"),"Nested model copy is independent from caller mutation")
 	check(not card._details_label.visible,"Details start collapsed")
-	check(labels(card).contains("배터리") and labels(card).contains("전력 저장 한도 +20"),"Caller title and effect are displayed without recalculation")
-	check(labels(card).contains("현재 턴이 끝났어요"),"Disabled reason is visible in card")
+	check(labels(card).contains("Battery") and labels(card).contains("Power storage limit +20"),"Caller title and effect are displayed without recalculation")
+	check(labels(card).contains("This turn has ended"),"Disabled reason is visible in card")
 	card._action_buttons.remove.pressed.emit()
 	card._request("remove",card._generation)
 	card._request("unknown",card._generation)
@@ -63,14 +63,14 @@ func _run() -> void:
 	card._details_button.pressed.emit()
 	check(card._details_label.visible,"Details expand")
 	var expanded_model := vm()
-	expanded_model.cost_text = "토큰 2개 · 비용 표시 갱신"
+	expanded_model.cost_text = "2 tokens · Updated cost"
 	card.set_view_model(expanded_model)
 	check(card._details_label.visible,"Same selection refresh preserves expanded details")
 	var old_action = card._action_buttons.inspect
 	var old_toggle = card._details_button
 	var replacement := vm()
 	replacement.slot_id = 12
-	replacement.actions = [{"id":"place","label":"여기에 짓기","enabled":true}]
+	replacement.actions = [{"id":"place","label":"Build here","enabled":true}]
 	card.set_view_model(replacement)
 	old_action.pressed.emit()
 	old_toggle.pressed.emit()
@@ -104,7 +104,7 @@ func _run() -> void:
 		card = Card.new()
 		column.add_child(card)
 		card.action_requested.connect(requested)
-		card.set_view_model({"slot_id":0,"kind":"empty","title":"빈 칸","summary":"필요한 시설을 골라 여기에 지어요.","cost_text":"비용은 고른 시설에 따라 달라요.","effects":[{"icon_id":"unknown","label":"칸 특징","value_text":"일조 · 차폐"}],"actions":[{"id":"place","label":"선택한 시설을 여기에 짓기","enabled":true}]})
+		card.set_view_model({"slot_id":0,"kind":"empty","title":"Empty pad","summary":"Choose a facility to build here.","cost_text":"Cost depends on the selected facility.","effects":[{"icon_id":"unknown","label":"Pad features","value_text":"Sunlight · Shielding"}],"actions":[{"id":"place","label":"Build the selected facility here","enabled":true}]})
 		await settle()
 		geometry(card,width)
 		await capture(view,str(width)+"-empty")
@@ -128,14 +128,14 @@ func _run() -> void:
 		await settle()
 		check(card._details_button.has_focus(),"Tab skips disabled action and reaches details")
 		var refresh_data := vm()
-		refresh_data.cost_text = "토큰 2개 · 표시 갱신"
+		refresh_data.cost_text = "2 tokens · Updated label"
 		card.set_view_model(refresh_data)
 		await settle()
 		check(card._details_button.has_focus(),"Same-context refresh preserves details keyboard focus")
 		var long_data := vm()
-		long_data.title = "아주 긴 이름의 시설도 잘 읽히는지 확인하는 정보 카드"
-		long_data.effects.append({"icon_id":"food","label":"길게 쓴 효과 설명","value_text":"추가 효과는 전달받은 문구만 그대로 보여 주며 규칙을 계산하지 않아요."})
-		long_data.actions[0].label = "현재 선택한 시설을 3D 화면에서 자세하게 살펴보기"
+		long_data.title = "A very long facility name to check that this information card remains readable"
+		long_data.effects.append({"icon_id":"food","label":"A longer effect description","value_text":"Additional effects show the supplied text without recalculating the game rules."})
+		long_data.actions[0].label = "Inspect the currently selected facility in detail in the 3D view"
 		card.set_view_model(long_data)
 		card._details_button.pressed.emit()
 		await settle()

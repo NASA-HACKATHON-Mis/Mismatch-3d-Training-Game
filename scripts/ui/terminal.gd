@@ -239,7 +239,7 @@ func _refresh_weather_label() -> void:
 		if record.get("event_id", "") == profile.get("flare_event_id", ""):
 			stamp = str(record.get("observed_at", stamp))
 	var observed := stamp.left(10) if not stamp.is_empty() else "Date unavailable"
-	var mode: String = {"live":"Fetched NASA records", "archive":"Embedded historical data · not live", "mixed":"Mixed: fetched + historical"}.get(str(data.get("mode", "archive")), "Embedded historical data · not live")
+	var mode: String = str(data.get("source_label", {"live":"Fetched NASA records · not a live feed", "archive":"Embedded historical data · not live", "mixed":"Mixed: fetched + historical · not a live feed"}.get(str(data.get("mode", "archive")), "Embedded historical data · not live")))
 	_weather_label.text = "NASA · %s · FLR %s · %s" % [mode, class_type, observed]
 	if not profile.is_empty():
 		var sep := " + SEP records" if not str(profile.get("sep_event_id", "")).is_empty() else ""
