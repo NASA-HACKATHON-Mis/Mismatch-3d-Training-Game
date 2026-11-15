@@ -37,7 +37,7 @@ func _command(session, choice := "", id := 1) -> Dictionary:
 func _request_and_rewind() -> void:
 	var session = Session.new(Scenario)
 	var original: Dictionary = session.state.duplicate(true)
-	_check(original.rule_version == "0.2", "communication uses rule version 0.2")
+	_check(original.rule_version == "0.3", "communication uses rule version 0.3")
 	_check(original.communication == {"pending": {}, "message": "", "response_turn": -1}, "empty initial communication")
 	_check(session.set_advice_request(true) == {"requested": true}, "request can be selected")
 	_check(session.set_advice_request(true) == {"requested": true}, "selecting twice remains one request")
