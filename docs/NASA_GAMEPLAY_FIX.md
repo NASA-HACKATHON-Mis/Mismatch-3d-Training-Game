@@ -48,3 +48,24 @@ FLR 등급·SEP/CME 존재는 **교육용 훈련 조건을 고르는 입력**이
 - 고정 행동이 두 해상도에서 보이며 경보/비용/답장 안내가 엔진과 일치한다.
 
 RadLab은 강력 추천, CSA/OSDR은 추천, Mars Trek은 선택이다. 이 수정은 필수 DONKI 연결을 먼저 완료한다. 전체 데이터 후보를 사용한 것으로 보고하지 않는다. PPT·영상·제출 작업은 포함하지 않는다.
+
+## 실제 확인 결과 — 2026-11-15
+
+검사 제품 SHA: `4ec6b79da8594407167d4e8d1c3d9f8865096dfa` (이후 문서 변경만 추가).
+
+| 검사 | 결과 |
+| --- | --- |
+| Godot 4.7.2 import | 종료0, 스크립트 오류 없음 |
+| NASA 자료 정규화·오류·대체·동결 | nasa_data57/0 |
+| 자료별 게임 결과·빈 SEP/CME·모델 제외·최대등급·복원 | weather_rules105/0 |
+| 실제 내장3종→Mission→7턴→통신→대피비용→되감기 | nasa_integration34/0 |
+| NASA 인과 표시 및 자료별 출처 | nasa_ui48/0 |
+| 기존 통신 연결·규칙·예상·현장E·안내 | feed_integration23/0, core_contract90/0, turn_preview635/0, operations_integration34/0, learning_ui15/0 |
+| 통합 핵심 합계 | headless1041/0 |
+| 실제 OpenGL 960×600/1280×800 | nasa_integration34/0+nasa_ui48/0=82/0, PNG 직접 확인 |
+| 실제 NASA API/Godot | FLR14/SEP0/CME90 모두live. SEP0을 보관폭풍으로 바꾸지 않음 |
+| 독립 검토 | 자료 원문3개 SHA와 metadata일치, 정규화→엔진 및 freeze→snapshot→UI/restore 계약 확인 |
+
+실제 내장자료 최대FLR은 X5.8(`2024-05-11T01:10:00-FLR-001`), 대표 SEP는 `2024-05-13T18:07:00-SEP-002`, CME는 `2024-05-13T09:12:00-CME-001`이다. 이 입력은 보호전력6·답장2턴을 선택한다. 실제 Mission에서 T1 질문→T3답장, T4 대피 비용6으로 E13, 동일 T4 되감기 후 E13 재현, T7 E37/O74/F42 완료를 확인했다. 자료별 다른 조건에서 결과가 달라지는 검사는 weather_rules에 있다.
+
+로그·이미지는 검사 worktree의 `logs/`에 있으며 Git 추적에서 제외한다. 실제 사용자 조작·브라우저 CORS/iframe 인수는 #29에 남긴다. 이번 수정은 Native Godot 자료 조회와 통합 게임 코드 확인이며 기존 Web 출력/서버는 갱신하지 않았다. 최종 main과 이슈 종료 상태는 연결 PR을 따른다.
