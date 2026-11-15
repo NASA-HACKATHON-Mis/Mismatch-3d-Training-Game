@@ -2,6 +2,7 @@ extends Control
 
 signal started
 signal help_requested
+signal guidance_changed(enabled: bool)
 
 const UI = preload("res://scripts/ui/ui_style.gd")
 const Simulation = preload("res://scripts/simulation/simulation.gd")
@@ -9,23 +10,27 @@ var _mission: Label
 var _meters: Label
 var _hint: Label
 var _status_box: PanelContainer
-var _intro: CenterContainer
+var _intro: PanelContainer
 var _reticle: Label
 var _footnote: Label
 var help_button: Button
 var _start: Button
 var _input_notice: Label
-
+var _guide_toggle: Button
+var _first_step: Label
+var _heading: Label
+var _header: PanelContainer
+var _intro_scroll: ScrollContainer
+var guidance_enabled := true
+var has_started := false
 
 func _ready() -> void:
 	UI.use_korean_theme(self)
-	var header := UI.panel(self, Color("#0b1728e8"), 14)
-	header.position = Vector2(24, 22)
-	var heading := UI.column(header, 1)
-	UI.label(heading, "달 표면 훈련 기지", 13, UI.CYAN)
-	_mission = UI.label(heading, UI.trn("달기지 리와인드", "Lunar Base Rewind"), 27)
-	_meters = UI.label(heading, "", 17, UI.MUTED)
-
+	_header = UI.panel(self, Color("#0b1728f5"), 14)
+	var heading := UI.column(_header, 3)
+	UI.label(heading, "달 표면 훈련 기지", 16, UI.CYAN)
+	_mission = UI.label(heading, "달기지 리와인드", 26)
+	_meters = UI.label(heading, "", 18, UI.TEXT, true)
 	_reticle = UI.label(self, "+", 31, UI.CYAN)
 	_reticle.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_reticle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -34,71 +39,74 @@ func _ready() -> void:
 	_reticle.offset_top = -24
 	_reticle.offset_right = 22
 	_reticle.offset_bottom = 24
-
-	_status_box = UI.panel(self, Color("#0b1728ef"), 12)
-	_status_box.anchor_left = 0.5
-	_status_box.anchor_right = 0.5
-	_status_box.anchor_top = 1.0
-	_status_box.anchor_bottom = 1.0
-	_status_box.offset_left = -280
-	_status_box.offset_right = 280
-	_status_box.offset_top = -80
-	_status_box.offset_bottom = -28
-	_hint = UI.label(_status_box, "", 18)
+	_status_box = UI.panel(self, Color("#0b1728f5"), 12)
+	_hint = UI.label(_status_box, "", 18, UI.TEXT, true)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_footnote = UI.label(self, UI.trn("교육용 가상 훈련 · 수치는 게임 단위", "Fictional training  /  values are game units"), 13, UI.MUTED)
-	_footnote.anchor_top = 1.0
-	_footnote.anchor_bottom = 1.0
-	_footnote.offset_left = 25
-	_footnote.offset_top = -31
-
-	_intro = CenterContainer.new()
-	_intro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_intro.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_intro)
-	var splash := UI.panel(_intro, Color("#0b182ced"), 22)
-	splash.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var text := UI.column(splash, 11)
-	text.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	UI.label(text, UI.trn("훈련 01   /   달 표면 기지", "EXERCISE 01   /   LUNAR SURFACE"), 14, UI.CYAN)
-	UI.label(text, UI.trn("달 기지를 지켜요", "Keep the Moon base running"), 38)
-	UI.label(text, UI.trn("시설을 짓고 7턴 동안 전력·산소·식량을 지켜요.",
-		"Build modules and keep power, oxygen, and food for 7 turns."), 20, UI.MUTED)
-	UI.label(text, UI.trn("실패해도 되감아 다른 선택을 시험할 수 있어요.",
-		"You can rewind a turn and try a different plan."), 17, UI.MUTED)
-	UI.label(text, "WASD 이동 · 마우스로 둘러보기 · 단말기를 보고 E", 15, UI.MUTED)
-	_input_notice = UI.label(text, "", 16, UI.CYAN)
+	_footnote = UI.label(self, "교육용 가상 훈련 · 수치는 게임 단위", 16, UI.MUTED)
+	_intro = UI.panel(self, Color("#0b182cf8"), 22)
+	_intro_scroll = ScrollContainer.new()
+	_intro_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_intro_scroll.follow_focus = true
+	_intro.add_child(_intro_scroll)
+	var text := UI.column(_intro_scroll, 12)
+	UI.grow(text)
+	UI.label(text, "훈련 01 / 달 표면 기지", 16, UI.CYAN)
+	_heading = UI.label(text, "달 기지를 지켜요", 32, UI.TEXT, true)
+	UI.label(text, "시설을 짓고 7턴 동안 전력·산소·식량을 지켜요.", 20, UI.TEXT, true)
+	UI.label(text, "키보드와 마우스가 있는 PC에서 시작해요.", 18, UI.AMBER, true)
+	UI.label(text, "WASD 이동 · 마우스로 둘러보기\n단말기를 보고 E · Esc 일시 정지", 18, UI.MUTED, true)
+	_first_step = UI.label(text, "1  단말기 가까이 가서 E를 눌러요.", 20, UI.CYAN, true)
+	_guide_toggle = UI.button(text, "첫 안내 건너뛰기", _toggle_guidance, UI.MUTED)
+	_input_notice = UI.label(text, "", 18, UI.AMBER, true)
 	_input_notice.hide()
-	var actions := UI.row(text, 8)
-	_start = UI.button(actions, "훈련 시작", func(): started.emit())
-	help_button = UI.button(actions, "안내서  H", func(): help_requested.emit(), UI.MUTED)
-	UI.grow(_start)
-	UI.grow(help_button)
+	_start = UI.button(text, "훈련 시작", func(): started.emit(), UI.CYAN, 46)
+	help_button = UI.button(text, "안내서  H", func(): help_requested.emit(), UI.MUTED)
+	resized.connect(_layout)
+	_layout()
 
+func _layout() -> void:
+	if not is_instance_valid(_intro): return
+	var narrow := size.x < 960
+	_header.position = Vector2(20, 18)
+	_header.size = Vector2(minf(size.x - 40, 490), 0)
+	var width := minf(560, size.x - 40) if narrow else minf(560, size.x * 0.47)
+	var height := minf(440, size.y - 170) if narrow else minf(540, size.y - 174)
+	_intro.position = Vector2((size.x - width) / 2 if narrow else 28, size.y - height - 38)
+	_intro.size = Vector2(width, height)
+	_status_box.position = Vector2(20, size.y - 108)
+	_status_box.size = Vector2(maxf(1, size.x - 40), 66)
+	_footnote.position = Vector2(20, size.y - 30)
+
+func _toggle_guidance() -> void:
+	set_guidance(not guidance_enabled)
+	guidance_changed.emit(guidance_enabled)
+
+func set_guidance(enabled: bool) -> void:
+	guidance_enabled = enabled
+	_first_step.visible = enabled
+	_guide_toggle.text = "첫 안내 건너뛰기" if enabled else "첫 안내 다시 보기"
 
 func show_mode(mode: String) -> void:
 	visible = mode != "terminal"
 	_intro.visible = mode in ["pause", "capturing"]
 	_start.disabled = mode == "capturing"
 	help_button.disabled = mode == "capturing"
+	_guide_toggle.disabled = mode == "capturing"
 	_reticle.visible = mode == "explore"
 	_status_box.visible = mode == "explore"
-	if mode == "pause":
-		_start.grab_focus()
-
+	if mode == "explore": has_started = true
+	_heading.text = "계속 기지를 살펴봐요" if has_started else "달 기지를 지켜요"
+	_start.text = "계속 탐색하기" if has_started else "훈련 시작"
+	if mode == "pause": _start.grab_focus()
 
 func set_input_notice(message: String) -> void:
 	_input_notice.text = message
 	_input_notice.visible = not message.is_empty()
 
-
 func refresh(state: Dictionary) -> void:
-	_mission.text = UI.trn("달기지 리와인드", "Lunar Base Rewind") + "  /  T%d" % state.turn_id
-	_meters.text = UI.trn("전력 %d/%d   ·   산소 %d   ·   식량 %d", "POWER %d/%d   ·   OXYGEN %d   ·   FOOD %d") % [
-		state.E, Simulation.energy_cap(state), state.O, state.F]
-
+	_mission.text = "달기지 리와인드 / T%d" % state.turn_id
+	_meters.text = "전력 %d/%d · 산소 %d · 식량 %d" % [state.E, Simulation.energy_cap(state), state.O, state.F]
 
 func set_target(active: bool) -> void:
-	_reticle.modulate = UI.CYAN if active else Color("#a5b6cdaa")
-	_hint.text = UI.trn("[ E ]  임무 단말기 열기", "[ E ]  Open mission console") if active else UI.trn(
-		"WASD 이동   ·   단말기를 조준하고 E   ·   Esc 일시 정지", "WASD walk   ·   Aim at the console + E   ·   Esc pause")
+	_reticle.modulate = UI.CYAN if active else UI.MUTED
+	_hint.text = "[ E ] 단말기를 열어요" if active else "단말기 가까이 가서 정면을 바라봐요.  WASD 이동 · 마우스 시선"

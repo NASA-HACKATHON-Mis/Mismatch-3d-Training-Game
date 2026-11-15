@@ -19,6 +19,8 @@ var _command_serial := 0
 var _help_focus: Control
 var _capture_elapsed := 0.0
 const CAPTURE_TIMEOUT := 2.0
+var _start_camera: Camera3D
+var _has_explored := false
 
 
 func _ready() -> void:
@@ -29,6 +31,14 @@ func _ready() -> void:
 	terminal.advanced.connect(_commit)
 	terminal.rewound.connect(_restore)
 	hud.started.connect(_start_exploring)
+	hud.guidance_changed.connect(_set_guidance)
+	terminal.guidance_changed.connect(_set_guidance)
+	_start_camera = Camera3D.new()
+	_start_camera.fov = 58
+	add_child(_start_camera)
+	get_viewport().size_changed.connect(_layout_start_camera)
+	_layout_start_camera()
+	_start_camera.make_current()
 	hud.help_requested.connect(_open_help)
 	terminal.help_requested.connect(_open_help)
 	help.closed.connect(_close_help)
@@ -36,6 +46,17 @@ func _ready() -> void:
 	_refresh()
 	_set_mode("pause")
 
+
+func _set_guidance(enabled: bool) -> void:
+	hud.set_guidance(enabled)
+	terminal.set_guidance(enabled)
+
+func _layout_start_camera() -> void:
+	if _has_explored or not is_instance_valid(_start_camera): return
+	var viewport_size := get_viewport().get_visible_rect().size
+	var narrow := viewport_size.x < 960
+	_start_camera.position = Vector3(1.1, 2.4, 24.5) if narrow else Vector3(0.0, 2.0, 24.0)
+	_start_camera.look_at(Vector3(1.1, -1.4, 18.0) if narrow else Vector3(0.1, 1.0, 18.0))
 
 func _physics_process(delta: float) -> void:
 	# A Web permission response can arrive after Esc, focus loss, or timeout.
@@ -133,6 +154,9 @@ func _pause() -> void:
 
 func _set_mode(new_mode: String) -> void:
 	mode = new_mode
+	if mode == "explore" and not _has_explored:
+		_has_explored = true
+		player.camera.make_current()
 	_aiming = false
 	var requested_mouse_mode := Input.MOUSE_MODE_CAPTURED if mode == "explore" else Input.MOUSE_MODE_VISIBLE
 	if Input.mouse_mode != requested_mouse_mode:
@@ -157,14 +181,14 @@ func _edit(action: String, slot_id: int, kind: String) -> void:
 	var state: Dictionary = verdict.state
 	station.sync_facilities(state)
 	_refresh()
-	terminal.set_notice(UI.trn("배치를 바꿨어요. 다음 턴에 확정돼요.", "Layout updated. Advance to confirm it."))
+	terminal.set_notice(UI.trn("배치를 바꿨어요. ‘이번 턴 진행’을 누르면 확정돼요.", "Layout updated. Advance to confirm it."))
 
 
 func _cancel_draft() -> void:
 	session.cancel_draft()
 	station.sync_facilities(session.state)
 	_refresh()
-	terminal.set_notice(UI.trn("이번 턴의 배치를 모두 취소했어요.", "This turn's layout changes were cancelled."))
+	terminal.set_notice(UI.trn("이번 변경을 취소했어요. 이전 턴의 시설은 그대로예요.", "This turn's layout changes were cancelled."))
 
 
 func _commit(event_choice: String) -> void:
