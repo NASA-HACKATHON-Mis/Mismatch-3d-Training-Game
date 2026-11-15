@@ -34,6 +34,7 @@ var _close: Button
 var help_button: Button
 var _advance: Button
 var _remove: Button
+var _place: Button
 var _cancel: Button
 var _rewind: Button
 var _summary: Label
@@ -110,23 +111,23 @@ func _ready() -> void:
 	scroll.add_child(outer)
 	_build_header(outer)
 	_build_outcome(outer)
-	_build_guidance(outer)
 	_working = BoxContainer.new()
 	_working.add_theme_constant_override("separation", 12)
 	outer.add_child(_working)
 	_build_map(_working)
 	_build_controls(_working)
+	_build_guidance(outer)
 	_build_timeline(outer)
 	resized.connect(_layout)
 	_layout()
 
 
 func _build_header(parent: Control) -> void:
-	var panel := UI.panel(parent, UI.CARD, 12)
-	var contents := UI.column(panel, 8)
+	var panel := UI.panel(parent, UI.CARD, 8)
+	var contents := UI.column(panel, 4)
 	_header_actions = BoxContainer.new()
 	contents.add_child(_header_actions)
-	var title := UI.label(_header_actions, "기지 운영 단말기", 26)
+	var title := UI.label(_header_actions, "기지 운영 단말기", 22)
 	UI.grow(title)
 	help_button = UI.button(_header_actions, "안내서  H", func(): help_requested.emit(), UI.CYAN)
 	_close = UI.button(_header_actions, "닫기  Esc", func(): closed.emit(), UI.MUTED)
@@ -204,8 +205,8 @@ func set_guidance(enabled: bool) -> void:
 
 func _layout() -> void:
 	if not is_instance_valid(_working): return
-	_working.vertical = size.x < 1100
-	_working.move_child(_controls_card if _working.vertical else _map_card, 0)
+	_working.vertical = size.x < 900
+	_working.move_child(_map_card, 0)
 	_header_actions.vertical = size.x < 600
 	_resource_grid.columns = 1 if size.x < 600 else 3
 	_timeline_top.vertical = size.x < 1100
@@ -217,7 +218,7 @@ func _refresh_guidance(planning: bool, edit_state: Dictionary) -> void:
 	elif not _session.draft.is_empty():
 		_guide_text.text = "2  배치를 확인해요. 바꾸려면 ‘이번 변경 취소’를 눌러요."
 	else:
-		_guide_text.text = "1  시설을 고른 뒤, 지도에서 비어 있는 칸을 눌러요."
+		_guide_text.text = "1  빈 칸과 시설을 고른 뒤 ‘여기에 짓기’를 눌러요."
 	if planning and not _event_values.is_empty():
 		_guide_text.text = "2  사건에 어떻게 대응할지 골라요." if _choice.is_empty() else "3  준비됐다면 ‘이번 턴 진행’을 눌러요."
 	elif planning and Simulation.count_kind(edit_state, "generator") > 0:
@@ -225,14 +226,13 @@ func _refresh_guidance(planning: bool, edit_state: Dictionary) -> void:
 
 
 func _build_map(parent: Control) -> void:
-	var card := UI.panel(parent)
+	var card := UI.panel(parent, UI.CARD, 10)
 	_map_card = card
 	UI.grow(card)
 	card.size_flags_stretch_ratio = 0.94
-	var map := UI.column(card, 8)
+	var map := UI.column(card, 5)
 	UI.label(map, "배치 지도", 16, UI.CYAN)
-	UI.label(map, UI.trn("북쪽 / NORTH · 일조: 발전 증가 · 차폐: 대피소 할인", "NORTH · SUN: more power · SHIELD: cheaper shelter"),
-		16, UI.MUTED, true)
+	UI.label(map, "북쪽 ↑ · 해: 발전 증가 · 방패: 대피소 할인", 14, UI.MUTED, true)
 	var grid := GridContainer.new()
 	grid.columns = 5
 	grid.size_flags_vertical = SIZE_SHRINK_BEGIN
@@ -240,14 +240,15 @@ func _build_map(parent: Control) -> void:
 	grid.add_theme_constant_override("v_separation", 5)
 	map.add_child(grid)
 	for slot_id in Rules.SLOT_COUNT:
-		var button := UI.button(grid, "", _select_slot.bind(slot_id), UI.TEXT, 58)
+		var button := UI.button(grid, "", _select_slot.bind(slot_id), UI.TEXT, 46)
 		UI.grow(button)
 		button.size_flags_vertical = SIZE_EXPAND_FILL
-		button.add_theme_font_size_override("font_size", 16)
+		button.add_theme_font_size_override("font_size", 14)
 		_slots.append(button)
-	_map_help = UI.label(map, "", 18, UI.MUTED, true)
-	_inspect = UI.button(map,"선택 칸 3D 보기",func(): inspect_requested.emit(),UI.CYAN)
-	_clear_selection = UI.button(map,"선택 해제",func(): _selected_slot = -1; refresh(_session),UI.MUTED)
+	_map_help = UI.label(map, "", 15, UI.MUTED, true)
+	var selection_actions := UI.row(map, 5)
+	_inspect = UI.button(selection_actions,"3D 보기",func(): inspect_requested.emit(),UI.CYAN, 30)
+	_clear_selection = UI.button(selection_actions,"선택 해제",func(): open_context(),UI.MUTED, 30)
 	var buttons := UI.row(map)
 	_remove = UI.button(buttons, UI.trn("선택 시설 철거", "Remove selected"),
 		func(): edited.emit("remove", _selected_slot, ""), UI.ALERT, 36)
@@ -276,6 +277,7 @@ func _build_controls(parent: Control) -> void:
 		button.tooltip_text = UI.description(kind)
 		_facilities[kind] = button
 	_selection_detail = UI.label(controls, "", 18, UI.TEXT, true)
+	_place = UI.button(controls, "여기에 짓기", _place_selected, UI.GREEN, 38)
 	_notice = UI.label(controls, "", 18, UI.ALERT, true)
 	_notice.hide()
 	_capacity = UI.label(controls, "", 18, UI.CYAN, true)
@@ -386,19 +388,23 @@ func _refresh_facilities(layout: Dictionary, planning: bool) -> void:
 		var shortfall: int = maxi(0,price - layout.budget)
 		var shortage := "\n건설 토큰 %d개 부족" % shortfall if shortfall > 0 else ""
 		if kind == "shelter" and _selected_slot < 0 and layout.budget >= 3: shortage = ""
-		button.text = "%s · 토큰 %s\n%s%s" % [UI.name_for(kind),_cost_caption(kind),_card_effect(kind),shortage]
+		button.text = "%s · 토큰 %s" % [UI.name_for(kind),_cost_caption(kind)]
+		button.tooltip_text = "%s\n%s%s" % [UI.description(kind), _card_effect(kind), shortage]
 		button.add_theme_font_size_override("font_size",16)
 		button.disabled = false # Descriptions remain accessible even when placement is unavailable.
 		UI.paint_button(button, UI.MUTED if shortfall > 0 else UI.FACILITY_COLORS[kind], kind == _selected_kind)
 	var cost: int = Rules.cost(_selected_kind, maxi(0,_selected_slot))
 	var gap: int = maxi(0,cost - layout.budget)
 	var location := "선택 칸 %02d" % (_selected_slot + 1) if _selected_slot >= 0 else "칸을 고르면 실제 비용을 확인해요"
-	_selection_detail.text = "%s · %s\n%s" % [UI.name_for(_selected_kind),location,UI.description(_selected_kind)]
-	if _selected_kind == "shelter":
-		_selection_detail.text += "\n차폐 칸01·21은 토큰3, 다른 칸은 토큰4예요."
+	_selection_detail.text = "%s · %s\n%s" % [UI.name_for(_selected_kind),location,_card_effect(_selected_kind)]
+	_selection_detail.tooltip_text = UI.description(_selected_kind)
 	if gap > 0:
 		_selection_detail.text += "\n건설 토큰 %d개 부족해요. 설명은 계속 볼 수 있어요." % gap
 	if not planning: _selection_detail.text += "\n완료된 턴에서는 배치할 수 없어요. 과거 턴으로 돌아가요."
+	var occupied := not Simulation.facility_at(layout, _selected_slot).is_empty()
+	_place.disabled = _locked or not planning or _selected_slot < 0 or occupied or gap > 0
+	_place.text = "여기에 짓기 · 토큰 %d" % cost
+	_place.tooltip_text = "빈 칸을 먼저 골라요." if _selected_slot < 0 else ("이미 건물이 있는 칸이에요." if occupied else "")
 
 func _toggle_preview() -> void:
 	_preview_open = not _preview_open
@@ -461,11 +467,12 @@ func _refresh_map(state: Dictionary, planning: bool) -> void:
 		var tint: Color = UI.FACILITY_COLORS.get(kind, UI.AMBER if sun else (UI.PURPLE if shield else UI.MUTED))
 		if not kind.is_empty():
 			contents = UI.name_for(kind)
-		button.text = "%02d\n%s\n%s" % [slot_id + 1, contents, marks if not marks.is_empty() else "일반"]
+		var short_marks := ("해" if sun else "") + ("방패" if shield else "")
+		button.text = "%02d %s\n%s" % [slot_id + 1, short_marks, contents]
 		button.tooltip_text = marks if kind.is_empty() else UI.description(kind) + " · " + (marks if not marks.is_empty() else "일반 칸")
 		button.disabled = false # Completed layouts can still be inspected.
 		UI.paint_button(button, tint, _selected_slot == slot_id)
-	_map_help.text = "시설을 고르고 빈 칸을 누르면 배치해요. 확정 전에는 이번 변경을 취소할 수 있어요." if planning else "칸을 골라 3D로 살펴봐요. 배치를 바꾸려면 과거 턴으로 돌아가요."
+	_map_help.text = "칸 선택 → 시설 선택 → 여기에 짓기" if planning else "칸을 골라 살펴봐요. 바꾸려면 과거 턴으로 돌아가요."
 	var selected := Simulation.facility_at(state, _selected_slot)
 	_remove.disabled = not planning or selected.is_empty() or selected.get("type") == "habitat"
 	if not selected.is_empty() and selected.type != "habitat":
@@ -570,19 +577,32 @@ func _result_text(result: Dictionary) -> String:
 
 
 func _select_slot(slot: int) -> void:
+	open_context(slot)
+
+
+## Select a site without performing an edit. Call refresh(session) before opening.
+func open_context(slot_id: int = -1) -> void:
 	clear_notice()
-	_selected_slot = slot
-	var preview: Dictionary = _session.preview()
-	if _session.state.phase == "planning" and Simulation.facility_at(preview.state, slot).is_empty():
-		edited.emit("place", slot, _selected_kind)
-	refresh(_session)
+	_selected_slot = slot_id if slot_id >= 0 and slot_id < Rules.SLOT_COUNT else -1
+	if _session != null:
+		refresh(_session)
+	if is_instance_valid(_scroll): _scroll.scroll_vertical = 0
+
+
+func _place_selected() -> void:
+	if _session == null or _locked or _session.state.phase != "planning": return
+	if _selected_slot < 0 or _selected_slot >= Rules.SLOT_COUNT: return
+	var layout: Dictionary = _session.preview().state
+	if not Simulation.facility_at(layout, _selected_slot).is_empty(): return
+	if layout.budget < Rules.cost(_selected_kind, _selected_slot): return
+	edited.emit("place", _selected_slot, _selected_kind)
 
 
 func _select_kind(kind: String) -> void:
 	clear_notice()
 	_selected_kind = kind
 	refresh(_session)
-	set_notice(UI.trn("%s 선택 · 비어 있는 칸을 눌러요.", "%s selected. Choose an empty pad.") % UI.name_for(kind))
+	set_notice("%s 선택 · 빈 칸을 고르고 ‘여기에 짓기’를 눌러요." % UI.name_for(kind))
 
 
 func _choose_event(index: int) -> void:
