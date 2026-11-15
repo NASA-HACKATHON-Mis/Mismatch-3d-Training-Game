@@ -1,5 +1,8 @@
 extends Control
 
+signal started
+signal help_requested
+
 const UI = preload("res://scripts/ui/ui_style.gd")
 const Simulation = preload("res://scripts/simulation/simulation.gd")
 var _mission: Label
@@ -9,13 +12,16 @@ var _status_box: PanelContainer
 var _intro: CenterContainer
 var _reticle: Label
 var _footnote: Label
+var help_button: Button
+var _start: Button
 
 
 func _ready() -> void:
+	UI.use_korean_theme(self)
 	var header := UI.panel(self, Color("#0b1728e8"), 14)
 	header.position = Vector2(24, 22)
 	var heading := UI.column(header, 1)
-	UI.label(heading, "SELENE   /   TRAINING STATION 01", 13, UI.CYAN)
+	UI.label(heading, "달 표면 훈련 기지", 13, UI.CYAN)
 	_mission = UI.label(heading, UI.trn("달기지 리와인드", "Lunar Base Rewind"), 27)
 	_meters = UI.label(heading, "", 17, UI.MUTED)
 
@@ -59,8 +65,12 @@ func _ready() -> void:
 		"Build modules and keep power, oxygen, and food for 7 turns."), 20, UI.MUTED)
 	UI.label(text, UI.trn("실패해도 되감아 다른 선택을 시험할 수 있어요.",
 		"You can rewind a turn and try a different plan."), 17, UI.MUTED)
-	UI.label(text, UI.trn("화면 클릭으로 시작 · 앞 단말기를 보고 E", "Click to start  /  Look at the console and press E"), 18, UI.CYAN)
-	UI.label(text, "W A S D   /   " + UI.trn("이동     마우스 / 둘러보기", "WALK     MOUSE / LOOK"), 14, UI.MUTED)
+	UI.label(text, "WASD 이동 · 마우스로 둘러보기 · 단말기를 보고 E", 15, UI.MUTED)
+	var actions := UI.row(text, 8)
+	_start = UI.button(actions, "훈련 시작", func(): started.emit())
+	help_button = UI.button(actions, "안내서  H", func(): help_requested.emit(), UI.MUTED)
+	UI.grow(_start)
+	UI.grow(help_button)
 
 
 func show_mode(mode: String) -> void:
@@ -68,6 +78,8 @@ func show_mode(mode: String) -> void:
 	_intro.visible = mode == "pause"
 	_reticle.visible = mode == "explore"
 	_status_box.visible = mode == "explore"
+	if _intro.visible:
+		_start.grab_focus()
 
 
 func refresh(state: Dictionary) -> void:

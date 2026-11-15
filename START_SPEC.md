@@ -142,10 +142,10 @@ rules_review가 메모리 계산으로 아래 경로를 검산했다. 실제 God
 - 입력 잠금·ESC·포커스·안전 스폰을 GUI로 확인하고 초기 연결본을 실제 목표 브라우저에서 검증한다.
 - 표시 단위는 게임 자원이며 kWh·실제 피폭량·실제7일로 표시하지 않는다. 재배 성장3턴도 현실 재배 기간이 아니다.
 - v0.1 사건은 교육용이다. DONKI를 수집하기 전 “NASA 실제 경보 데이터” 배지를 붙이지 않는다. 실제 자료를 쓰면 원문 URL·관측시각·필드·가공·사용 조건을 기록한다.
-- 공식 출처 후보: [DONKI](https://ccmc.gsfc.nasa.gov/tools/DONKI/), [NASA APIs](https://api.nasa.gov/), [OSDR](https://osdr.nasa.gov/bio/repo/), [CSA 식량 교육](https://www.asc-csa.gc.ca/eng/youth-educators/toolkits/food-production/). 실제 수집/라이선스 검토 미완료는 별도 준비 항목이다.
+- 공식 출처 후보: [DONKI](https://ccmc.gsfc.nasa.gov/tools/DONKI/), [NASA APIs](https://api.nasa.gov/), [OSDR](https://osdr.nasa.gov/bio/repo/), [CSA 식량 교육](https://www.asc-csa.gc.ca/eng/youth-educators/toolkits/food-production/). 수집한 DONKI 1건과 CSA 설명·사용조건은 docs/DATA_SOURCES.md, 실제 게임 내 설명 연결은 #5를 따른다.
 
 ## 10. 인계와 통합
 
-게임 상태·공유 씬·충돌 wrapper 책임은 dyhan0528/core, GLB·원본·자산 manifest 책임은 jsjavsj다. HH-004가 Godot 씬을 동시에 편집하지 않는다. 첫 플레이 가능한 통합 대상은 `feature/HH-001-core-loop`이며 모델·후속 게임 기능은 독립 검토 후 해당 브랜치를 대상으로 PR 통합하는 운영 계획이다.
+게임 상태·공유 씬·충돌 wrapper 책임은 dyhan0528/core, GLB·원본·자산 manifest 책임은 jsjavsj다. HH-004가 Godot 씬을 동시에 편집하지 않는다. 첫 플레이 가능한 통합 대상은 `feature/HH-001-core-loop`이며 모델·후속 기능은 의미 있는 검사 후 해당 브랜치를 대상으로 PR 생성·일반 merge한다. 별도의 PR 리뷰 대기는 없다.
 
-이번 문서 작업은 PR 작성·merge를 실행하지 않는다. 이후 실제 source/target 커밋·충돌 책임·검증 범위를 WORK에 기록해 통합한다. main은 현재 없으며 정식 main 승격·배포·실제 제출은 마지막 별도 단계다. 지금 시작을 위해 main을 먼저 만들 필요는 없다.
+PR #8로 전체 모델 통합을 완료했다. 이후 실제 source/target 커밋·충돌 책임·검증 범위를 WORK에 기록해 통합한다. main은 현재 없으며 정식 main 승격·배포·실제 제출은 마지막 별도 단계다. 지금 시작을 위해 main을 먼저 만들 필요는 없다.

@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/mission.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/world/station.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/terminal.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/help.tscn" id="6"]
 
 [node name="LunarBase" type="Node3D"]
 script = ExtResource("1")
@@ -19,3 +20,5 @@ position = Vector3(0, 0, 20)
 [node name="HUD" parent="Interface" instance=ExtResource("4")]
 
 [node name="Terminal" parent="Interface" instance=ExtResource("5")]
+
+[node name="Help" parent="Interface" instance=ExtResource("6")]

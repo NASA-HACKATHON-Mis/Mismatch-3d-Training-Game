@@ -7,11 +7,13 @@ Godot 4.7.2에서 실행할 수 있습니다. 기지에 발전기, 배터리, �
 ## 실행 및 첫 플레이
 
 1. **Godot 4.7.2 일반판**에서 이 폴더의 `project.godot`를 열고 **F6이 아닌 F5**로 프로젝트를 실행합니다. 이미 준비된 Windows PC의 portable 위치와 APPDATA 격리 방법은 [환경 기록](docs/ENVIRONMENT.md)을 참고하세요.
-2. 화면을 클릭해 시작합니다. **WASD**로 걷고 마우스로 둘러봅니다. 시작 위치에서 정면 단말기를 바라보고 **E**를 누릅니다. **Esc**로 단말기를 닫거나 멈출 수 있고, 화면을 다시 클릭하면 이동합니다.
+2. **훈련 시작**을 누릅니다. **WASD**로 걷고 마우스로 둘러봅니다. 시작 위치에서 정면 단말기를 바라보고 **E**를 누릅니다. **Esc**로 단말기를 닫거나 멈출 수 있고, 화면을 다시 클릭하면 이동합니다.
 3. 발전기를 고르고 **01**번 일조 칸을 누른 뒤 **T1 확정**을 누릅니다. 아래에서 **T1**을 선택하고 **선택 턴 시작으로** 돌아갑니다. 이번에는 발전기 없이 T1을 다시 확정해 보세요. 아래의 같은 턴 비교에 두 시도의 전력 차이가 표시됩니다.
 4. 7턴을 모두 도전하려면 첫 턴에 발전기 **01**, 배터리 **12**, 재배실 **14**, 대피소 **25**를 놓으세요. T2에서 **재배 유지**, T4에서 **대피하기**, T5에서 **확인**을 선택합니다.
 
-화면의 칸 번호는 01–25이며 코드의 슬롯 ID는 0–24입니다. 자원과 사건은 교육용 가상 규칙입니다. 한국어 Windows에서는 한국어, 웹에서는 첫 빌드의 기본 영어 UI를 표시합니다.
+시작 화면이나 단말기에서 **안내서**를 누르거나 **H**를 누르면 시설, 사건과 되감기, 실제 자료를 볼 수 있습니다. **Tab**과 **Enter**로 항목을 선택하고 **Esc**로 돌아갑니다. Windows와 Web 모두 [Noto Sans KR](resources/fonts/README.md) 글꼴을 번들로 사용해 한국어를 표시합니다.
+
+화면의 칸 번호는 01–25이며 코드의 슬롯 ID는 0–24입니다. 자원과 사건은 교육용 가상 규칙입니다. 안내서에 보관한 NASA 과거 관측 및 CSA 교육 설명의 근거는 [자료 출처](docs/DATA_SOURCES.md)를 참고하세요.
 
 ## Web 출력과 검사
 
@@ -26,3 +28,5 @@ Windows portable 실행 방법은 [환경 기록](docs/ENVIRONMENT.md)을 따르
 ```
 
 [규칙 v0.1](START_SPEC.md) · [작업 기록과 검증 범위](WORK.md) · [팀원 워크플로](WORKFLOW.md) · [모델 제작 규격](ASSET_BRIEF.md) · [GitHub 이슈](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues)
+
+현재 작업: [#5 한국어·학습 설명](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/5), [#6 두 PC 최종 검증](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/6), [#7 제출 준비](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/7). 팀원은 [WORKFLOW의 현재 담당표](WORKFLOW.md#지금-할-일)를 따릅니다. 모델 추가 제작은 발견된 결함 수정에 한정합니다.
