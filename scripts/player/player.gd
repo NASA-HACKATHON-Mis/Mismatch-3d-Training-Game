@@ -2,7 +2,8 @@ extends CharacterBody3D
 
 const SPEED := 3.0
 const MOUSE_SENSITIVITY := 0.0023
-const MAX_PITCH := deg_to_rad(80.0)
+const MIN_PITCH := deg_to_rad(-65.0)
+const MAX_PITCH := deg_to_rad(75.0)
 const WALK_ACTIONS := [&"walk_left", &"walk_right", &"walk_forward", &"walk_back"]
 const Rules = preload("res://scripts/simulation/scenario.gd")
 
@@ -17,8 +18,10 @@ var _dragging := false
 var _wait_for_release: Array[StringName] = []
 var _jump_was_pressed := false
 var _needs_ground_refresh := false
+var _arm_clearance_shape := BoxShape3D.new()
 
 func _ready() -> void:
+	_arm_clearance_shape.size = Vector3(0.98, 0.85, 1.20)
 	get_window().mouse_exited.connect(_cancel_drag)
 	get_window().focus_exited.connect(_cancel_drag)
 
@@ -66,6 +69,19 @@ func _physics_process(delta: float) -> void:
 		apply_pose({"position": [Rules.SPAWN.x, Rules.SPAWN.y, Rules.SPAWN.z], "yaw": 0.0, "pitch": 0.0})
 	if is_instance_valid(avatar):
 		avatar.update_motion(global_basis.inverse() * velocity, is_on_floor(), exploring, delta)
+		_refresh_arm_clearance()
+
+
+func _refresh_arm_clearance() -> void:
+	if not is_instance_valid(avatar) or not is_inside_tree(): return
+	# Cover both arms, including side walls that a center ray cannot detect.
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = _arm_clearance_shape
+	query.transform = global_transform * Transform3D(Basis.IDENTITY, Vector3(0, 1.30, -0.35))
+	query.collision_mask = 1
+	query.exclude = [get_rid()]
+	avatar.set_obstacle_near(not get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty())
+	avatar.set_view_pitch(camera.rotation.x)
 
 
 func _strength(action: StringName) -> float:
@@ -94,7 +110,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			if not _dragging: return
 		rotation.y = wrapf(rotation.y - motion.screen_relative.x * MOUSE_SENSITIVITY, -PI, PI)
 		camera.rotation.x = clampf(camera.rotation.x - motion.screen_relative.y * MOUSE_SENSITIVITY,
-			-MAX_PITCH, MAX_PITCH)
+			MIN_PITCH, MAX_PITCH)
+		if is_instance_valid(avatar): avatar.set_view_pitch(camera.rotation.x)
 
 
 func sees_console(console: StaticBody3D) -> bool:
@@ -114,10 +131,11 @@ func apply_pose(saved: Dictionary) -> void:
 	var p: Array = saved.position
 	global_position = Vector3(p[0], p[1], p[2])
 	rotation.y = saved.yaw
-	camera.rotation.x = clampf(saved.pitch, -MAX_PITCH, MAX_PITCH)
+	camera.rotation.x = clampf(saved.pitch, MIN_PITCH, MAX_PITCH)
 	velocity = Vector3.ZERO
 	_cancel_drag()
 	if is_instance_valid(avatar): avatar.update_motion(Vector3.ZERO, true, true, 0.0)
+	_refresh_arm_clearance()
 	_wait_for_release.clear()
 	_jump_was_pressed = Input.is_action_pressed(&"jump")
 	_needs_ground_refresh = true

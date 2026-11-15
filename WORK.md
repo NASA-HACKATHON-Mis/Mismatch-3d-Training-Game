@@ -584,3 +584,11 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 별도build/pe05-cross Web export exit0, localhost8073 일반/거부iframe fixture HTTP200. 기존8072출력/서버 보존. Native 일반제품PID27320/window7408522는 준비만 완료. 독립headless4880/0을 재현했으며 실제입력·표시FPS와 구분한다.
 - PM Chrome 일반페이지 실측: 시작캡처/팔/게이지/마우스회전/Esc·클릭재개/E단말기, 발전기01·배터리12 draft 토큰7/현재20/20·배치용량40분리, T1확정뒤T2 32/40·O62·F30, T1복원뒤토큰12·빈시설·20/20·O60·F36 확인.
 - Chrome 새사용자입력 감지로 추가조작대기/조작위임질문응답대기. iframe최종화면주소가일반index.html로달라져fallback확정불가, Native실조작·iframe·실제heldSpace/점프·표시FPS 미검증유지. 자동PASS로대체하지않음. 상세증거/제한은 docs/PE05_CROSS_VERIFICATION.md 후속절. #29및관련기능OPEN/최종인수대기, 독립검토PASS한2문서를 Refs #29 문서PR로인계·배포없음·#7보류.
+
+## 긴급 #39 시야·그림자·팔 근접 수정 — 2026-11-15
+
+- 최신mainb6558cf391abccdcd76ac9da966218eb9c097bdf clean/PR40 source23d487f 동일에서 fix/player-view-shadow-arms 생성, #39 jsjavsj claim기록. Worker ux12_worker/독립ux11_verifier/PMroot. station.gd와캡슐·모델·규칙은보존.
+- 아래65/위75 입력·복원공통시야제한, 닫힌몸통/머리shadow-only, 하향시팔shadow-only, 양팔부피worldquery로정면/측벽근접수납 및pause/restore정합. 신규검사기본628/실렌더646(PNG18)통과. 독립955/0, PM가로세로하향·그림자·벽접근이미지검토PASS. 부츠HUD가림으로발인지PASS는주장않음.
+- docs/FIX39_PLAYER_VIEW.md에범위/검사/제한기록. 새build/fix-player 및8074 로컬미리보기준비, 기존8072/8073/Native보존. Desktop/Chrome조작하지않음. Refs#39 인계·사용자직접플레이인수대기OPEN/#29미실행유지·배포없음·#7보류.
+
+- 추가독립rewind663/outcome1277 통과로 #39최종합계2895/0. Webexport exit0, http://127.0.0.1:8074/index.html HTTP200, PCK7422492B SHA256 B7D86B7841E328454456EB61417C59147B7F672292CC5FB162BD0FCEEFFE6544 파일/응답일치. 실제브라우저플레이인수는미실행/OPEN유지.
