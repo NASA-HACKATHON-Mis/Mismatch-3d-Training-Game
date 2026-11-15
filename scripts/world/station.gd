@@ -22,6 +22,8 @@ var _selection: Node3D
 var selected_slot := -1
 var _selection_label: Label3D
 var _guide_collision: StaticBody3D
+var _interaction_highlight: Node3D
+var _interaction_key := ""
 
 
 func _ready() -> void:
@@ -37,6 +39,10 @@ func _ready() -> void:
 	_wrappers.name = "FacilityWrappers"
 	add_child(_wrappers)
 	_create_selection()
+	_interaction_highlight = Node3D.new()
+	_interaction_highlight.name = "NearbySiteOutline"
+	add_child(_interaction_highlight)
+	_interaction_highlight.hide()
 
 
 func _create_selection() -> void:
@@ -63,6 +69,49 @@ func highlight_slot(slot: int, caption: String = "") -> void:
 	if selected_slot < 0: return
 	_selection.position = Rules.slot_position(slot)
 	_selection_label.text = "%02d · %s" % [slot+1,caption]
+
+func show_interaction_target(target: Dictionary, state: Dictionary) -> void:
+	if not is_instance_valid(_interaction_highlight): return
+	var target_kind: String = target.get("kind", "none")
+	var slot: int = target.get("slot_id", -1)
+	var kind := ""
+	if target_kind == "slot" and slot >= 0 and slot < Rules.SLOT_COUNT:
+		for facility: Dictionary in state.get("facilities", []):
+			if facility.slot_id == slot:
+				kind = facility.type
+				break
+	elif target_kind != "console":
+		target_kind = "none"
+	var key := "%s:%d:%s" % [target_kind, slot, kind]
+	if key == _interaction_key: return
+	_interaction_key = key
+	for child in _interaction_highlight.get_children():
+		_interaction_highlight.remove_child(child)
+		child.queue_free()
+	_interaction_highlight.visible = target_kind != "none"
+	if target_kind == "none": return
+	_interaction_highlight.position = Rules.CONSOLE if target_kind == "console" else Rules.slot_position(slot)
+	if target_kind == "slot":
+		# Bright corners mark the physical pad without covering the ground.
+		for x: float in [-1.0, 1.0]:
+			for z: float in [-1.0, 1.0]:
+				_box(_interaction_highlight, Vector3(x * 1.82, 0.08, z * 2.18), Vector3(0.82, 0.07, 0.07), CYAN, true)
+				_box(_interaction_highlight, Vector3(x * 2.18, 0.08, z * 1.82), Vector3(0.07, 0.07, 0.82), CYAN, true)
+	if not kind.is_empty() or target_kind == "console":
+		var bounds := Vector3(1.94, 2.2, 0.9) if target_kind == "console" else Rules.footprint(kind) + Vector3.ONE * 0.12
+		_outline_box(bounds)
+	for child in _interaction_highlight.get_children():
+		if child is GeometryInstance3D:
+			child.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+func _outline_box(bounds: Vector3) -> void:
+	var half := bounds * 0.5
+	var thickness := 0.035
+	for a: float in [-1.0, 1.0]:
+		for b: float in [-1.0, 1.0]:
+			_box(_interaction_highlight, Vector3(a * half.x, half.y + 0.03, b * half.z), Vector3(thickness, bounds.y, thickness), CYAN, true)
+			_box(_interaction_highlight, Vector3(0, half.y + a * half.y + 0.03, b * half.z), Vector3(bounds.x, thickness, thickness), CYAN, true)
+			_box(_interaction_highlight, Vector3(a * half.x, half.y + b * half.y + 0.03, 0), Vector3(thickness, thickness, bounds.z), CYAN, true)
 
 
 func _atmosphere() -> void:
@@ -239,13 +288,13 @@ func interaction_target_for(collider: Node) -> Dictionary:
 	if not is_instance_valid(collider) or not is_ancestor_of(collider):
 		return none
 	if collider == console:
-		return {"kind": "console", "slot_id": -1, "prompt": "E · 기지 보기"}
+		return {"kind": "console", "slot_id": -1, "prompt": "2 / E · 대시보드"}
 	var node := collider
 	while node != self and node != null:
 		if node.get_parent() == _wrappers:
 			var slot: int = node.get_meta("slot_id", -1)
 			if slot >= 0 and slot < Rules.SLOT_COUNT:
-				return {"kind": "slot", "slot_id": slot, "prompt": "E · 건물 보기"}
+				return {"kind": "slot", "slot_id": slot, "prompt": "2 · 건물 보기"}
 			return none
 		node = node.get_parent()
 	return none
