@@ -73,6 +73,7 @@ func _ready() -> void:
 	_status_box = UI.panel(self, Color("#0b1728f5"), 12)
 	_hint = UI.label(_status_box, "", 18, UI.TEXT, true)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status_box.minimum_size_changed.connect(_layout)
 	_footnote = UI.label(self, "교육용 가상 훈련 · 수치는 게임 단위", 16, UI.MUTED)
 	_intro = UI.panel(self, Color("#0b182cf8"), 22)
 	_intro_scroll = ScrollContainer.new()
@@ -115,8 +116,8 @@ func _layout() -> void:
 	height = minf(height, maxf(80, size.y - _header.get_combined_minimum_size().y - 72))
 	_intro.position = Vector2((size.x - width) / 2 if narrow else 28, size.y - height - 38)
 	_intro.size = Vector2(width, height)
-	_status_box.position = Vector2(20, size.y - 150)
-	_status_box.size = Vector2(maxf(1, size.x - 40), 108)
+	_status_box.size = Vector2(maxf(1, size.x - 40), maxf(108, _status_box.get_combined_minimum_size().y))
+	_status_box.position = Vector2(20, size.y - _status_box.size.y - 42)
 	_footnote.position = Vector2(20, size.y - 30)
 	_inspection.position = Vector2(20,size.y-180)
 	_inspection.size = Vector2(maxf(1,size.x-40),140)

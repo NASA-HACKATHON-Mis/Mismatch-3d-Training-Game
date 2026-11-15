@@ -61,6 +61,7 @@ func _run() -> void:
 		await settle()
 		check("드래그" in game.hud._hint.text and game.hud._hint.is_visible_in_tree(), "Drag notice remains visible while exploring")
 		check(game.hud._status_box.get_global_rect().encloses(game.hud._hint.get_global_rect()), "Drag guidance fits panel")
+		check(Rect2(Vector2.ZERO, Vector2(dimensions)).encloses(game.hud._hint.get_global_rect()), "Drag guidance fits actual viewport")
 		await capture(view, "%dx%d-drag-guidance" % [dimensions.x,dimensions.y])
 		game.look_mode_changed.emit("captured")
 		game.hud.set_target(true)

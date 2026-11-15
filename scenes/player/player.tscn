@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player/avatar_visual.tscn" id="2"]
 
 [sub_resource type="CapsuleShape3D" id="Capsule"]
 radius = 0.3
@@ -22,3 +23,5 @@ current = true
 fov = 72.0
 near = 0.05
 far = 380.0
+
+[node name="AvatarVisual" parent="." instance=ExtResource("2")]

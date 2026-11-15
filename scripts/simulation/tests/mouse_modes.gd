@@ -5,6 +5,11 @@ var checks := 0
 var failures := 0
 var notifications: Array[String] = []
 
+class LegacyProbe extends Node3D:
+	var exploring := false
+	func set_exploring(enabled: bool) -> void:
+		exploring = enabled
+
 class LookProbe extends Node3D:
 	var camera: Camera3D
 	var exploring := false
@@ -37,10 +42,13 @@ func _run() -> void:
 	game.set_physics_process(false)
 	game.player.set_physics_process(false)
 	var original_player = game.player
+	var legacy := LegacyProbe.new()
+	game.add_child(legacy)
+	game.player = legacy
 	var initial: Dictionary = game.session.state.duplicate(true)
 	game._start_exploring()
 	game._update_capture(2.0, false)
-	check(game.mode == "pause" and not original_player.exploring, "Legacy player cannot enter unsafe drag")
+	check(game.mode == "pause" and not legacy.exploring, "Legacy player cannot enter unsafe drag")
 	check(game.hud._input_notice.visible and not game.hud._start.disabled, "Legacy retry remains usable")
 	game._set_mode("explore", "drag")
 	check(game.mode == "pause", "Explicit drag also requires input API")

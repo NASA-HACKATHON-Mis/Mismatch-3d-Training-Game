@@ -102,8 +102,9 @@ func _check_capture(game: Node) -> void:
 	game._update_capture(0.1, false)
 	check(game.mode == "capturing" and not game.player.exploring, "Async capture waits without movement")
 	game._update_capture(2.0, false)
-	check(game.mode == "pause" and game.hud._input_notice.visible and not game.hud._start.disabled,
-		"Denied/timed-out capture provides an enabled retry and visible explanation")
+	check(game.mode == "explore" and game.look_mode == "drag" and game.player.exploring,
+		"Denied/timed-out capture enables integrated drag exploration")
+	game._pause()
 	game._start_exploring()
 	game._update_capture(0.1, true)
 	check(game.mode == "explore" and game.player.exploring, "Retry succeeds after capture arrives")
