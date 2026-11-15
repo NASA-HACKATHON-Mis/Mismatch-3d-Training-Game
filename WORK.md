@@ -379,8 +379,8 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | jsjavsj | in-progress / 수정·자동검사 완료, 실제 브라우저 인수·main 통합 대기 |
 | UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | done / PR #19 검증·main 통합 |
 | UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | done / PR #20 검증·main 통합 |
-| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | in-progress / 결과 화면 구현·검증 |
-| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | blocked / UX-R04 통합 대기 |
+| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | done / PR #21 검증·main 통합 |
+| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | ready / UX-R04 완료, 착수 claim 전 |
 | UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | blocked / UX-R05 통합 대기 |
 
 저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
@@ -473,3 +473,6 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 
 - 최종 독립 검사 3,175개 통과: core90/generator19/facility52/learning15/navigation70/guidance1,225/preview635/outcome1,069. 최종4크기 실제렌더1,101개/0fail 및 PNG32개, Web export 재검사 성공. 규칙 및 기존 preview 계산 코드 변경 없음.
 - PM Native 성공 GUI PASS: 코드로 기존 정상 배치·계산을 실행해7턴 성공을 준비한 창에서 실제 기록T1~7/사건대응 표시, Esc닫기 완료HUD, 결과재열기, H/Esc 안내서복귀, 과거기록이동/T7시작되감기 결과해제, T7재진행 성공, 닫기→둘러보기→Esc 완료유지를 직접 확인했다. 실패창 수동 확인 결과는 후속 기록한다.
+
+- 검사 소스 `f6fd78460f02af280ca6db8094ade09a4c618004`와 독립 검증 snapshot 해시 일치 확인. PM Native 실패 GUI PASS: 기존 계산으로 준비한 T3 전력 중단 HUD→결과 다시 보기에서 필요14/남은0/후속계산 중단, 실제T1~3 및 T2재배 유지 선택을 확인했다. 최종 Native 성공·실패 UI 인수 완료.
+- [PR #21](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/21)을 일반 merge하며 이 완료 작업판을 함께 반영한다. 실제 merge SHA와 #14 CLOSED 재조회는 이슈에 기록한다. #15는 ready/미착수이며 구현하지 않았다. localhost8072는 최종 새 게임 시작용 Web 출력을 유지한다.
