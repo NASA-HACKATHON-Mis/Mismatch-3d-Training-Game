@@ -40,13 +40,13 @@ static func footprint(kind: String) -> Vector3:
 			# The solar array is 2.593 m tall. Keep the original floor footprint.
 			return Vector3(3.6, 2.6, 3.4)
 		"battery":
-			return Vector3(2.8, 1.6, 2.7)
+			return Vector3(3.32, 2.26, 2.7)
 		"greenhouse":
-			return Vector3(3.8, 2.4, 3.5)
+			return Vector3(3.8, 2.99, 3.76)
 		"shelter":
-			return Vector3(3.6, 2.5, 3.8)
+			return Vector3(3.8, 2.8, 3.8)
 		_:
-			return Vector3(3.8, 2.7, 3.8)
+			return Vector3(3.8, 3.12, 3.8)
 
 
 static func facility_overlaps_player(kind: String, slot_id: int, pose: Dictionary) -> bool:
