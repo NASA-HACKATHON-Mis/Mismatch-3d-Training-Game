@@ -577,3 +577,10 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 사용자 교차검증 요청으로 원격 fetch/main3ea5bbc3c31ebbfb0dfbb0b3e299e04173bbc57c clean 확인. #29 댓글은 dyhan0528의 준비착수 기록이며 공개 PE-05 branch/PR은 조회되지 않았다. 상대 PC 미공개작업을 완료/미착수로 단정하지 않는다.
 - docs/PE-05-cross-verification에서 제품수정 없이 기존 게이지 실렌더70/0(PNG6), PM 시각검토, 독립 resource64/mouse23/navigation70/core90/learning15 합계262/0 완료. GPU/headless 실행을 순차조정했다. 상세범위·환경·미실행·공개후보대기 이유는 docs/PE05_CROSS_VERIFICATION.md 참조.
 - #27 player/project claim은 PR34/main3ea5bbc로 반환 완료. #29 담당은 실제통합후보SHA/PR을 인계하면 팀원교차검증을 계속할 수 있다. 현재결과는 컴포넌트 부분검사이며 통합PASS가 아니다. #29/관련기능OPEN, 기존8072빌드/서버 보존·배포없음·#7보류.
+
+## PE-05 공개 통합본 후속 교차 검증 — 진행 중
+
+- main2f3da388d48623db5c137d05fd41505759c45418을 fetch/ff, 구현sourcecab73f6b4cb67cce4321366c51800b218abaecbd와 전체diff0 확인. docs/PE-05-final-cross-verification에서 기록만 작성하고 제품파일은 수정하지 않는다.
+- 별도build/pe05-cross Web export exit0, localhost8073 일반/거부iframe fixture HTTP200. 기존8072출력/서버 보존. Native 일반제품PID27320/window7408522는 준비만 완료. 독립headless4880/0을 재현했으며 실제입력·표시FPS와 구분한다.
+- PM Chrome 일반페이지 실측: 시작캡처/팔/게이지/마우스회전/Esc·클릭재개/E단말기, 발전기01·배터리12 draft 토큰7/현재20/20·배치용량40분리, T1확정뒤T2 32/40·O62·F30, T1복원뒤토큰12·빈시설·20/20·O60·F36 확인.
+- Chrome 새사용자입력 감지로 추가조작대기/조작위임질문응답대기. iframe최종화면주소가일반index.html로달라져fallback확정불가, Native실조작·iframe·실제heldSpace/점프·표시FPS 미검증유지. 자동PASS로대체하지않음. 상세증거/제한은 docs/PE05_CROSS_VERIFICATION.md 후속절. #29및관련기능OPEN/최종인수대기, 독립검토PASS한2문서를 Refs #29 문서PR로인계·배포없음·#7보류.
