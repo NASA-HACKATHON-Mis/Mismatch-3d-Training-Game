@@ -42,6 +42,8 @@ func _run() -> void:
 	game.set_physics_process(false)
 	game.player.set_physics_process(false)
 	var original_player = game.player
+	# Move the replaced real collider away from the probe camera.
+	original_player.position = Vector3(100,0,100)
 	var legacy := LegacyProbe.new()
 	game.add_child(legacy)
 	game.player = legacy
@@ -55,6 +57,11 @@ func _run() -> void:
 	var probe := LookProbe.new()
 	game.add_child(probe)
 	game.player = probe
+	probe.position = Vector3(0,0,20)
+	probe.camera.position.y = 1.7
+	probe.camera.look_at(Vector3(0,1.4,18))
+	await physics_frame
+	await physics_frame
 	game.look_mode_changed.connect(func(value: String): notifications.append(value))
 	game._start_exploring()
 	check(game.mode == "capturing" and not probe.exploring and probe.look_mode == "disabled", "Waiting disables motion and look")

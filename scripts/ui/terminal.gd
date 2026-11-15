@@ -17,7 +17,8 @@ const Preview = preload("res://scripts/simulation/turn_preview.gd")
 const History = preload("res://scripts/ui/history_explanation.gd")
 const Outcome = preload("res://scripts/ui/outcome_summary.gd")
 const Learning = preload("res://resources/content/learning.gd")
-const ResourceMeter = preload("res://scripts/ui/resource_meter.gd")
+const ResourceOverview = preload("res://scripts/ui/resource_overview.gd")
+const FacilityInfoCard = preload("res://scripts/ui/facility_info_card.gd")
 const GLYPHS := {"habitat": "HAB", "generator": "SOL", "battery": "BAT", "greenhouse": "GROW", "shelter": "SAFE"}
 
 var _session
@@ -39,9 +40,8 @@ var _cancel: Button
 var _rewind: Button
 var _summary: Label
 var _resource_grid: GridContainer
-var _energy: ResourceMeter
-var _oxygen: ResourceMeter
-var _food: ResourceMeter
+var _resource_overview: ResourceOverview
+var _facility_info: FacilityInfoCard
 var _map_help: Label
 var _event_title: Label
 var _event_text: Label
@@ -99,8 +99,8 @@ func _ready() -> void:
 	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	scroll.offset_left = 24
 	scroll.offset_right = -24
-	scroll.offset_top = 20
-	scroll.offset_bottom = -18
+	scroll.offset_top = 8
+	scroll.offset_bottom = -8
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.follow_focus = true
 	add_child(scroll)
@@ -132,19 +132,9 @@ func _build_header(parent: Control) -> void:
 	help_button = UI.button(_header_actions, "안내서  H", func(): help_requested.emit(), UI.CYAN)
 	_close = UI.button(_header_actions, "닫기  Esc", func(): closed.emit(), UI.MUTED)
 	_summary = UI.label(contents, "", 18, UI.TEXT, true)
-	UI.label(contents, "현재 확정 자원", 16, UI.MUTED)
-	_resource_grid = GridContainer.new()
-	_resource_grid.columns = 3
-	_resource_grid.add_theme_constant_override("h_separation", 16)
-	_resource_grid.add_theme_constant_override("v_separation", 8)
-	contents.add_child(_resource_grid)
-	_energy = ResourceMeter.new()
-	_oxygen = ResourceMeter.new()
-	_food = ResourceMeter.new()
-	for meter in [_energy, _oxygen, _food]: _resource_grid.add_child(meter)
-	_energy.set_color(UI.AMBER)
-	_oxygen.set_color(UI.CYAN)
-	_food.set_color(UI.GREEN)
+	_resource_overview = ResourceOverview.new()
+	contents.add_child(_resource_overview)
+	_resource_grid = _resource_overview
 
 func _build_outcome(parent: Control) -> void:
 	_outcome_card = UI.panel(parent, Color("#133047"), 16)
@@ -208,7 +198,6 @@ func _layout() -> void:
 	_working.vertical = size.x < 900
 	_working.move_child(_map_card, 0)
 	_header_actions.vertical = size.x < 600
-	_resource_grid.columns = 1 if size.x < 600 else 3
 	_timeline_top.vertical = size.x < 1100
 	_comparison_sides.vertical = size.x < 900
 
@@ -276,8 +265,13 @@ func _build_controls(parent: Control) -> void:
 		UI.grow(button)
 		button.tooltip_text = UI.description(kind)
 		_facilities[kind] = button
+	_facility_info = FacilityInfoCard.new()
+	controls.add_child(_facility_info)
+	_facility_info.action_requested.connect(_on_facility_action)
 	_selection_detail = UI.label(controls, "", 18, UI.TEXT, true)
+	_selection_detail.hide()
 	_place = UI.button(controls, "여기에 짓기", _place_selected, UI.GREEN, 38)
+	_place.hide()
 	_notice = UI.label(controls, "", 18, UI.ALERT, true)
 	_notice.hide()
 	_capacity = UI.label(controls, "", 18, UI.CYAN, true)
@@ -347,9 +341,10 @@ func refresh(session) -> void:
 		_last_turn = turn
 	var planning: bool = state.phase == "planning"
 	_summary.text = "T%d / 7 · 배치 후 남는 건설 토큰 %d" % [turn, edit_state.budget]
-	_energy.set_values("전력", state.E, Simulation.energy_cap(state))
-	_oxygen.set_values("산소", state.O, 100)
-	_food.set_values("식량", state.F, 100)
+	_resource_overview.set_view_model({"show_preview": not session.draft.is_empty(), "resources": [
+		{"id":"energy", "current":state.E, "capacity":Simulation.energy_cap(state), "preview":edit_state.E, "preview_capacity":Simulation.energy_cap(edit_state)},
+		{"id":"oxygen", "current":state.O, "capacity":100, "preview":edit_state.O, "preview_capacity":100},
+		{"id":"food", "current":state.F, "capacity":100, "preview":edit_state.F, "preview_capacity":100}]})
 	_refresh_map(edit_state, planning)
 	_refresh_facilities(edit_state, planning)
 	_refresh_event(turn, planning, edit_state)
@@ -366,8 +361,46 @@ func refresh(session) -> void:
 	_refresh_outcome()
 	_inspect.disabled = _selected_slot < 0
 	_clear_selection.disabled = _selected_slot < 0
+	_refresh_info_card(edit_state, planning)
 	selected_slot_changed.emit(_selected_slot)
 
+
+func _refresh_info_card(layout: Dictionary, planning: bool) -> void:
+	var facility: Dictionary = Simulation.facility_at(layout, _selected_slot)
+	var occupied := not facility.is_empty()
+	var kind: String = facility.type if occupied else _selected_kind
+	var summaries := {"generator":"햇빛으로 전기를 만들어요.", "battery":"전기를 더 많이 저장해요.", "greenhouse":"전기를 써서 식량을 길러요.", "shelter":"위험한 날에는 여기로 대피해요.", "habitat":"우주인이 생활하는 집이에요."}
+	var reason := ""
+	if _selected_slot < 0: reason = "지도에서 빈 칸을 먼저 골라요."
+	elif not planning: reason = "과거 기록으로 돌아가면 바꿀 수 있어요."
+	elif _locked: reason = "처리 중이에요."
+	elif not occupied and _place.disabled: reason = "건설 토큰이 부족해요."
+	elif kind == "habitat": reason = "거주실은 고정된 집이에요."
+	var actions: Array = []
+	if not occupied:
+		actions.append({"id":"place", "label":"여기에 짓기", "enabled":not _place.disabled, "reason":reason})
+	else:
+		actions.append({"id":"remove", "label":"철거하기", "enabled":not _remove.disabled and not _locked, "reason":reason})
+	if _selected_slot >= 0:
+		actions.append({"id":"inspect", "label":"3D로 보기", "enabled":true, "reason":""})
+	var effect := _card_effect(kind)
+	if kind == "habitat": effect = "기지의 중심 · 철거 불가"
+	var cost_text := "건설 토큰 " + _cost_caption(kind) if not occupied else (_remove.text if kind != "habitat" else "고정 시설")
+	_facility_info.set_view_model({"slot_id":_selected_slot, "kind":kind, "title":UI.name_for(kind),
+		"summary":summaries.get(kind,""), "cost_text":cost_text,
+		"effects":[{"icon_id":kind,"label":"역할","value_text":effect}], "details":UI.description(kind), "actions":actions})
+
+func _on_facility_action(action_id: String) -> void:
+	if _session == null or not visible: return
+	var layout: Dictionary = _session.preview().state
+	var facility: Dictionary = Simulation.facility_at(layout, _selected_slot)
+	match action_id:
+		"place": _place_selected()
+		"remove":
+			if not _locked and _session.state.phase == "planning" and not facility.is_empty() and facility.type != "habitat":
+				edited.emit("remove", _selected_slot, "")
+		"inspect":
+			if _selected_slot >= 0 and _selected_slot < Rules.SLOT_COUNT: inspect_requested.emit()
 
 func _card_effect(kind: String) -> String:
 	match kind:

@@ -5,6 +5,8 @@ const Scenario = preload("res://resources/scenarios/lunar_training.tres")
 const Rules = preload("res://scripts/simulation/scenario.gd")
 const Session = preload("res://scripts/simulation/snapshot_store.gd")
 const UI = preload("res://scripts/ui/ui_style.gd")
+const SiteInteraction = preload("res://scripts/world/site_interaction.gd")
+var _site_interaction = SiteInteraction.new()
 
 @onready var station = $Station
 @onready var player = $Player
@@ -28,6 +30,8 @@ var _has_explored := false
 
 
 func _ready() -> void:
+	add_child(_site_interaction)
+	_site_interaction.configure(station)
 	get_window().focus_exited.connect(_pause)
 	terminal.closed.connect(_pause)
 	terminal.selected_slot_changed.connect(_highlight_selected)
@@ -110,8 +114,9 @@ func _physics_process(delta: float) -> void:
 			hud.set_input_notice(UI.trn("마우스 잠금이 풀렸어요. 다시 시작하려면 버튼을 눌러요.",
 				"Mouse capture was released. Click the button to resume."))
 			return
-		_aiming = player.sees_console(station.console)
-		hud.set_target(_aiming,player.global_position,-player.global_basis.z)
+		var target: Dictionary = _site_interaction.resolve_target(player.camera)
+		_aiming = target.kind != "none"
+		hud.set_target(_aiming,player.global_position,-player.global_basis.z,target.prompt)
 
 
 func _input(event: InputEvent) -> void:
@@ -133,9 +138,10 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 	if mode == "explore" and event.is_action_pressed(&"open_terminal", false):
-		if _aiming:
-			terminal.clear_notice()
+		var target: Dictionary = _site_interaction.resolve_target(player.camera)
+		if target.kind != "none":
 			_refresh()
+			terminal.open_context(target.slot_id)
 			_set_mode("terminal")
 		get_viewport().set_input_as_handled()
 

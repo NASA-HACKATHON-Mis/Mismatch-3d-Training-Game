@@ -1,6 +1,6 @@
 # 현장 조작·어린이용 기지 운영 화면 명세
 
-작성: 2026-11-15. 상태: A/B/C/D 구현 main 통합·인계 완료 및 이슈 종료. E 최종 연결 착수 가능. 기준 main `97a9f34` (착수 시 최신 origin/main 재확인).
+작성: 2026-11-15. 상태: A/B/C/D 구현 main 통합·인계 완료 및 이슈 종료. E 연결 구현 완료·사용자 확인 대기. 기준 main `97a9f34` (착수 시 최신 origin/main 재확인).
 
 ## 목표와 범위
 
@@ -103,6 +103,14 @@ root는 A/B/C 코드와 B의1280×800/960×600, C의840/280 PNG를 확인했다.
 
 PR #53 MERGED, source `e2dd07d7169af5b7621e34d2b7374fee2dfddd53`, merge `617a48791ef160449921bc885bb92be6fb25fa18`. 팀원 Windows/Godot4.7.2 전용232/0 및 독립 재검사232/0, 렌더244/0(동일 검사+12PNG), 280/360/520폭 기록을 PR에서 확인했다. 이는 팀원 기록이며 root 재실행으로 주장하지 않는다. FacilityInfoCard.set_view_model 및 action_requested API·로컬 SVG7개가 main에 존재하고 독립 구현 인수를 충족해 #46 종료.
 
-A~D 구현 이슈는 모두 CLOSED. 현재 신규 기능에서 남은 구현은 #47: SiteInteraction→mission E/HUD 연결, Terminal.open_context 진입, 실제 Session 기반 자원/시설 카드 데이터 공급 및 장착, action 재검사와 최종 흐름 확인이다. 미착수이며 외부 구현 대기는 해소되었다. 코드 대조에서 mission의 SiteInteraction 및 terminal의 ResourceOverview/FacilityInfoCard 장착은 아직 없다.
+A~D 구현 이슈는 모두 CLOSED. 아래는 OPS-E 착수 전 인계 기록이다. 현재 구현 결과는 문서 끝 OPS-E 연결 절을 따른다. 당시 남은 구현은 #47: SiteInteraction→mission E/HUD 연결, Terminal.open_context 진입, 실제 Session 기반 자원/시설 카드 데이터 공급 및 장착, action 재검사와 최종 흐름 확인이다. 미착수이며 외부 구현 대기는 해소되었다. 코드 대조에서 mission의 SiteInteraction 및 terminal의 ResourceOverview/FacilityInfoCard 장착은 아직 없다.
 
-기존 #38/#39는 수정 PR40/42 병합 완료·사용자 확인 대기, #26~#29는 남은 실제 조작/환경별 인수를 유지한다. #7 제출은 보류. 문서 검토·이슈 정리로 이 항목들을 PASS 처리하지 않는다.
+기존 #38/#39는 수정 PR40/42 병합 완료·사용자 확인 대기, #26~#29는 남은 실제 조작/환경별 인수를 유지한다. #7 제출은 보류. 문서 검토·이슈 정리로 이 항목들을 PASS 처리하지 않는다.## OPS-E 연결 구현 — 사용자 확인 대기
+
+현장 대상 조회를 mission의 E 입력/HUD에 연결했다. 매 E 입력에서 대상을 다시 조회해 지난 프레임의 오래된 대상이나 벽 뒤 대상을 열지 않는다. 빈 칸/건물은 해당 칸, 중앙 단말기는 전체 개요로 진입한다. open_context는 선택만 수행한다.
+
+단말기에 ResourceOverview와 FacilityInfoCard를 실제 장착했다. Session의 확정/미확정 배치를 읽어 현재·예상 용량을 분리 표시하고, 선택한 실제 시설 또는 건설 후보의 역할·비용·효과·행동 가능 여부를 공급한다. 카드 요청은 terminal에서 재검사한 뒤 기존 Session 명령으로 실행한다. 거주실 철거·점유 칸 중복 건설을 막는다. 긴 설명은 카드 상세에 보존한다.
+
+확인: Godot4.7.2 import0. 핵심 통합32, core90, 기존 단말기28, 마우스23, 입력20, UI38 = headless231/0. 실제 OpenGL 통합32/0 및1280×800/960×600 PNG 검토. tests/mouse_modes는 가짜 sees_console 대신 실제 카메라 조준으로 갱신하고 대체된 실제 플레이어 충돌을 probe 위치에서 치웠다. play_ui_integration은 새 그래프의 현재 수치/막대를 확인하도록 갱신했다.
+
+통합 검사는 실제 Session/세계 충돌을 사용하지만 합성 입력이다. 현장 E→카드 건설/철거→턴→되감기→pause/캡처 재개, 중앙 단말기 및 고정 거주실을 확인했다. 실제 사용자 Native/Web/iframe 조작은 아직 미실행. 960×600에서는 하단 카드 행동·턴 조작에 스크롤이 필요하다. #47은 구현 통합 완료·사용자 최종 확인 대기로 OPEN 유지한다. 기존 미완료 환경/플레이 이슈와 제출 보류는 그대로다.
