@@ -1,6 +1,6 @@
 # 현장 조작·어린이용 기지 운영 화면 명세
 
-작성: 2026-11-15. 상태: A/B/C 구현 main 통합 완료, D 및 E 최종 연결 대기. 기준 main `97a9f34` (착수 시 최신 origin/main 재확인).
+작성: 2026-11-15. 상태: A/B/C/D 구현 main 통합·인계 완료 및 이슈 종료. E 최종 연결 착수 가능. 기준 main `97a9f34` (착수 시 최신 origin/main 재확인).
 
 ## 목표와 범위
 
@@ -79,7 +79,7 @@ OPS-C: #45 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issue
 OPS-D: #46 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/46
 OPS-E: #47 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/47
 
-A/B/C는 아래 PR로 구현·검사·main 통합 완료. D는 담당 이슈 #46에서 실제 착수 상태를 확인한다. E는 A/B/C API 인계를 받았고 D 인계 및 최종 제품 연결이 남아 있다. 아래 최초 착수/배정 규칙과 현재 구현 상태를 구분한다.
+A/B/C는 아래 PR로 구현·검사·main 통합 완료. D도 PR #53 병합·API 인계를 완료했다. #43~#46은 CLOSED이며 #47은 ready, 최종 제품 연결이 남아 있다. 아래 최초 착수/배정 규칙과 현재 구현 상태를 구분한다.
 
 ## A/B/C 구현 인계 — 2026-11-15
 
@@ -97,5 +97,12 @@ root는 A/B/C 코드와 B의1280×800/960×600, C의840/280 PNG를 확인했다.
 - B 연결 순서: refresh(session) → open_context(slot_id). -1은 전체 개요. 칸 클릭은 선택만 하며 ‘여기에 짓기’가 실제 draft를 만든다. 기존 edited 등 신호 유지. 960 화면에서 보드25칸·자원·건설 버튼은 보이고 아래 턴/보조 조작은 스크롤한다.
 - C 최소폭280, 폭840 이상 가로3열·그 미만 세로. 현 단말기는 아직 기존 ResourceMeter를 사용하므로 새 그래프가 제품 화면에 장착됐다고 보고하지 않는다.
 - D 시설 카드의 구현을 대신하지 않았다. #47이 실제 Session에서 view model을 만들고 C/D를 장착해야 한다. C 장착 이후 화면 높이는 재확인한다.
-- 실제 Native/Web/iframe 사용자 조작 및 현장 E 최종 흐름은 이번 검사에 포함하지 않았다. #43~#45는 구현·전용 검사·main 병합·API 인계 범위를 완료해 사용자 요청으로 CLOSED 처리했다. 미완료 최종 연결·사용자 인수는 OPEN인 #47에서 추적한다. #46 팀원 작업은 진행 중이다. 기존 #26~29/#38/#39 인수와 #7 보류를 유지한다.
+- 실제 Native/Web/iframe 사용자 조작 및 현장 E 최종 흐름은 이번 검사에 포함하지 않았다. #43~#45는 구현·전용 검사·main 병합·API 인계 범위를 완료해 사용자 요청으로 CLOSED 처리했다. 미완료 최종 연결·사용자 인수는 OPEN인 #47에서 추적한다. #46도 PR #53 구현 인계 완료로 CLOSED 처리했다. 기존 #26~29/#38/#39 인수와 #7 보류를 유지한다.
 - 각 구현 worktree와 브랜치를 보존한다. 사용자 SUBMISSION.md 미커밋 변경은 건드리지 않았다. PPT/영상은 작업하지 않았다.
+## D 인계 확인 및 현재 남은 작업
+
+PR #53 MERGED, source `e2dd07d7169af5b7621e34d2b7374fee2dfddd53`, merge `617a48791ef160449921bc885bb92be6fb25fa18`. 팀원 Windows/Godot4.7.2 전용232/0 및 독립 재검사232/0, 렌더244/0(동일 검사+12PNG), 280/360/520폭 기록을 PR에서 확인했다. 이는 팀원 기록이며 root 재실행으로 주장하지 않는다. FacilityInfoCard.set_view_model 및 action_requested API·로컬 SVG7개가 main에 존재하고 독립 구현 인수를 충족해 #46 종료.
+
+A~D 구현 이슈는 모두 CLOSED. 현재 신규 기능에서 남은 구현은 #47: SiteInteraction→mission E/HUD 연결, Terminal.open_context 진입, 실제 Session 기반 자원/시설 카드 데이터 공급 및 장착, action 재검사와 최종 흐름 확인이다. 미착수이며 외부 구현 대기는 해소되었다. 코드 대조에서 mission의 SiteInteraction 및 terminal의 ResourceOverview/FacilityInfoCard 장착은 아직 없다.
+
+기존 #38/#39는 수정 PR40/42 병합 완료·사용자 확인 대기, #26~#29는 남은 실제 조작/환경별 인수를 유지한다. #7 제출은 보류. 문서 검토·이슈 정리로 이 항목들을 PASS 처리하지 않는다.
