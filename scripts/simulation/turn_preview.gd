@@ -19,7 +19,8 @@ static func choice_label(choice: String) -> String:
 		"acknowledge": return "보급 지연 확인"
 	return "현재 배치"
 
-static func inspect(snapshot: Dictionary, draft: Array, choice: String, pose: Dictionary = {}) -> Dictionary:
+static func inspect(snapshot: Dictionary, draft: Array, choice: String, pose: Dictionary = {},
+		advice_request: bool = false) -> Dictionary:
 	var source := snapshot.duplicate(true)
 	var edits := draft.duplicate(true)
 	var valid := Simulation.validate_draft(source, edits, pose.duplicate(true))
@@ -28,13 +29,13 @@ static func inspect(snapshot: Dictionary, draft: Array, choice: String, pose: Di
 	var capacity := Simulation.energy_cap(layout)
 	var output := {"current_energy":source.E, "current_capacity":Simulation.energy_cap(source),
 		"layout_capacity":capacity, "spill":maxi(0, source.E - capacity), "layout":layout,
-		"conditional":false, "outcomes":[]}
+		"conditional":false, "outcomes":[], "communication_cost":1 if advice_request else 0}
 	if source.phase != "planning": return output
 	var choices := choices_for(source.turn_id)
 	output.conditional = choice.is_empty() and choices != [""]
 	if not output.conditional: choices = [choice]
 	for option in choices:
-		var result := Simulation.simulate_turn(source.duplicate(true), edits.duplicate(true), option, pose.duplicate(true))
+		var result := Simulation.simulate_turn(source.duplicate(true), edits.duplicate(true), option, pose.duplicate(true), advice_request)
 		output.outcomes.append({"choice":option,"result":result,
 			"available":option != "shelter" or Simulation.count_kind(layout,"shelter") > 0})
 	return output
@@ -45,6 +46,10 @@ static func flow_lines(before: Dictionary, result: Dictionary) -> String:
 	var stats: Dictionary = result.get("stats", {})
 	var after: Dictionary = result.state_after
 	var lines: Array[String] = []
+	if int(result.get("communication_cost", 0)) > 0:
+		lines.append("조언 요청 전력 1 · 다음 턴을 확정하면 답장이 와요. (게임 상담 처리 시간)")
+	if "advice_received" in result.get("causes", []):
+		lines.append("지구의 답장: " + str(after.communication.message))
 	if skipped.has("power") or stats.is_empty():
 		lines.append("전력·산소·재배·식량·보급: 계산 전 중단")
 		return "\n".join(lines)

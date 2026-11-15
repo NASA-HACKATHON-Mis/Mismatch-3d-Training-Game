@@ -12,7 +12,7 @@ const BUILDABLE := ["generator", "battery", "greenhouse", "shelter"]
 const EVENTS := {"2": "power_fault", "4": "weather_alert", "5": "supply_delay"}
 
 @export var scenario_id := "lunar_training"
-@export var rule_version := "0.1"
+@export var rule_version := "0.2"
 @export var source_labels := {"resources": "educational_game_units", "events": "fictional_training_events"}
 
 
@@ -75,6 +75,8 @@ func initial_state() -> Dictionary:
 		"budget": 12, "next_instance_id": 2,
 		"fault_mode": "", "event_schedule": EVENTS.duplicate(true), "event_applied": {},
 		"supply_delivered": false, "mission_progress": 0,
+		# One game turn of processing, not the Moon's physical signal travel time.
+		"communication": {"pending": {}, "message": "", "response_turn": -1},
 		"player": {"position": [SPAWN.x, SPAWN.y, SPAWN.z], "yaw": 0.0, "pitch": 0.0},
 		"input_mode": "pause",
 	}
