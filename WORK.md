@@ -377,7 +377,7 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | 작업 | 범위 | 실제 이슈 | 구현 담당 | 상태 |
 | --- | --- | --- | --- | --- |
 | UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | jsjavsj | in-progress / 수정·자동검사 완료, 실제 브라우저 인수·main 통합 대기 |
-| UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | blocked / UX-R01 통합 대기 |
+| UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | in-progress / 첫 안내·화면 개선 |
 | UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | blocked / UX-R02 통합 대기 |
 | UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | blocked / UX-R03 통합 대기 |
 | UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | blocked / UX-R04 통합 대기 |
@@ -427,3 +427,17 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - PM은 변경 전 Native 화면에서 시작 클릭·E 단말기 열기·Esc 일시정지를 확인했다. Native 정상 시작 정지는 미재현이며 단말기 자체의 별도 충돌 결함도 확인되지 않았다. 최종 Native 화면 및 Chrome/Edge 직접 클릭·잠금 거부·Esc/포커스 복귀·iframe 입력 검사는 미실행이다. Windows Computer Use가 브라우저 URL 정책 확인 불가로 중단되어 추가 UI 조작을 하지 않았다.
 - Web export 성공(exit 0), `build/web/index.pck` SHA-256 `5526aa8f6a61da6915aa0b3f7a7402c99f205ee8e14af86a0644a8fa5b47fba3`. 모델·폰트 import의 줄바꿈만 바뀐 부수 파일 8개는 내용 차이가 없음을 확인하고 작업 전 상태로 복구했다.
 - 검증한 소스 커밋 `78a1affc49938eca9c771a94564f4d87430fcb64`를 작업 브랜치에 push하고 [PR #18](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/18)을 `Refs #11`, OPEN/DRAFT로 생성했다. 독립 Verifier가 커밋과 검증 파일 해시의 일치를 확인했다. #11 본문에도 결과·PR·미실행 조건을 반영했다. #11은 OPEN이며 실제 브라우저 입력 인수 전 main 병합·이슈 종료를 보류한다. #12는 #11 검증·통합 대기 상태를 유지한다. 외부 terrain 위치 복원 시 기존 안전 위치 판정에 따른 spawn 복귀는 기존 계약 그대로다.
+
+## UX-R01 사용자 확인·통합 및 UX-R02 착수 — 2026-11-15
+
+- 사용자가 로컬 빌드에서 정상 동작을 확인하고 #11 병합 및 #12 진행을 요청했다. PR #18을 일반 merge하여 `main`에 `0f53621426e6342d389b9cdcc60fb6a8768477cf`로 반영했고 #11 CLOSED(completed)를 재조회했다. 사용자 확인은 안내한 시작/E/기지 출입/Esc 재시작 흐름의 인수이며, 브라우저 종류·버전 및 잠금 거부/iframe 전체 행렬 검사로 확대해 기록하지 않는다.
+- #12 시작 패킷: `feature/UX-R02-guidance`, 위 최신 main과 같은 HEAD·clean에서 생성. 명세 `5ccae7f023cc18495b1ba536442bff2be7bb95dc`, 원계약 유지. 사람 담당 jsjavsj, 구현 보조 ux12_worker, 독립 ux11_verifier. 실제 #12 본문 claim/in-progress를 갱신·재조회했고 기존 IMPLEMENTATION_READY=true와 선행 통합을 확인했다.
+- 허용: UI/안내·시작 구도·관련 검사·현재 문서. UX-012의 실제 픽셀 반응형을 위해 project.godot의 stretch mode 한 줄 변경을 PM이 확인했다. 규칙 수치·원본 모델·저장/미래사건/보상·제출은 변경하지 않는다.
+
+- UX-R02 구현: 시작 전 PC 입력 요구와 한 행동 안내, 시작/단말기의 안내 건너뛰기·다시보기 동기화, 시설→사건 선택→턴 진행 안내를 추가했다. 안내 표시만 바뀌며 state/draft/attempt_id는 유지한다. 과거 기록은 완료 기록 전 설명을 보이고 기록이 생기면 열어 되감기·비교를 사용한다. 25칸과 모든 기존 배치 기능은 유지했다.
+- 넓은 화면은 지도/시설 2열, 1100px 미만은 시설 선택부터 세로로 배치하고 스크롤·키보드 초점 추적을 사용한다. 전체 화면 축소 대신 실제 픽셀 레이아웃으로 전환했다. 본문18px·보조16px 이상, 공통 글자색/비활성 글자색의 카드 배경 대비4.5:1 검사를 추가했다. 한글 테마와 영어 NORTH 표기 등 실제 글리프를 검사했고 별도 영문 모드를 새로 구현하지 않았다.
+- 시작 전용 카메라로 로봇의 주요 형태와 안내 패널을 분리했다. 최초 탐색 때 기존 플레이어 카메라로 복귀하며 플레이어 위치/시점 기록은 바꾸지 않는다. 그 뒤 일시정지에서도 탐색 카메라를 유지한다. 모델 원본은 수정하지 않았다.
+- 용어는 ‘이번 턴 진행’, ‘이번 변경 취소’, ‘전력 생산/소비’, ‘식량 수확/보급’으로 표시한다. 계산 전에 중단한 수확/보급을 0으로 표현하지 않는다. README의 실제 버튼·과거 기록 열기 절차를 함께 갱신했다.
+- Godot4.7.2 자체·독립 headless 검증: 기존246 + guidance_ui615 = 861개, exit0/실패0. 새 검사는 네 화면크기의 UI 너비·스크롤 프레임·글자크기/글리프/대비, T1/T2·안내skip/reopen·과거기록·복원·결과 문구·시작카메라 전환과 상태 불변을 확인한다. 실제 어린이의 이해도/사용성 관찰로 대체하지 않는다.
+- 실제 OpenGL 렌더링에서 1920×1080·1280×720·1024×768·800×900의 시작/단말기/T2사건/안내서 PNG16개를 생성했다. 당시624개 검사 통과(이후 대비7개 검사만 추가, 제품 동일). 로컬 증거 `logs/ux12/`는 Git 제외. PM이 로봇 전체·시작 버튼·단말기 안내/사건·안내서 화면을 검토했다.
+- Web export exit0, PCK SHA256 `60f8723c1b62410977ff3deb36d58f5fc9542bcea5c46daddc3e36380cb69b7d`. 기존 로컬 서버8072에서 새 빌드를 제공한다. 실제 브라우저 입력 및 디자인 검토 결과는 후속 기록에 구분해 추가한다.

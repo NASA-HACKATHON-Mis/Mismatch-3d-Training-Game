@@ -25,6 +25,7 @@ static func use_korean_theme(panel_root: Control) -> void:
 		font.variation_embolden = 0.55
 		_korean_theme = Theme.new()
 		_korean_theme.default_font = font
+		_korean_theme.default_font_size = 18
 	panel_root.theme = _korean_theme
 
 
@@ -113,7 +114,7 @@ static func label(parent: Control, value: String, size: int, color: Color = TEXT
 		wrap := false) -> Label:
 	var node := Label.new()
 	node.text = value
-	node.add_theme_font_size_override("font_size", size)
+	node.add_theme_font_size_override("font_size", maxi(16, size))
 	node.add_theme_color_override("font_color", color)
 	node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if wrap:
@@ -127,7 +128,7 @@ static func button(parent: Control, value: String, callback: Callable, color: Co
 	var node := Button.new()
 	node.text = value
 	node.custom_minimum_size.y = height
-	node.add_theme_font_size_override("font_size", 16)
+	node.add_theme_font_size_override("font_size", 18)
 	paint_button(node, color)
 	if callback.is_valid():
 		node.pressed.connect(callback)
@@ -139,7 +140,7 @@ static func paint_button(node: Button, color: Color, active := false) -> void:
 	node.add_theme_color_override("font_color", color)
 	node.add_theme_color_override("font_hover_color", TEXT)
 	node.add_theme_color_override("font_pressed_color", TEXT)
-	node.add_theme_color_override("font_disabled_color", Color("#708199"))
+	node.add_theme_color_override("font_disabled_color", Color("#9aaec8"))
 	node.add_theme_stylebox_override("normal", box(Color("#1c3b4b") if active else Color("#15263b"),
 		color if active else LINE, 8, 7))
 	node.add_theme_stylebox_override("hover", box(Color("#234359"), color, 8, 7))
