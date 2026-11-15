@@ -166,7 +166,7 @@ func refresh(session) -> void:
 		_remove.text = "이 시설 철거 · %d 토큰 돌려받기" % refund
 	else:
 		_remove.text = "고정 거주실 · 철거할 수 없어요"
-	_inspect.visible = not empty
+	_inspect.visible = _slot_id >= 0
 	_energy.set_values("전력", int(session.state.E), Simulation.energy_cap(session.state))
 	_oxygen.set_values("산소", int(session.state.O), 100)
 	_food.set_values("식량", int(session.state.F), 100)
@@ -193,7 +193,7 @@ func _update_access() -> void:
 	for button: Button in _choice_buttons.values(): button.disabled = not can_edit
 	_place.disabled = not can_edit or not facility.is_empty() or int(_layout_state.get("budget", 0)) < Rules.cost(_selected_kind, _slot_id)
 	_remove.disabled = not can_edit or facility.is_empty() or facility.get("type", "") == "habitat"
-	_inspect.disabled = not _access_allowed or facility.is_empty()
+	_inspect.disabled = not _access_allowed
 	if not _access_allowed:
 		_permission.text = _access_reason if not _access_reason.is_empty() else "시설을 가까이에서 바라봐요."
 	elif _view_mode == "details":
