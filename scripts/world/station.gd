@@ -76,12 +76,26 @@ func _atmosphere() -> void:
 	world.environment = settings
 	add_child(world)
 	var sun := DirectionalLight3D.new()
+	sun.name = "SunLight"
 	sun.rotation_degrees = Vector3(-31, -36, 0)
 	sun.light_color = Color("#ffdec4")
 	sun.light_energy = 1.18
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 50.0
 	add_child(sun)
+	# The light travels along -Z; its visible source belongs in the +Z direction.
+	var disk := MeshInstance3D.new()
+	disk.name = "SunDisk"
+	var disk_mesh := SphereMesh.new()
+	disk_mesh.radius = 4.0
+	disk_mesh.height = 8.0
+	disk_mesh.radial_segments = 32
+	disk_mesh.rings = 16
+	disk.mesh = disk_mesh
+	disk.position = sun.basis.z.normalized() * 220.0
+	disk.material_override = _mat(Color("#fff2d4"), true)
+	disk.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(disk)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 32
 	var star_mesh := SphereMesh.new()
@@ -141,6 +155,9 @@ func _deck() -> void:
 	for x: float in [-16.6, 16.6]:
 		_box(self, Vector3(x, 0.02, 2.5), Vector3(0.09, 0.04, 34.7), AMBER, true)
 		for z: float in [-14.6, -5.0, 5.0, 15.0, 20.5]:
+			# Match the visible post/cap envelope; keep the gaps and edge ramps open.
+			_collider(self, "EdgePost_%s_%s" % [str(x), str(z)],
+				Vector3(x, 0.385, z), Vector3(0.27, 0.77, 0.27))
 			_box(self, Vector3(x, 0.35, z), Vector3(0.18, 0.7, 0.18), INK)
 			_box(self, Vector3(x, 0.72, z), Vector3(0.27, 0.1, 0.27), AMBER, true)
 	for id in Rules.SLOT_COUNT:

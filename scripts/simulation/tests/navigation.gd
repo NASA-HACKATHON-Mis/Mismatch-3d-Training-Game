@@ -54,10 +54,12 @@ func _check_routes(game: Node, phase: String) -> void:
 		["north", Vector3(5, 0.02, -14), Vector3.FORWARD],
 		["east", Vector3(16, 0.02, 8), Vector3.RIGHT],
 		["west", Vector3(-16, 0.02, 8), Vector3.LEFT],
-		["south-east", Vector3(16.3, 0.02, 20.3), Vector3(1, 0, 1).normalized()],
-		["south-west", Vector3(-16.3, 0.02, 20.3), Vector3(-1, 0, 1).normalized()],
-		["north-east", Vector3(16.3, 0.02, -14.3), Vector3(1, 0, -1).normalized()],
-		["north-west", Vector3(-16.3, 0.02, -14.3), Vector3(-1, 0, -1).normalized()],
+		# Walk around the visible corner posts, which now correctly have collision.
+		# Direct post blocking is covered separately by edge_posts_sun.gd.
+		["south-east", Vector3(16.0, 0.02, 20.85), Vector3(1, 0, 1).normalized()],
+		["south-west", Vector3(-16.0, 0.02, 20.85), Vector3(-1, 0, 1).normalized()],
+		["north-east", Vector3(16.0, 0.02, -14.95), Vector3(1, 0, -1).normalized()],
+		["north-west", Vector3(-16.0, 0.02, -14.95), Vector3(-1, 0, -1).normalized()],
 	]:
 		player.global_position = route[1]
 		player.rotation.y = 0
