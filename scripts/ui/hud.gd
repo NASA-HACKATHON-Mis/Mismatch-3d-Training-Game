@@ -28,6 +28,7 @@ var _mode := "pause"
 var _intro: PanelContainer
 var _reticle: Label
 var _footnote: Label
+var _wayfinding: Label
 var help_button: Button
 var _start: Button
 var _input_notice: Label
@@ -97,6 +98,10 @@ func _ready() -> void:
 		_site_buttons[action] = card
 	_status_box.minimum_size_changed.connect(_layout)
 	_footnote = UI.label(self, "교육용 가상 훈련 · 수치는 게임 단위", 16, UI.MUTED)
+	_wayfinding = UI.label(self, "", 17, UI.CYAN)
+	_wayfinding.add_theme_color_override("font_outline_color", UI.DARK)
+	_wayfinding.add_theme_constant_override("outline_size", 4)
+	_wayfinding.hide()
 	_intro = UI.panel(self, Color("#0b182cf8"), 22)
 	_intro_scroll = ScrollContainer.new()
 	_intro_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -141,6 +146,7 @@ func _layout() -> void:
 	_status_box.size = Vector2(minf(448, maxf(1, size.x - 40)), _status_box.get_combined_minimum_size().y)
 	_status_box.position = Vector2((size.x - _status_box.size.x) * 0.5, size.y - _status_box.size.y - 42)
 	_footnote.position = Vector2(20, size.y - 30)
+	_wayfinding.position = Vector2(20, size.y - 62)
 	_inspection.position = Vector2(20,size.y-180)
 	_inspection.size = Vector2(maxf(1,size.x-40),140)
 
@@ -164,6 +170,7 @@ func show_mode(mode: String) -> void:
 	_guide_toggle.disabled = mode == "capturing"
 	_reticle.visible = mode == "explore"
 	_status_box.visible = mode == "explore" and _site_target.get("kind", "none") != "none"
+	_wayfinding.visible = mode == "explore" and _site_target.get("kind", "none") == "none"
 	if mode == "explore": has_started = true
 	_heading.text = _outcome_heading if _ended else ("계속 기지를 살펴봐요" if has_started else "달 기지를 지켜요")
 	for item in _training_copy: item.visible = not _ended
@@ -215,6 +222,10 @@ func _direction(vector: Vector3) -> String:
 
 func set_target(active: bool, position_3d: Vector3 = Vector3.ZERO, facing: Vector3 = Vector3.FORWARD, prompt: String = "") -> void:
 	_reticle.modulate = UI.CYAN if active else UI.MUTED
+	var offset := preload("res://scripts/simulation/scenario.gd").CONSOLE - position_3d
+	var angle := Vector2(facing.x, facing.z).angle_to(Vector2(offset.x, offset.z))
+	var arrow := "↑" if absf(angle) < PI / 4 else ("↓" if absf(angle) > 3 * PI / 4 else "→" if angle > 0 else "←")
+	_wayfinding.text = "기지 단말기 %s · %dm" % [arrow, roundi(Vector2(offset.x, offset.z).length())]
 	# Legacy callers can still update the reticle and a short prompt.
 	if active and not prompt.is_empty(): _hint.text = prompt
 
@@ -225,6 +236,7 @@ func set_site_target(target: Dictionary, state: Dictionary) -> void:
 	var facility: Dictionary = Simulation.facility_at(state, slot) if kind == "slot" else {}
 	_reticle.modulate = UI.CYAN if kind != "none" else UI.MUTED
 	_status_box.visible = _mode == "explore" and kind in ["slot", "console"]
+	_wayfinding.visible = _mode == "explore" and kind == "none"
 	_site_buttons.edit.visible = kind == "slot"
 	_site_buttons.inspect.visible = kind == "slot"
 	_site_buttons.details.visible = kind in ["slot", "console"]
@@ -239,7 +251,7 @@ func set_site_target(target: Dictionary, state: Dictionary) -> void:
 		_site_buttons.inspect.text = "[ 3 ]\n3D 보기"
 		_site_buttons.edit.disabled = state.get("phase", "") != "planning" or facility.get("type", "") == "habitat"
 		_site_buttons.details.disabled = false
-		_site_buttons.inspect.disabled = facility.is_empty()
+		_site_buttons.inspect.disabled = slot < 0 or slot >= preload("res://scripts/simulation/scenario.gd").SLOT_COUNT
 	_layout()
 
 func _request_site_action(action: String) -> void:

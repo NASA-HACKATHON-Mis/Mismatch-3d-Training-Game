@@ -55,7 +55,7 @@ func _run() -> void:
 	station.show_interaction_target(target, session.state)
 	await process_frame
 	check(hud._status_box.visible and hud._site_buttons.edit.visible, "Empty site has short square action menu")
-	check(hud._site_buttons.inspect.disabled, "Empty site has no building inspection action")
+	check(not hud._site_buttons.inspect.disabled, "Empty site supports the same 3D inspection shortcut")
 	check(station._interaction_highlight.visible and station._interaction_highlight.get_child_count() == 8, "Empty site highlights pad corners")
 	check(hud._status_box.size.x <= 448 and hud._status_box.size.y < 160, "Nearby menu replaces the full width notification bar")
 	if "--render" in OS.get_cmdline_user_args():
@@ -66,6 +66,7 @@ func _run() -> void:
 	panel._place_selected()
 	check(requests.is_empty(), "Opening a menu does not grant action permission")
 	panel.set_access_allowed(true)
+	check(panel._inspect.visible and not panel._inspect.disabled, "Empty site panel also offers 3D inspection")
 	panel._select_kind("battery")
 	check(session.state == before and session.draft.is_empty(), "Selection never changes simulation state")
 	panel._place_selected()
@@ -121,6 +122,15 @@ func _run() -> void:
 	hud.set_site_target({"kind": "none", "slot_id": -1}, placed.state)
 	station.show_interaction_target({"kind": "none", "slot_id": -1}, placed.state)
 	check(not hud._status_box.visible and not station._interaction_highlight.visible, "No target clears cards and world highlight")
+	hud.set_target(false, Vector3.ZERO, Vector3.RIGHT)
+	hud.set_site_target({"kind": "none", "slot_id": -1}, placed.state)
+	check(hud._wayfinding.visible and hud._wayfinding.text == "기지 단말기 → · 18m", "No target keeps a short terminal direction and distance")
+	if "--render" in OS.get_cmdline_user_args():
+		await _capture(viewport, "field-wayfinding-960.png")
+	hud.set_site_target({"kind": "slot", "slot_id": 11}, placed.state)
+	check(not hud._wayfinding.visible, "Target cards replace wayfinding without duplicate prompts")
+	hud.show_mode("field")
+	check(not hud._wayfinding.visible, "Field panel hides exploration wayfinding")
 	var wall := StaticBody3D.new()
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
