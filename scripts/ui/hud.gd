@@ -181,12 +181,13 @@ func _direction(vector: Vector3) -> String:
 	if absf(vector.x) > absf(vector.z): return "동쪽" if vector.x > 0 else "서쪽"
 	return "남쪽" if vector.z > 0 else "북쪽"
 
-func set_target(active: bool, position_3d: Vector3 = Vector3.ZERO, facing: Vector3 = Vector3.FORWARD) -> void:
+func set_target(active: bool, position_3d: Vector3 = Vector3.ZERO, facing: Vector3 = Vector3.FORWARD, prompt: String = "") -> void:
 	_reticle.modulate = UI.CYAN if active else UI.MUTED
 	var target := preload("res://scripts/simulation/scenario.gd").CONSOLE - position_3d
 	var angle := Vector2(facing.x,facing.z).angle_to(Vector2(target.x,target.z))
 	var relative := "앞쪽" if absf(angle) < PI/4 else ("뒤쪽" if absf(angle) > 3*PI/4 else "오른쪽" if angle > 0 else "왼쪽")
 	_hint.text = "[ E ] 단말기를 열어요" if active else "단말기 %s(%s) · 약 %dm. 시설 사이·바깥 통로를 따라 남쪽 입구 로봇 옆으로 돌아와 정면을 바라봐요." % [relative,_direction(target),roundi(Vector2(target.x,target.z).length())]
+	if active and not prompt.is_empty(): _hint.text = prompt
 	_hint.text += "\n이동 중에는 턴·자원이 바뀌지 않아요."
 	if _look_mode == "drag":
 		_hint.text = "마우스 잠금 대신 왼쪽 버튼 드래그로 둘러봐요.\n" + _hint.text
