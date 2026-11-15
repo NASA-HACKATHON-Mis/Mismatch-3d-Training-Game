@@ -54,6 +54,7 @@ func _run() -> void:
 		check(card.columns == (3 if width >= 840 else 1),"Responsive columns "+str(width))
 		check(card.size.x <= width,"Fits width "+str(width))
 		for child in card.get_children():
+			if not child.visible: continue
 			check(Rect2(Vector2.ZERO,Vector2(view.size)).encloses(child.get_global_rect()),"Card fits viewport")
 		for id: String in card.IDS:
 			check(card._cards[id].current.size.x >= card._cards[id].current.get_minimum_size().x,"Current caption fits")

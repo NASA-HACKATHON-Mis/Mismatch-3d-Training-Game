@@ -55,9 +55,15 @@ func _run() -> void:
 		await settle()
 		check(ui.visible and game.mode == "terminal", "terminal visible during geometry/capture")
 		check(not ui._working.vertical, "board and controls side by side")
-		for node in [ui._resource_grid, ui._slots[0], ui._slots[24]]:
+		for node in [ui._resource_grid, ui._slots[0], ui._advance]:
 			var rect: Rect2 = node.get_global_rect()
 			check(rect.position.x >= 0 and rect.end.x <= dimensions.x and rect.position.y >= 0 and rect.end.y <= dimensions.y, "resource and board visible " + str(dimensions) + " " + str(rect))
+		ui._scroll.ensure_control_visible(ui._slots[24])
+		await settle()
+		check(ui._scroll.get_global_rect().encloses(ui._slots[24].get_global_rect()), "Last board row reachable by scrolling")
+		check(Rect2(Vector2.ZERO,Vector2(dimensions)).encloses(ui._advance.get_global_rect()), "Advance remains visible after scrolling board")
+		ui._scroll.scroll_vertical = 0
+		await settle()
 		if "--render" in OS.get_cmdline_user_args():
 			await RenderingServer.frame_post_draw
 			var file := "res://logs/ops-b/terminal-%dx%d.png" % [dimensions.x,dimensions.y]

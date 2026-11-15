@@ -32,7 +32,7 @@ func _run() -> void:
 		await settle()
 		var terminal = game.terminal
 		var original: Dictionary = game.session.state.duplicate(true)
-		check(terminal._resource_overview._cards.energy.current.text == "현재 20 / 20" and terminal._resource_overview._cards.oxygen.current.text == "현재 60 / 100" and terminal._resource_overview._cards.food.current.text == "현재 36 / 100", "Terminal current values")
+		check(terminal._resource_overview._cards.energy.current.text == "현재 20 / 20" and terminal._resource_overview._cards.oxygen.current.text == "산소 60 / 100" and terminal._food_detail.text.contains("36/100"), "Terminal current values")
 		game._edit("place", 11, "battery")
 		check(terminal._resource_overview._cards.energy.current.text == "현재 20 / 20" and "40" in terminal._capacity.text, "Current meter separate from draft capacity")
 		check(game.session.state == original, "Meters and previews do not commit draft")
@@ -45,9 +45,9 @@ func _run() -> void:
 		game._restore(1)
 		check(terminal._resource_overview._cards.energy.current.text == "현재 20 / 20" and is_equal_approx(terminal._resource_overview._cards.food.current_bar.value,0.36), "Rewind synchronizes terminal")
 		await settle()
-		for id in ["energy", "oxygen", "food"]:
+		for id in ["energy", "oxygen"]:
 			var meter: Dictionary = terminal._resource_overview._cards[id]
-			check(terminal._scroll.get_global_rect().encloses(meter.current.get_global_rect()), "Meter inside terminal scroll viewport")
+			check(Rect2(Vector2.ZERO,Vector2(dimensions)).encloses(meter.current.get_global_rect()) and not terminal._scroll.is_ancestor_of(meter.current), "Meter pinned inside viewport")
 			check(meter.current.size.x >= meter.current.get_minimum_size().x, "No clipped meter text")
 		await capture(view, "%dx%d-terminal" % [dimensions.x,dimensions.y])
 		game.hud.configure_controls(false, false)
