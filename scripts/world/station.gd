@@ -1,8 +1,10 @@
 extends Node3D
-## Placeholder visual children can be replaced with GLB scenes. Collision stays in the wrapper.
+## Facility scenes supply the visuals. Collision stays in the slot wrapper.
 
 const Rules = preload("res://scripts/simulation/scenario.gd")
-const GENERATOR_MODEL_PATH := "res://assets/models/facility_generator.glb"
+const MODEL_DIR := "res://assets/models/"
+const GUIDE_POSITION := Rules.CONSOLE + Vector3(2.15, 0.0, 0.2)
+const GUIDE_SIZE := Vector3(0.76, 1.47, 0.53)
 const INK := Color("#121d2d")
 const ALLOY := Color("#c3d0d9")
 const AMBER := Color("#ffc16f")
@@ -15,16 +17,20 @@ const COLORS := {"habitat": CYAN, "generator": AMBER, "battery": VIOLET,
 var console: StaticBody3D
 var _wrappers := Node3D.new()
 var _materials := {}
-var _generator_model: PackedScene
+var _facility_models: Dictionary[String, PackedScene] = {}
+var _guide_collision: StaticBody3D
 
 
 func _ready() -> void:
-	if ResourceLoader.exists(GENERATOR_MODEL_PATH, "PackedScene"):
-		_generator_model = ResourceLoader.load(GENERATOR_MODEL_PATH, "PackedScene") as PackedScene
+	for kind: String in COLORS:
+		var model := _load_model("facility_" + kind)
+		if model != null:
+			_facility_models[kind] = model
 	_atmosphere()
 	_terrain()
 	_deck()
 	_create_console()
+	_create_guide_robot()
 	_wrappers.name = "FacilityWrappers"
 	add_child(_wrappers)
 
@@ -144,6 +150,27 @@ func sync_facilities(state: Dictionary) -> void:
 		_facility(facility)
 
 
+func _load_model(model_name: String) -> PackedScene:
+	var path := MODEL_DIR + model_name + ".glb"
+	if not ResourceLoader.exists(path, "PackedScene"):
+		return null
+	return ResourceLoader.load(path, "PackedScene") as PackedScene
+
+
+func _create_guide_robot() -> void:
+	var scene := _load_model("guide_robot")
+	if scene == null:
+		return
+	var robot := scene.instantiate() as Node3D
+	robot.name = "GuideRobot"
+	robot.position = GUIDE_POSITION
+	# The source faces -Z. Turn it toward the entrance on the +Z side.
+	robot.rotation.y = PI
+	add_child(robot)
+	_guide_collision = _collider(self, "GuideRobotCollision", GUIDE_POSITION + Vector3.UP * GUIDE_SIZE.y * 0.5,
+		GUIDE_SIZE)
+
+
 func _facility(facility: Dictionary) -> void:
 	var kind: String = facility.type
 	var id: int = facility.slot_id
@@ -159,8 +186,8 @@ func _facility(facility: Dictionary) -> void:
 	var model := Node3D.new()
 	model.name = "Visual"
 	wrapper.add_child(model)
-	if kind == "generator" and _generator_model != null:
-		model.add_child(_generator_model.instantiate())
+	if _facility_models.has(kind):
+		model.add_child(_facility_models[kind].instantiate())
 		return
 	_box(model, Vector3(0, 0.09, 0), Vector3(size.x, 0.18, size.z), INK)
 	_box(model, Vector3(0, 0.19, size.z * 0.49), Vector3(size.x * 0.84, 0.07, 0.05), tint, true)
@@ -210,6 +237,11 @@ func pose_is_safe(pose: Dictionary, state: Dictionary) -> bool:
 		return false
 	if absf(p[0]) < 1.1 and absf(float(p[2]) - Rules.CONSOLE.z) < 0.65:
 		return false
+	if _guide_collision != null and p[1] < GUIDE_SIZE.y and p[1] + 1.8 > 0.0:
+		var x := maxf(absf(float(p[0]) - GUIDE_POSITION.x) - GUIDE_SIZE.x * 0.5, 0.0)
+		var z := maxf(absf(float(p[2]) - GUIDE_POSITION.z) - GUIDE_SIZE.z * 0.5, 0.0)
+		if x * x + z * z < 0.09:
+			return false
 	for facility: Dictionary in state.facilities:
 		if Rules.facility_overlaps_player(facility.type, facility.slot_id, pose):
 			return false
