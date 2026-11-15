@@ -75,9 +75,9 @@ func _run() -> void:
 		key(game,"base_map")
 		check(game.mode == "grid" and game._grid_view.visible and not game.terminal.visible, "4 opens dedicated read-only map anywhere")
 		var map = game._grid_view
-		check(map._slots.size() == 25 and map._slots[0].text.contains("발전기") and map._slots[12].text.contains("거주실"), "map shows all 25 cells and installed facilities")
-		check(map._slots[24].text.contains("−") and map._slots[24].text.contains("빈 부지"), "map distinguishes pending removal from empty")
-		check(map._slots[11].text.contains("●") and map._summary.text.contains("변경 예정"), "current location and pending layout are marked")
+		check(map._slots.size() == 25 and map._slots[0].text.contains("Solar array") and map._slots[12].text.contains("Habitat"), "map shows all 25 cells and installed facilities")
+		check(map._slots[24].text.contains("−") and map._slots[24].text.contains("Empty pad"), "map distinguishes pending removal from empty")
+		check(map._slots[11].text.contains("●") and map._summary.text.contains("planned changes"), "current location and pending layout are marked")
 		map._select(0)
 		var before: Dictionary = game.session.state.duplicate(true)
 		var draft: Array = game.session.draft.duplicate(true)

@@ -111,7 +111,7 @@ func _freeze_weather() -> bool:
 	var context: Dictionary = _weather.freeze()
 	var configured: Dictionary = session.configure_weather(context)
 	if configured.has("error"):
-		terminal.set_notice("이번 훈련의 자료를 고정하지 못했어요. 게임을 다시 열어 주세요.", true)
+		terminal.set_notice("Could not lock this mission's data. Please restart the game.", true)
 		return false
 	_on_weather_updated(context)
 	_refresh()
@@ -128,17 +128,17 @@ func _set_advice_request(enabled: bool) -> void:
 
 func _advice_error(code: String) -> String:
 	match code:
-		"advice_pending": return "지구의 답장을 기다리는 중이에요."
-		"advice_too_late": return "훈련이 끝나기 전에 답장을 받을 시간이 없어요."
-		"advice_power": return "조언 요청에 저장 전력 1이 필요해요."
-	return "지금은 요청을 바꿀 수 없어요. 턴과 남은 전력을 확인해요."
+		"advice_pending": return "Waiting for a reply from Earth."
+		"advice_too_late": return "A new reply would arrive after the mission ends."
+		"advice_power": return "An advice request needs 1 stored power."
+	return "Cannot change the request now. Check the turn and stored power."
 
 
 func _highlight_selected(slot: int) -> void:
 	if mode not in ["terminal", "inspect"]: return
 	var layout: Dictionary = _layout_state
 	var facility: Dictionary = preload("res://scripts/simulation/simulation.gd").facility_at(layout,slot)
-	station.highlight_slot(slot,UI.name_for(facility.type) if not facility.is_empty() else "빈 칸")
+	station.highlight_slot(slot,UI.name_for(facility.type) if not facility.is_empty() else "Empty pad")
 
 func _inspect_selected() -> void:
 	if mode != "terminal" or terminal._selected_slot < 0: return
@@ -168,11 +168,11 @@ func _begin_inspection(slot: int, return_mode: String) -> void:
 	_observation_camera.position = target + Vector3(7,9,10)
 	_observation_camera.look_at(target + Vector3(0,0.8,0))
 	_observation_camera.make_current()
-	var state_label := "미확정 배치 포함" if not session.draft.is_empty() else "현재 확정 배치"
-	hud.show_inspection("지도 %02d번 칸 · %s · 청록색 테두리와 번호가 선택 위치예요." % [slot+1,state_label])
-	hud.set_inspection_return({"terminal":"대시보드로 돌아가기 · Esc", "field":"현장 메뉴로 돌아가기 · Esc", "grid":"기지 지도로 돌아가기 · Esc", "explore":"탐색으로 돌아가기 · Esc"}.get(return_mode, "돌아가기 · Esc"))
+	var state_label := "includes planned changes" if not session.draft.is_empty() else "confirmed layout"
+	hud.show_inspection("Pad %02d · %s · The cyan outline marks your selection." % [slot+1,state_label])
+	hud.set_inspection_return({"terminal":"Back to dashboard · Esc", "field":"Back to site menu · Esc", "grid":"Back to base map · Esc", "explore":"Back to exploring · Esc"}.get(return_mode, "Back · Esc"))
 	_set_mode("inspect")
-	station.highlight_slot(slot, "3D 관찰")
+	station.highlight_slot(slot, "3D view")
 
 func _close_inspection() -> void:
 	if mode != "inspect": return
@@ -231,7 +231,7 @@ func _physics_process(delta: float) -> void:
 		_update_capture(delta, Input.mouse_mode == Input.MOUSE_MODE_CAPTURED)
 		return
 	if mode == "field":
-		_site_panel.set_access_allowed(_site_access(_active_site_slot), "해당 위치 가까이에서 작업해요.")
+		_site_panel.set_access_allowed(_site_access(_active_site_slot), "Stand near this site and face it to make changes.")
 	if mode == "explore":
 		if look_mode == "captured" and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			if _capture_release_grace > 0.0:
@@ -240,7 +240,7 @@ func _physics_process(delta: float) -> void:
 				_set_mode("explore", "drag")
 				return
 			_pause()
-			hud.set_input_notice(UI.trn("마우스 잠금이 풀렸어요. 다시 시작하려면 버튼을 눌러요.",
+			hud.set_input_notice(UI.trn("Mouse capture was released. Click Resume to continue.",
 				"Mouse capture was released. Click the button to resume."))
 			return
 		_capture_release_grace = maxf(0.0, _capture_release_grace - delta)
@@ -313,7 +313,7 @@ func _resume_exploring(preferred: String) -> void:
 		_set_mode("explore", "drag")
 		return
 	_capture_elapsed = 0.0
-	hud.set_input_notice("마우스 잠금을 기다리고 있어요. Esc로 취소할 수 있어요.")
+	hud.set_input_notice("Waiting for mouse capture. Esc cancels.")
 	_set_mode("capturing")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -335,7 +335,7 @@ func _update_capture(delta: float, captured: bool) -> void:
 			_set_mode("explore", "drag")
 			return
 		_set_mode("pause")
-		hud.set_input_notice(UI.trn("마우스 잠금을 허용하지 못했어요. 게임 화면을 클릭한 뒤 다시 시작해요.\n계속 막히면 게임을 새 탭에서 열어 주세요.",
+		hud.set_input_notice(UI.trn("Mouse capture was blocked. Click the game to resume.\nIf it stays blocked, open the game in its own tab.",
 			"Mouse capture was not allowed. Click the game and try again.\nIf it stays blocked, open the game in its own tab."))
 
 
@@ -406,9 +406,9 @@ func _set_mode(new_mode: String, requested_look_mode: String = "captured") -> vo
 	if mode not in ["terminal", "inspect", "field"]: station.highlight_slot(-1)
 	if mode == "grid": _grid_view.refresh(session, player.position)
 	if mode == "field":
-		station.highlight_slot(_active_site_slot, "현장 작업" if _site_edit_enabled else "현장 상세")
+		station.highlight_slot(_active_site_slot, "Site editing" if _site_edit_enabled else "Site details")
 		_site_panel.refresh(session)
-		_site_panel.set_access_allowed(_site_access(_active_site_slot), "해당 위치 가까이에서 작업해요.")
+		_site_panel.set_access_allowed(_site_access(_active_site_slot), "Stand near this site and face it to make changes.")
 	if terminal.visible:
 		terminal.focus_primary()
 
@@ -425,7 +425,7 @@ func _refresh() -> void:
 func _edit(action: String, slot_id: int, kind: String) -> void:
 	# Dashboard selections and forged/stale signals cannot edit a remote site.
 	if mode != "field" or help.visible or not _site_panel.visible or not _site_edit_enabled or slot_id != _active_site_slot or not _site_access(slot_id):
-		var notice := "설치·철거는 해당 위치 가까이에서 1번 메뉴로 해요."
+		var notice := "Build or remove only at that site. Walk up and press 1."
 		terminal.set_notice(notice, true)
 		_site_panel.set_notice(notice, true)
 		return
@@ -436,7 +436,7 @@ func _edit(action: String, slot_id: int, kind: String) -> void:
 	var state: Dictionary = verdict.state
 	station.sync_facilities(state)
 	_refresh()
-	_site_panel.set_notice("이 위치의 배치를 바꿨어요. 대시보드에서 턴을 진행하면 확정돼요.")
+	_site_panel.set_notice("Site changed. Run a turn at the dashboard to confirm it.")
 
 
 func _cancel_draft() -> void:
@@ -444,7 +444,7 @@ func _cancel_draft() -> void:
 	# A dashboard cancellation may cancel a question, never undo remote builds.
 	session.set_advice_request(false)
 	_refresh()
-	terminal.set_notice("질문 예약을 취소했어요. 배치 취소는 해당 현장의 1번 메뉴에서 해요.")
+	terminal.set_notice("Advice request cancelled. Undo building plans at that site with 1.")
 
 
 func _commit(event_choice: String) -> void:
@@ -462,7 +462,7 @@ func _commit(event_choice: String) -> void:
 	terminal.on_result(result.turn_id)
 	_refresh()
 	if result.phase == "turn_complete":
-		terminal.set_notice("T%d 완료! 전력·산소·식량을 지켰어요. 다음 턴을 준비해요." % result.turn_id)
+		terminal.set_notice("T%d complete! Power, oxygen and food are safe. Prepare the next turn." % result.turn_id)
 	else:
 		terminal.scroll_to_outcome()
 
@@ -485,6 +485,6 @@ func _restore(turn_id: int) -> void:
 	terminal.on_restore(turn_id)
 	_refresh()
 	_set_mode("terminal")
-	terminal.set_notice(UI.trn("T%d 시작으로 돌아왔어요. 다르게 시도해 보세요.",
+	terminal.set_notice(UI.trn("Back at the start of T%d. Try a different choice.",
 		"Rewound to the start of T%d. Try a different choice.") % turn_id if safe else
-		UI.trn("안전한 위치로 돌아왔어요.", "Returned to a safe position."))
+		UI.trn("Returned to a safe position.", "Returned to a safe position."))

@@ -288,13 +288,13 @@ func interaction_target_for(collider: Node) -> Dictionary:
 	if not is_instance_valid(collider) or not is_ancestor_of(collider):
 		return none
 	if collider == console:
-		return {"kind": "console", "slot_id": -1, "prompt": "2 / E · 대시보드"}
+		return {"kind": "console", "slot_id": -1, "prompt": "2 / E · Dashboard"}
 	var node := collider
 	while node != self and node != null:
 		if node.get_parent() == _wrappers:
 			var slot: int = node.get_meta("slot_id", -1)
 			if slot >= 0 and slot < Rules.SLOT_COUNT:
-				return {"kind": "slot", "slot_id": slot, "prompt": "2 · 건물 보기"}
+				return {"kind": "slot", "slot_id": slot, "prompt": "2 · View details"}
 			return none
 		node = node.get_parent()
 	return none

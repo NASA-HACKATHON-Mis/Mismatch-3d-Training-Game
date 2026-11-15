@@ -11,11 +11,11 @@ const ResourceMeter = preload("res://scripts/ui/resource_meter.gd")
 const ICON_PATH := "res://assets/ui/operations/facilities/"
 const ICONS := {"generator": "energy", "battery": "storage", "greenhouse": "food", "shelter": "shield", "habitat": "oxygen"}
 const EFFECTS := {
-	"generator": "햇빛을 전력으로 바꿔요.",
-	"battery": "전력을 더 많이 저장해요.",
-	"greenhouse": "전력을 써서 식량을 길러요.",
-	"shelter": "우주날씨 경보 때 대피해요.",
-	"habitat": "승무원의 산소를 만들어요."
+	"generator": "Turns sunlight into power.",
+	"battery": "Stores more power for later.",
+	"greenhouse": "Uses power to grow food.",
+	"shelter": "Keeps the crew safe during alerts.",
+	"habitat": "Makes oxygen for the crew."
 }
 
 var _session
@@ -62,9 +62,9 @@ func _ready() -> void:
 	var heading := UI.row(column, 8)
 	var titles := UI.column(heading, 3)
 	UI.grow(titles)
-	_subtitle = UI.label(titles, "현장 조작", 16, UI.CYAN)
+	_subtitle = UI.label(titles, "Site menu", 16, UI.CYAN)
 	_title = UI.label(titles, "", 26, UI.TEXT, true)
-	UI.button(heading, "닫기\nEsc", func(): closed.emit(), UI.MUTED, 52)
+	UI.button(heading, "Close\nEsc", func(): closed.emit(), UI.MUTED, 52)
 	_site_tags = UI.label(column, "", 16, UI.AMBER, true)
 	_budget = UI.label(column, "", 20, UI.AMBER)
 	_choices = GridContainer.new()
@@ -93,11 +93,11 @@ func _ready() -> void:
 	_effect = UI.label(feature_text, "", 16, UI.MUTED, true)
 	_place = UI.button(column, "", _place_selected, UI.CYAN, 48)
 	_remove = UI.button(column, "", _remove_selected, UI.ALERT, 48)
-	_inspect = UI.button(column, "3D로 살펴보기", _request_inspect, UI.PURPLE, 44)
+	_inspect = UI.button(column, "View in 3D", _request_inspect, UI.PURPLE, 44)
 	_permission = UI.label(column, "", 16, UI.AMBER, true)
 	_notice = UI.label(column, "", 17, UI.CYAN, true)
 	_notice.hide()
-	UI.label(column, "현재 기지 자원", 17, UI.MUTED)
+	UI.label(column, "Current base resources", 17, UI.MUTED)
 	var resources := UI.row(column, 12)
 	_energy = ResourceMeter.new()
 	_oxygen = ResourceMeter.new()
@@ -108,7 +108,7 @@ func _ready() -> void:
 	_energy.set_color(UI.AMBER)
 	_oxygen.set_color(UI.CYAN)
 	_food.set_color(UI.GREEN)
-	UI.label(column, "배치를 마치면 단말기에서 턴을 진행해요.", 16, UI.MUTED, true)
+	UI.label(column, "After building, run a turn at the base console.", 16, UI.MUTED, true)
 	resized.connect(_position_card)
 	_position_card()
 	hide()
@@ -125,7 +125,7 @@ func open_site(session, slot_id: int, view_mode: String = "edit") -> void:
 	_view_mode = view_mode if view_mode in ["edit", "details"] else "details"
 	_selected_kind = "generator"
 	_access_allowed = false # Mission must explicitly grant the current physical access.
-	_access_reason = "시설을 가까이에서 바라봐요."
+	_access_reason = "Stand near the site and face it."
 	set_notice("")
 	refresh(session)
 	show()
@@ -140,46 +140,46 @@ func refresh(session) -> void:
 	var empty := facility.is_empty()
 	var editing := _view_mode == "edit"
 	var kind: String = _selected_kind if empty and editing else str(facility.get("type", ""))
-	_subtitle.text = "현장 설치·철거" if editing else "현장 상세 정보"
-	_title.text = "%02d번 · %s" % [_slot_id + 1, "빈 부지" if empty else UI.name_for(kind)] if _slot_id >= 0 else "선택할 수 없는 위치"
+	_subtitle.text = "Build / Remove here" if editing else "Site details"
+	_title.text = "Pad %02d · %s" % [_slot_id + 1, "Empty pad" if empty else UI.name_for(kind)] if _slot_id >= 0 else "Unavailable site"
 	var tags: Array[String] = []
-	if Rules.SUNLIT.has(_slot_id): tags.append("햇빛이 잘 들어요")
-	if Rules.SHIELDED.has(_slot_id): tags.append("차폐 지형 · 대피소 할인")
-	_site_tags.text = " · ".join(tags) if not tags.is_empty() else "일반 부지"
-	_budget.text = "건설 토큰  %d" % int(_layout_state.get("budget", 0))
+	if Rules.SUNLIT.has(_slot_id): tags.append("Sunlit pad")
+	if Rules.SHIELDED.has(_slot_id): tags.append("Shielded terrain · Cheaper shelter")
+	_site_tags.text = " · ".join(tags) if not tags.is_empty() else "Standard pad"
+	_budget.text = "Build tokens  %d" % int(_layout_state.get("budget", 0))
 	_choices.visible = editing and empty and _slot_id >= 0
 	for choice: String in _choice_buttons:
 		var cost := Rules.cost(choice, _slot_id)
 		var button: Button = _choice_buttons[choice]
-		button.text = "%s\n%d 토큰" % [UI.name_for(choice), cost]
+		button.text = "%s\n%d tokens" % [UI.name_for(choice), cost]
 		UI.paint_button(button, UI.FACILITY_COLORS[choice], choice == _selected_kind)
 	_facility_icon.visible = not kind.is_empty()
 	if not kind.is_empty(): _facility_icon.texture = load(ICON_PATH + ICONS.get(kind, "info") + ".svg")
-	_description.text = EFFECTS.get(kind, "아직 시설이 없어요.")
+	_description.text = EFFECTS.get(kind, "No facility here yet.")
 	_effect.text = _effect_text(kind, facility)
 	_place.visible = editing and empty and _slot_id >= 0
-	_place.text = "여기에 %s 설치 · %d 토큰" % [UI.name_for(_selected_kind), Rules.cost(_selected_kind, _slot_id)]
+	_place.text = "Build %s · %d tokens" % [UI.name_for(_selected_kind), Rules.cost(_selected_kind, _slot_id)]
 	_remove.visible = editing and not empty
 	if not empty and kind != "habitat":
 		@warning_ignore("integer_division")
 		var refund: int = int(facility.get("actual_paid_cost", 0)) if int(facility.instance_id) >= int(session.state.next_instance_id) else int(facility.get("actual_paid_cost", 0)) / 2
-		_remove.text = "이 시설 철거 · %d 토큰 돌려받기" % refund
+		_remove.text = "Remove · Get %d %s back" % [refund, "token" if refund == 1 else "tokens"]
 	else:
-		_remove.text = "고정 거주실 · 철거할 수 없어요"
+		_remove.text = "Fixed habitat · Cannot remove"
 	_inspect.visible = _slot_id >= 0
-	_energy.set_values("전력", int(session.state.E), Simulation.energy_cap(session.state))
-	_oxygen.set_values("산소", int(session.state.O), 100)
-	_food.set_values("식량", int(session.state.F), 100)
+	_energy.set_values("Power", int(session.state.E), Simulation.energy_cap(session.state))
+	_oxygen.set_values("Oxygen", int(session.state.O), 100)
+	_food.set_values("Food", int(session.state.F), 100)
 	_update_access()
 
 func _effect_text(kind: String, facility: Dictionary) -> String:
 	match kind:
-		"generator": return "기본 전력 +%d / 턴 · 사건에 따라 달라져요" % (18 if Rules.SUNLIT.has(_slot_id) else 12)
-		"battery": return "전력 저장 한도 +20"
-		"greenhouse": return "전력 4 사용 · 3번 가동하면 식량 +18\n성장 %d / 3" % int(facility.get("growth", 0))
-		"shelter": return "경보 때 단말기에서 ‘대피’를 골라요."
-		"habitat": return "전력 6 → 산소 8 · 고정 시설"
-	return "설치하려면 닫고 1을 눌러요."
+		"generator": return "Base power +%d / turn · Events may change this" % (18 if Rules.SUNLIT.has(_slot_id) else 12)
+		"battery": return "Power storage limit +20"
+		"greenhouse": return "Uses 4 power · +18 food after 3 active turns\nGrowth %d / 3" % int(facility.get("growth", 0))
+		"shelter": return "Choose Take shelter at the console during an alert."
+		"habitat": return "6 power → 8 oxygen · Fixed facility"
+	return "Close this view and press 1 to build here."
 
 func set_access_allowed(enabled: bool, reason: String = "") -> void:
 	_access_allowed = enabled and _slot_id >= 0
@@ -195,15 +195,15 @@ func _update_access() -> void:
 	_remove.disabled = not can_edit or facility.is_empty() or facility.get("type", "") == "habitat"
 	_inspect.disabled = not _access_allowed
 	if not _access_allowed:
-		_permission.text = _access_reason if not _access_reason.is_empty() else "시설을 가까이에서 바라봐요."
+		_permission.text = _access_reason if not _access_reason.is_empty() else "Stand near the site and face it."
 	elif _view_mode == "details":
-		_permission.text = "정보를 보는 화면이에요."
+		_permission.text = "Read-only details."
 	elif _session.state.phase != "planning":
-		_permission.text = "턴이 끝났어요. 단말기에서 다음 턴을 준비해요."
+		_permission.text = "The turn has ended. Use the console to continue."
 	elif facility.is_empty() and _place.disabled:
-		_permission.text = "건설 토큰이 부족해요."
+		_permission.text = "Not enough build tokens."
 	else:
-		_permission.text = "선택한 이 위치에서만 바꿀 수 있어요."
+		_permission.text = "Changes apply only to this site."
 
 func set_notice(text: String, is_error: bool = false) -> void:
 	_notice.text = text

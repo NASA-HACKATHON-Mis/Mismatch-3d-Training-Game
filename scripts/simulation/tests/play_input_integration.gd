@@ -39,7 +39,7 @@ func _run() -> void:
 	game._update_capture(2.0, false)
 	check(game.look_mode == "drag" and player.look_mode == "drag" and player.exploring, "Real player enters fallback")
 	check(is_instance_valid(player.avatar) and player.avatar.get_parent() == player, "Body attached to yaw root")
-	check("Space" in game.hud._controls.text and "드래그" in game.help._controls.text, "Integrated capabilities advertised")
+	check("Space" in game.hud._controls.text and "drag" in game.help._controls.text, "Integrated capabilities advertised")
 	var yaw: float = player.rotation.y
 	view.push_input(motion(Vector2(700,300),false),true)
 	check(player.rotation.y == yaw, "Hover cannot rotate")

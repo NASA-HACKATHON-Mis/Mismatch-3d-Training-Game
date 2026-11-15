@@ -89,12 +89,12 @@ static func advice_request_error(state: Dictionary) -> String:
 
 static func _advice_for(state: Dictionary) -> String:
 	if state.turn_id <= 3:
-		return "발전기 고장 때는 저장 전력이 중요해요. 전력이 부족하면 재배를 잠깐 쉬게 해 봐요."
+		return "Stored power helps during an outage. Pause your greenhouses if power is low."
 	if shelter_required(state) and count_kind(state, "shelter") == 0 and state.turn_id <= 4:
-		return "우주 날씨 경보에 대비해 대피소를 준비해요. 대피할 때는 재배가 쉬어요."
+		return "Build a shelter before an alert. Greenhouses pause while the crew shelters."
 	if state.F <= 24:
-		return "남은 식량을 살펴봐요. 재배실은 세 번 가동해야 수확하고 전력도 필요해요."
-	return "다음 턴 예상 자원과 시설 비용을 함께 살펴봐요. 바꾸기 전과 후를 비교해 보세요."
+		return "Check your food. Greenhouses need power and three active turns before harvest."
+	return "Check the next-turn preview and facility costs. Compare before and after each change."
 
 
 static func simulate_turn(snapshot: Dictionary, draft: Array, event_choice: String,
