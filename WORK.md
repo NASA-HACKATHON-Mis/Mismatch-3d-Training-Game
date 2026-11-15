@@ -356,3 +356,31 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - Godot `4.7.2.stable.official.ed1daf0bf`의 headless import와 기존 161개·새 안내서 검사 15개가 자체·독립 실행에서 통과했다. 별도 Windows 렌더에서 한국어 글자, 시설과 비교 화면, 출처 카드와 키보드 초점 표시를 확인했다. `--headless --path . --export-release Web build/web/index.html` 성공. 최종 PCK 7,378,664 B의 SHA-256은 `ca5193353dbbf7be3fa1a2579dad1727adbfc8ce11bf9bb1cd72fbbc28e0c3ac`이다. 두 PC의 전체 브라우저 플레이는 #6에서 확인한다.
 - 독립 검사에서 최종 PCK만으로 실제 안내서 씬을 열어 한글 글리프, OFL 라이선스, DONKI 원자료와 metadata의 오프라인 로드를 확인했다.
 - 최종 Web 빌드에서 한국어 시작 화면, 안내서 클릭, 실제 자료 탭의 NASA·CSA 카드, Esc로 시작 화면 복귀, H로 다시 열기와 Tab 키 초점 표시를 확인했다.
+
+## 로컬 UX 명세 초안 — 2026-11-15 Asia/Seoul
+
+- 사용자 “백로그에 있는것들을 명세에 올려서 보여줘”에 따라 ux_spec_worker가 [UX_REDESIGN_SPEC v1.0](UX_REDESIGN_SPEC.md)을 작성했다. 기준 HEAD `9907d51d54b0b3a638cd61a6c7de29f46ff46e49`, 브랜치 `docs/HH-007-submission-prep` 유지. UX-001~030의 관찰·목표·수용조건·검사·우선순위·규칙 영향을 연결한 로컬 검토 초안이다.
+- 문서 구조 자체 확인: 30개 ID를 각각 1회 제목으로 포함하고 기존 START_SPEC v0.1 규칙과 예시를 대조했다. 이번 작업에서 게임 구현/실행 재현/사용자 테스트는 수행하지 않았으며 백로그 해결 확인도 하지 않았다. ux_spec_verify의 독립 문서 검토를 통과했고, 기존 게임과 구분되도록 변경이력의 상태를 “UX 개선 미구현/미검증”으로 명확히 했다.
+- 기존 SUBMISSION.md 변경과 Git 제외 LOCAL_BACKLOG.md 원문을 보존한다. 제품 코드·규칙·모델·브랜치 변경, Git stage/commit/push, 이슈 생성·원격 공개는 수행하지 않았다. 다음은 사용자에게 초안 제시이며, 제품 구현 준비 완료를 선언하지 않는다.
+
+## UX 리팩터링 작업판
+
+- 2026-11-15: 사용자 승인에 따라 refactor_docs_worker가 읽기 쉬운 명세 v1.1, 상세 수용 기준, 실제 GitHub 작업 이슈 6개를 준비한다. 사용자는 개발하지 않고 Codex가 구현과 별도 검증을 맡는다. dyhan0528는 제품 Owner이며 개발 assignee로 배정하지 않는다. jsjavsj의 추가 모델 작업도 배정하지 않는다.
+- 현재 기준: `docs/HH-007-submission-prep` / `9907d51d54b0b3a638cd61a6c7de29f46ff46e49`. 기존 SUBMISSION.md dirty와 Git 제외 LOCAL_BACKLOG.md를 보존한다. #1~6 CLOSED, #7 OPEN/제출 보류를 실제 조회했다.
+- UX-DOC-001 completed: UX_REDESIGN_SPEC.md를 쉬운 6묶음으로 개편하고 docs/UX_ACCEPTANCE.md에 상세30항목을 보존, README 진입점을 갱신한다. 독립 Verifier 검토 뒤 명시 파일만 commit한다. 제품 코드는 변경하지 않는다.
+- UX-PUBLISH-001 executing: 승인 저장소 `NASA-HACKATHON-Mis/Mismatch-3d-Training-Game`, 문서 브랜치 `docs/UX-refactoring-plan` 생성 및 명시 문서 commit/push. main·기존 core·모델 브랜치·SUBMISSION·로컬 백로그는 게시 대상이 아니다. 요청 근거는 사용자의 문서 업데이트·이슈 작성 진행 승인이다.
+- UX-ISSUES-001 unrequested: 같은 저장소에 UX-R01~06 중복 조회 후 create/update, 본문 파일은 logs/ux-refactor/UX-R01.md~UX-R06.md. 응답 후 실제 이슈를 재조회한다. 상태 불명확 시 조회로 대조하고 중복 생성하지 않는다. 기존 완료 이슈와 #7은 수정하지 않는다.
+- 준비 상태: 로컬 초안, 문서 검토 및 원격 등록 대기. 구현 준비 완료나 게임 검증 완료가 아니다. 순서는 R01→R02→R03→R04→R05→R06이며 선행 검증·core 통합 전 후속 이슈는 blocked다. 각 착수 때 실제 Worker/Verifier, claim 및 최신 실행 기준 SHA를 확정한다.
+
+| 작업 | 범위 | 실제 이슈 | 상태 |
+| --- | --- | --- | --- |
+| UX-R01 | 시작·단말기·재진입 | 등록 대기 | 착수 점검 대기 |
+| UX-R02 | 첫 안내·화면 | 등록 대기 | R01 대기 |
+| UX-R03 | 시설·자원 | 등록 대기 | R02 대기 |
+| UX-R04 | 성공·실패 | 등록 대기 | R03 대기 |
+| UX-R05 | 되감기·비교 | 등록 대기 | R04 대기 |
+| UX-R06 | 사용성·통합 검증 | 등록 대기 | R05 대기 |
+
+저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
+
+- refactor_docs_verify 독립 문서 검토 통과: 30 ID 보존, 28 실행+2 보류, 사용자 개발 없음, 규칙 유지, 검사 명령과 상대 링크 확인. 이번 작업은 문서 검사이며 게임 검사는 미실행이다. 게시 후 실제 커밋과 이슈를 다시 대조한다.
