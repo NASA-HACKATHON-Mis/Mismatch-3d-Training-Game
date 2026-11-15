@@ -100,6 +100,12 @@ func _terrain() -> void:
 
 func _deck() -> void:
 	_body(self, "Deck", Vector3(0, -0.15, 3), Vector3(34, 0.3, 36), Color("#293747"))
+	# The terrain is 18 cm below the deck. Continuous ramps preserve walking
+	# access at every edge, including corners, without adding a jump/teleport.
+	_deck_ramp("SouthRamp", [Vector3(-17, 0, 21), Vector3(17, 0, 21), Vector3(18, -0.18, 22), Vector3(-18, -0.18, 22)])
+	_deck_ramp("NorthRamp", [Vector3(17, 0, -15), Vector3(-17, 0, -15), Vector3(-18, -0.18, -16), Vector3(18, -0.18, -16)])
+	_deck_ramp("EastRamp", [Vector3(17, 0, 21), Vector3(17, 0, -15), Vector3(18, -0.18, -16), Vector3(18, -0.18, 22)])
+	_deck_ramp("WestRamp", [Vector3(-17, 0, -15), Vector3(-17, 0, 21), Vector3(-18, -0.18, 22), Vector3(-18, -0.18, -16)])
 	for i in range(-3, 4):
 		_box(self, Vector3(i * 4.8, 0.004, 16.0), Vector3(2.25, 0.008, 0.06), CYAN, true)
 	for x: float in [-16.6, 16.6]:
@@ -122,6 +128,30 @@ func _deck() -> void:
 		for x: float in [-1.9, 1.9]:
 			_box(self, slot + Vector3(x, 0.015, 1.92), Vector3(0.17, 0.014, 0.13), border, true)
 		_sign(self, "%02d" % (id + 1), slot + Vector3(0, 0.017, 1.88), Color("#b8c5d3"), 32, 0.014, true)
+
+
+func _deck_ramp(label: String, top: Array) -> void:
+	var body := StaticBody3D.new()
+	body.name = label
+	var points := PackedVector3Array()
+	for point: Vector3 in top:
+		points.append(point)
+		points.append(Vector3(point.x, -0.3, point.z))
+	var shape := ConvexPolygonShape3D.new()
+	shape.points = points
+	var collider := CollisionShape3D.new()
+	collider.shape = shape
+	body.add_child(collider)
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for index: int in [0, 1, 2, 0, 2, 3]:
+		surface.add_vertex(top[index])
+	surface.generate_normals()
+	var visual := MeshInstance3D.new()
+	visual.mesh = surface.commit()
+	visual.material_override = _mat(Color("#354556"), false)
+	body.add_child(visual)
+	add_child(body)
 
 
 func _create_console() -> void:
