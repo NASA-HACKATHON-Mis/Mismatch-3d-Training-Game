@@ -12,6 +12,7 @@ const UI = preload("res://scripts/ui/ui_style.gd")
 const Rules = preload("res://scripts/simulation/scenario.gd")
 const Simulation = preload("res://scripts/simulation/simulation.gd")
 const Preview = preload("res://scripts/simulation/turn_preview.gd")
+const Outcome = preload("res://scripts/ui/outcome_summary.gd")
 const Learning = preload("res://resources/content/learning.gd")
 const GLYPHS := {"habitat": "HAB", "generator": "SOL", "battery": "BAT", "greenhouse": "GROW", "shelter": "SAFE"}
 
@@ -64,6 +65,13 @@ var _advance_reason: Label
 var _preview_toggle: Button
 var _preview_detail: Label
 var _preview_open := false
+var _scroll: ScrollContainer
+var _outcome_card: PanelContainer
+var _outcome_title: Label
+var _outcome_reason: Label
+var _outcome_details: Label
+var _outcome_toggle: Button
+var _outcome_action: Button
 
 
 func _ready() -> void:
@@ -73,6 +81,7 @@ func _ready() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 	var scroll := ScrollContainer.new()
+	_scroll = scroll
 	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	scroll.offset_left = 24
 	scroll.offset_right = -24
@@ -87,6 +96,7 @@ func _ready() -> void:
 	outer.add_theme_constant_override("separation", 10)
 	scroll.add_child(outer)
 	_build_header(outer)
+	_build_outcome(outer)
 	_build_guidance(outer)
 	_working = BoxContainer.new()
 	_working.add_theme_constant_override("separation", 12)
@@ -108,6 +118,43 @@ func _build_header(parent: Control) -> void:
 	help_button = UI.button(_header_actions, "안내서  H", func(): help_requested.emit(), UI.CYAN)
 	_close = UI.button(_header_actions, "닫기  Esc", func(): closed.emit(), UI.MUTED)
 	_summary = UI.label(contents, "", 18, UI.TEXT, true)
+
+func _build_outcome(parent: Control) -> void:
+	_outcome_card = UI.panel(parent, Color("#133047"), 16)
+	var contents := UI.column(_outcome_card, 10)
+	_outcome_title = UI.label(contents, "", 28, UI.CYAN, true)
+	_outcome_reason = UI.label(contents, "", 18, UI.TEXT, true)
+	_outcome_action = UI.button(contents, "과거 기록에서 다시 시도하기", _open_outcome_history, UI.AMBER)
+	_outcome_toggle = UI.button(contents, "내 선택·자원 기록 보기", _toggle_outcome_details, UI.MUTED)
+	_outcome_details = UI.label(contents, "", 18, UI.TEXT, true)
+	_outcome_details.hide()
+	_outcome_card.hide()
+
+func _toggle_outcome_details() -> void:
+	_outcome_details.visible = not _outcome_details.visible
+	_outcome_toggle.text = "내 선택·자원 기록 접기" if _outcome_details.visible else "내 선택·자원 기록 보기"
+
+func scroll_to_outcome() -> void:
+	_scroll.scroll_vertical = 0
+
+func _open_outcome_history() -> void:
+	_history_open = true
+	_refresh_timeline()
+	_history_toggle.grab_focus()
+	_scroll.call_deferred("ensure_control_visible", _history_toggle)
+
+func _refresh_outcome() -> void:
+	var state: Dictionary = _session.state
+	_outcome_card.visible = Outcome.ended(state)
+	if not _outcome_card.visible:
+		_outcome_details.hide()
+		_outcome_toggle.text = "내 선택·자원 기록 보기"
+		return
+	_outcome_title.text = Outcome.heading(state)
+	_outcome_title.add_theme_color_override("font_color", UI.CYAN if state.phase == "completed" else UI.ALERT)
+	_outcome_reason.text = Outcome.reason(_session.result_at(state.turn_id))
+	_outcome_details.text = Outcome.history_lines(_session)
+	_outcome_action.text = "과거 기록·되감기와 비교" if state.phase == "completed" else "과거 기록에서 다시 시도하기"
 
 func _build_guidance(parent: Control) -> void:
 	var card := UI.panel(parent, Color("#133047"), 12)
@@ -278,6 +325,7 @@ func refresh(session) -> void:
 	_refresh_preview(planning, edit_state)
 	_refresh_guidance(planning, edit_state)
 	_refresh_timeline()
+	_refresh_outcome()
 
 
 func _card_effect(kind: String) -> String:
@@ -505,7 +553,7 @@ func _choose_event(index: int) -> void:
 
 
 func _advance_turn() -> void:
-	if _locked:
+	if _locked or _session.state.phase != "planning":
 		return
 	_locked = true
 	_advance.disabled = true
@@ -547,7 +595,9 @@ func clear_notice() -> void:
 
 
 func focus_primary() -> void:
-	if not _facilities[_selected_kind].disabled:
+	if _outcome_card.visible:
+		_close.grab_focus()
+	elif not _facilities[_selected_kind].disabled:
 		_facilities[_selected_kind].grab_focus()
 	else:
 		_close.grab_focus()
