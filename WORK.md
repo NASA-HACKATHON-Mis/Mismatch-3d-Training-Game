@@ -365,6 +365,8 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 
 ## UX 리팩터링 작업판
 
+**현재 역할(v1.2): dyhan0528는 디자인 검토만 담당합니다. 개선 구현 전체와 UX-R01~06 작업 브랜치 소유자는 jsjavsj입니다. 독립 검증은 구현자와 분리하여 착수 때 지정하며 AI는 필요시 보조합니다. 아래 v1.1 담당 기록은 당시 이력이며 이 역할 정정이 우선합니다.**
+
 - 2026-11-15: 사용자 승인에 따라 refactor_docs_worker가 읽기 쉬운 명세 v1.1, 상세 수용 기준, 실제 GitHub 작업 이슈 6개를 준비한다. 사용자는 개발하지 않고 Codex가 구현과 별도 검증을 맡는다. dyhan0528는 제품 Owner이며 개발 assignee로 배정하지 않는다. jsjavsj의 추가 모델 작업도 배정하지 않는다.
 - 현재 기준: `docs/HH-007-submission-prep` / `9907d51d54b0b3a638cd61a6c7de29f46ff46e49`. 기존 SUBMISSION.md dirty와 Git 제외 LOCAL_BACKLOG.md를 보존한다. #1~6 CLOSED, #7 OPEN/제출 보류를 실제 조회했다.
 - UX-DOC-001 completed: UX_REDESIGN_SPEC.md를 쉬운 6묶음으로 개편하고 docs/UX_ACCEPTANCE.md에 상세30항목을 보존, README 진입점을 갱신한다. 독립 Verifier 검토 뒤 명시 파일만 commit한다. 제품 코드는 변경하지 않는다.
@@ -372,14 +374,14 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - UX-ISSUES-001 completed: 같은 저장소에 UX-R01~06 중복 조회 후 create/update, 본문 파일은 logs/ux-refactor/UX-R01.md~UX-R06.md. 응답 후 실제 이슈를 재조회한다. 상태 불명확 시 조회로 대조하고 중복 생성하지 않는다. 기존 완료 이슈와 #7은 수정하지 않는다.
 - 준비 상태: 문서 독립 검토·원격 게시와 이슈6개 등록 완료. 구현 준비 완료나 게임 검증 완료가 아니다. 순서는 R01→R02→R03→R04→R05→R06이며 선행 검증·core 통합 전 후속 이슈는 blocked다. 각 착수 때 실제 Worker/Verifier, claim 및 최신 실행 기준 SHA를 확정한다.
 
-| 작업 | 범위 | 실제 이슈 | 상태 |
-| --- | --- | --- | --- |
-| UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | ready / 착수 claim 전 |
-| UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | blocked / UX-R01 통합 대기 |
-| UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | blocked / UX-R02 통합 대기 |
-| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | blocked / UX-R03 통합 대기 |
-| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | blocked / UX-R04 통합 대기 |
-| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | blocked / UX-R05 통합 대기 |
+| 작업 | 범위 | 실제 이슈 | 구현 담당 | 상태 |
+| --- | --- | --- | --- | --- |
+| UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | jsjavsj | ready / 착수 claim 전 |
+| UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | blocked / UX-R01 통합 대기 |
+| UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | blocked / UX-R02 통합 대기 |
+| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | blocked / UX-R03 통합 대기 |
+| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | blocked / UX-R04 통합 대기 |
+| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | blocked / UX-R05 통합 대기 |
 
 저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
 
@@ -392,3 +394,12 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 이슈6개의 실제 본문을 로컬 검토 본문과 정규화해 대조했고 모두 일치했다. R01 ready(착수 claim 전), R02~06 blocked(직전 이슈 검증·core 통합 대기). 제품 수정·게임 검사·main/core 병합·배포·제출은 수행하지 않았다. 다음 작업은 Codex Worker/Verifier를 지정하고 #11에서 실제 환경 재현부터 시작하는 것이다.
 
 - refactor_docs_verify의 원격 독립 대조 통과: #11~16 제목·본문·명세 SHA·assignee 없음·상태·선행 링크 일치, 명세 브랜치 원격 일치, 문서4개만 커밋 및 보호 파일 해시 유지 확인. UX-TRACK-001: 검토한 WORK 작업판만 추가 commit/push하여 최종 인계한다.
+
+## UX 리팩터링 역할 정정 — v1.2
+
+- 사용자 결정: “나는 이번에 디자인만 볼 거야, 나머지 개선사항은 전부 다 팀원이 작업할 거야.” dyhan0528는 디자인 검토만, jsjavsj는 개선 구현 전체와 이슈·작업 브랜치 담당으로 정정한다. 사용자에게 개발·기술 검증 작업을 배정하지 않는다. 구현자의 자체 검사와 별도 독립 검증은 유지하며 독립 담당은 착수 전에 지정한다.
+- UX-ROLE-001 completed: refactor_docs_worker가 README.md, UX_REDESIGN_SPEC.md, docs/UX_ACCEPTANCE.md, WORK.md의 현재 역할을 정정한다. 상세 요구·검사·보류 항목·선행 순서는 유지하며 과거 담당 기록은 이력으로 보존한다. docs/UX-refactoring-plan 기준 e672f9c0a851e51c75c4d660791bb8a6ae040a2d, 기존 SUBMISSION dirty 및 LOCAL_BACKLOG 해시를 보존한다.
+- UX-ROLE-PUBLISH-001 executing: 사용자 역할 정정 승인으로 독립 검토한 문서4개만 같은 문서 브랜치에 commit/push한다. GitHub #11~16 본문을 새 명세 커밋과 역할에 맞추고 실제 assignee를 jsjavsj로 설정한다. 코드·이전 완료 이슈·core/main·배포는 변경하지 않는다.
+- 다음 행동: 팀원 jsjavsj가 자신의 복사본에서 명세·기준·브랜치를 확인하고 #11 claim 및 독립 검증 담당을 확정한 뒤 구현을 시작한다. 이 역할 문서 수정은 팀원의 실제 착수나 검사 완료를 뜻하지 않는다.
+
+- refactor_docs_verify 역할 정정 초안 독립 검토 통과: 문서4개와 이슈6개에서 디자인 검토/팀원 구현/독립 검증 분리 일치. 보호 파일 해시 유지, 게임 검사는 수행하지 않음.
