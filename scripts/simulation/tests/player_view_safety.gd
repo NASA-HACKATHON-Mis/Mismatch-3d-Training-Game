@@ -37,7 +37,7 @@ func make_wall(parent, position: Vector3, size: Vector3) -> StaticBody3D:
 	return body
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute("res://logs/fix-player")
-	for size in [Vector2i(1280,720), Vector2i(800,900)]:
+	for size in [Vector2i(1280,800), Vector2i(960,600)]:
 		var view := SubViewport.new()
 		view.size = size
 		view.own_world_3d = true
@@ -49,6 +49,7 @@ func _run() -> void:
 		var player = game.player
 		player.set_physics_process(false)
 		game._set_mode("explore")
+		game.hud.hide()
 		await settle()
 		var original_state: Dictionary = game.session.state.duplicate(true)
 		var start_pose: Dictionary = player.pose()
@@ -58,7 +59,8 @@ func _run() -> void:
 		var shadows := []
 		for node in player.avatar.get_children():
 			if node is MeshInstance3D and node.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY: shadows.append(node)
-		check(shadows.size() == 2, "Closed torso and head cast shadows only")
+		check(shadows.size() == 1, "Only helmet interior is hidden from first-person camera")
+		check(player.avatar.get_node("Torso").cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "Torso remains visible and casts a complete body shadow")
 		check(player.avatar.find_children("*","CollisionObject3D",true,false).is_empty(), "Visuals add no collisions")
 		var tag := "%dx%d" % [size.x,size.y]
 		for entry in [["front",0.0,0.0],["down",-90.0,0.0],["up",90.0,0.0],["down-left",-90.0,90.0],["down-right",-90.0,-90.0]]:
@@ -66,7 +68,7 @@ func _run() -> void:
 			check(player.camera.rotation.x >= player.MIN_PITCH-0.000001 and player.camera.rotation.x <= player.MAX_PITCH+0.000001,"Restore clamps actual camera pitch")
 			for arm in player.avatar._arms:
 				for mesh in arm.get_children():
-					check(mesh.cast_shadow == (GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY if entry[1] < -35 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON),"Restore updates lowered-view arm visibility without removing shadows")
+					check(mesh.visible and mesh.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON,"Full-size arms remain visible across the pitch range")
 			game.hud.set_target(false,player.global_position,-player.global_basis.z)
 			await settle()
 			await capture(view,tag+"-"+entry[0])
@@ -98,12 +100,19 @@ func _run() -> void:
 			player._refresh_arm_clearance()
 			check(player.avatar.obstacle_near,"Detect " + side + " wall across arm volume")
 			var boundary: float = wall.position.z+wall_size.z/2-player.position.z if side == "front" else (wall.position.x+wall_size.x/2-player.position.x if side == "left" else wall.position.x-wall_size.x/2-player.position.x)
-			for arm in player.avatar._arms:
-				for mesh in arm.get_children():
-					var bounds: AABB = mesh.get_aabb()
-					for corner in 8:
-						var point: Vector3 = player.to_local(mesh.to_global(bounds.get_endpoint(corner)))
-						check(point.z > boundary if side == "front" else (point.x > boundary if side == "left" else point.x < boundary),"Retracted arm vertex remains in front of wall after actual capsule approach")
+			for pitch in [0.0, player.MIN_PITCH, player.MAX_PITCH]:
+				player.camera.rotation.x = pitch
+				player._refresh_arm_clearance()
+				for arm in player.avatar._arms:
+					for mesh in arm.get_children():
+						var bounds: AABB = mesh.get_aabb()
+						for corner in 8:
+							var point: Vector3 = player.to_local(mesh.to_global(bounds.get_endpoint(corner)))
+							check(point.z > boundary if side == "front" else (point.x > boundary if side == "left" else point.x < boundary),"Folded arm stays in front of %s wall at pitch %.2f" % [side, pitch])
+				await settle()
+				await capture(view,tag+"-wall-"+side+"-pitch-"+str(roundi(rad_to_deg(pitch))))
+			player.camera.rotation.x = 0.0
+			player._refresh_arm_clearance()
 			var before: Dictionary = player.pose()
 			var arm_pose: Transform3D = player.avatar._arms[0].transform
 			player.set_exploring(false)
