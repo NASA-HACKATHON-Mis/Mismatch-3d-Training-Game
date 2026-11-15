@@ -4,6 +4,8 @@
 
 Godot 4.7.2에서 실행할 수 있습니다. 기지에 발전기, 배터리, 거주실, 온실, 대피소의 Blender 모델이 표시됩니다. 입구 단말기 옆에는 안내 로봇이 서 있습니다. 단일 스레드 Web 빌드를 생성했고 기존 통합 검증 이슈 #6은 완료했습니다.
 
+합쳐진 게임과 문서는 [`main`](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/tree/main)에서 보세요. 최신 `main`에서 작업 브랜치를 만들고, 검사 후 PR로 `main`에 병합합니다. 배포와 실제 제출은 별도 결정입니다. [통합 절차](WORKFLOW.md#main에-통합하는-방법)
+
 ## 실행 및 첫 플레이
 
 1. **Godot 4.7.2 일반판**에서 이 폴더의 `project.godot`를 열고 **F6이 아닌 F5**로 프로젝트를 실행합니다. 이미 준비된 Windows PC의 portable 위치와 APPDATA 격리 방법은 [환경 기록](docs/ENVIRONMENT.md)을 참고하세요.

@@ -409,3 +409,10 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 실제 대조 결과: #11~16 모두 OPEN, assignee는 jsjavsj 한 명, 본문은 검토한 v1.2 역할과 명세 5ccae7f023cc18495b1ba536442bff2be7bb95dc에 일치한다. R01 ready/착수 claim 전, R02~06 선행 통합 대기를 유지했다. 기존 SUBMISSION.md 및 LOCAL_BACKLOG.md 해시는 작업 전과 동일하며 제품 구현은 시작하지 않았다.
 
 - refactor_docs_verify 원격 독립 검토 통과: 이슈6개 실제 담당 jsjavsj만, 본문·새 명세 SHA·OPEN 상태·원격 커밋 일치 및 보호 파일 유지. UX-ROLE-TRACK-001: 이 완료 기록만 WORK.md에 commit/push해 인계한다.
+
+## main 통합 정책 — 2026-11-15
+
+- MAIN-BASELINE-001. 사용자의 통합 브랜치 정리 요청에 따라 core_loop_worker가 `NASA-HACKATHON-Mis/Mismatch-3d-Training-Game`의 검증 기준 `9907d51d54b0b3a638cd61a6c7de29f46ff46e49`로 새 원격 `main`을 초기화한다. 원격 `feature/HH-001-core-loop`와 일치하고 `main`은 시작 시 없었다. 기존 기본 브랜치는 `docs/mission-spec-v2`였다.
+- MAIN-UX-DOCS-001. 최신 `docs/UX-refactoring-plan`의 `3b014eb62488239bef1f78b4eb20f12b62362c3d`에서 분리한 `docs/main-integration-policy`를 사용한다. UX 문서 4개 변경과 해당 작업 커밋을 보존하고, README·WORKFLOW·WORK·UX 문서만 최신 상태에 맞춘다. 검증 기준과 실행 코드, 모델, 설정, 원자료의 트리가 같은지 검사한 뒤 `docs/main-integration-policy → main` PR을 일반 merge한다.
+- MAIN-DEFAULT-001. 병합한 `main`과 작업 트리를 대응시킨 뒤 GitHub 기본 브랜치를 `main`으로 바꾼다. 이후 `작업 브랜치 → 검사 → PR → main` 순서로 통합한다. 기존 브랜치는 보존한다. 배포·실제 접수는 별도이며 #6 완료, #7 제출 보류를 유지한다. UX #11–16의 담당·선행 조건은 유지하고 통합 대상만 맞춘다.
+- 현재 사용자 체크아웃 `docs/UX-refactoring-plan`의 미커밋 제출 초안과 로컬 전용 기록은 보존한다. 이번 정책·문서 변경에는 제품 코드나 모델 변경이 없다.
