@@ -12,7 +12,7 @@ const BUILDABLE := ["generator", "battery", "greenhouse", "shelter"]
 const EVENTS := {"2": "power_fault", "4": "weather_alert", "5": "supply_delay"}
 
 @export var scenario_id := "lunar_training"
-@export var rule_version := "0.2"
+@export var rule_version := "0.3"
 @export var source_labels := {"resources": "educational_game_units", "events": "fictional_training_events"}
 
 

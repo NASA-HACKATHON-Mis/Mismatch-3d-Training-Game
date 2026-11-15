@@ -3,6 +3,7 @@ extends RefCounted
 ## One current attempt and one archived comparison attempt.
 
 const Simulation = preload("res://scripts/simulation/simulation.gd")
+const WeatherRules = preload("res://scripts/simulation/weather_rules.gd")
 
 var attempt_id := 1
 var current_history := {"snapshots": {}, "results": {}}
@@ -21,6 +22,17 @@ func _init(scenario: Resource) -> void:
 
 func _save_snapshot() -> void:
 	current_history.snapshots[str(state.turn_id)] = state.duplicate(true)
+
+
+func configure_weather(context: Dictionary) -> Dictionary:
+	if state.has("weather"):
+		if state.weather.context == context: return {"profile": state.weather.duplicate(true)}
+		return {"error": "weather_locked"}
+	if _committing or state.turn_id != 1 or state.phase != "planning" or not current_history.results.is_empty() or not previous_attempt.is_empty():
+		return {"error": "weather_configuration_closed"}
+	state.weather = WeatherRules.build(context)
+	_save_snapshot()
+	return {"profile": state.weather.duplicate(true)}
 
 
 func snapshot(turn_id: int) -> Dictionary:
