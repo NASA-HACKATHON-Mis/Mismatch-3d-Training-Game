@@ -12,6 +12,9 @@ var _weather_context: Dictionary = {}
 var _weather_title: Label
 var _weather_text: Label
 var _weather_source: Button
+var _source_cards: Dictionary = {}
+var _communication_help: Label
+var _weather_event_help: Label
 
 
 func _ready() -> void:
@@ -98,10 +101,11 @@ func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
 
 func _build_events(parent: Control) -> void:
 	UI.label(parent, "훈련용 가상 사건 · 턴과 자원은 게임 단위예요.", 18, UI.AMBER, true)
-	_card(parent, "지구에 조언 요청하기", "요청은 이번 턴을 확정할 때 전력 1을 써요. 확정 전에는 취소할 수 있어요. 답장은 다음 턴을 마칠 때 도착해요. 한 번에 한 요청만 보낼 수 있고 마지막 턴에는 새 요청을 보내지 않아요. 답장은 조언이며 자원을 주지는 않아요. 한 턴 대기는 게임의 상담 처리 시간이며 실제 달의 전파 지연이 아니에요.")
+	_communication_help = _card(parent, "지구에 조언 요청하기", "요청을 확정할 때 전력 1을 써요. 확정 전에는 취소할 수 있어요. NASA CME 기록을 반영해 답장은 1~2턴 뒤 도착해요. T7 안에 답장을 받을 수 있을 때만 요청해요. 한 번에 한 요청만 보내요. 답장은 조언이며 자원을 주지 않아요. 대기 시간은 교육용 규칙이며 실제 달의 전파 지연이 아니에요.").get_child(1)
 	for turn: int in Learning.EVENTS:
 		var event: Array = Learning.EVENTS[turn]
-		_card(parent, event[0], event[1], UI.AMBER)
+		var event_card := _card(parent, event[0], event[1], UI.AMBER)
+		if turn == 4: _weather_event_help = event_card.get_child(1)
 	_card(parent, "같은 턴 두 번 해 보기",
 		"완료한 턴의 시작으로 되감아요. 시설 배치나 대처 방법을 한 가지만 바꾸고 같은 턴을 실행해요. 남은 자원과 발전·수확을 비교해 보세요.")
 
@@ -111,13 +115,18 @@ func _build_sources(parent: Control) -> void:
 	var current := _card(parent, "이번 훈련의 우주날씨 참고 자료", "자료를 확인하고 있어요. 기다리지 않고 시작할 수 있어요.")
 	_weather_title = current.get_child(0)
 	_weather_text = current.get_child(1)
-	_weather_source = UI.button(current, "이번 사례 원문", _open_weather_source, UI.CYAN, 36)
+	_weather_source = UI.button(current, "FLR 대표 근거 원문", _open_weather_source, UI.CYAN, 36)
 	_weather_source.disabled = true
+	for kind: String in ["FLR", "SEP", "CME"]:
+		var source_card := _card(parent, {"FLR":"FLR · 태양 플레어", "SEP":"SEP · 태양 고에너지 입자", "CME":"CME · 코로나 질량 방출"}[kind], "NASA 사건 기록을 확인하고 있어요.")
+		var link := UI.button(source_card, "대표 기록 원문 ↗", _open_record_source.bind(kind), UI.CYAN, 36)
+		link.disabled = true
+		_source_cards[kind] = {"text":source_card.get_child(1), "link":link, "url":""}
 	var archived := Learning.archived_flare()
 	if not archived.is_empty():
 		var record: Dictionary = archived.record
 		var meta: Dictionary = archived.metadata
-		var title := "과거 관측 · 태양 플레어 %s" % record.classType
+		var title := "학습용 보관 이력 · 2016년 태양 플레어 %s" % record.classType
 		var description := "태양에서 아주 큰 에너지가 갑자기 나오는 현상을 태양 플레어라고 해요. 우주 임무를 계획할 때는 이런 기록도 살펴봐요."
 		var donki := _card(parent, title, description)
 		UI.label(donki, "시작 %s    최대 %s    종료 %s" % [
@@ -125,7 +134,7 @@ func _build_sources(parent: Control) -> void:
 			Learning.utc_label(record.endTime)], 15, UI.MUTED, true)
 		UI.label(donki, "NASA Goddard CCMC / DONKI · %s\n자료 조회 %s (한국 날짜) · 기록 개정판 %d" % [
 			record.flrID, str(meta.retrieved_at).left(10), int(record.versionId)], 15, UI.MUTED, true)
-		UI.label(donki, "보관된 관측 1건이에요. 게임 4턴 경보는 가상 사건이며, 게임 자원과 위험 수치는 이 기록에서 계산하지 않아요.",
+		UI.label(donki, "학습용 이력 1건이에요. 이번 플레이 자료는 위의 대표 기록을 확인해요. 게임 4턴 경보는 가상 사건이며 NASA 기록을 교육용 조건 선택에 활용해요. 실제 피폭량 예측은 아니에요.",
 			15, UI.AMBER, true)
 		var links := UI.row(donki, 8)
 		UI.button(links, "NASA 사건 원문 ↗", _open_source.bind(str(meta.event_link)), UI.CYAN, 36)
@@ -137,31 +146,69 @@ func _build_sources(parent: Control) -> void:
 	UI.label(csa, "출처 Canadian Space Agency · 게임 제작팀의 한국어 요약 · CSA 공식 번역 아님",
 		15, UI.MUTED, true)
 	UI.button(csa, "캐나다 우주국 원문 ↗", _open_source.bind(Learning.CSA_ARTICLE), UI.GREEN, 36)
-	UI.label(parent, "시작 전 최근 DONKI 자료를 한 번 조회해요. 실패하거나 조회 중 시작하면 내장 자료를 사용해요. 한 판의 자료는 고정돼 되감아도 바뀌지 않아요. 아래 보관 기록과 요약은 오프라인에서도 읽을 수 있어요.", 15, UI.MUTED, true)
+	UI.label(parent, "시작 전 FLR·SEP·CME를 조회하고 실패한 종류는 내장 자료로 채워요. 한 판의 자료와 교육용 변환 규칙은 고정돼 되감아도 바뀌지 않아요. 최근 조회 성공은 오늘 발생했거나 지금 안전하다는 뜻이 아니에요.", 15, UI.MUTED, true)
 
 
 func set_weather_context(data: Dictionary) -> void:
 	_weather_context = data.duplicate(true)
 	if not is_instance_valid(_weather_title): return
-	var mode := "최근 API 조회" if str(data.get("mode", "archive")) == "live" else "내장 과거 자료"
-	_weather_title.text = "%s · %s %s" % [mode, str(data.get("record_type", "FLR")), str(data.get("class_type", ""))]
+	var mode: String = {"live":"최근 API 조회", "archive":"내장 보관 자료", "mixed":"최근 조회·보관 자료 혼합"}.get(str(data.get("mode", "archive")), "내장 보관 자료")
+	_weather_title.text = "이번 플레이 · NASA 사건 기록 · " + mode
 	var observed := str(data.get("observed_at", ""))
 	var fetched := str(data.get("fetched_at", ""))
-	var status := "보관한 실제 관측 사례를 사용해요."
-	match str(data.get("status", "")):
-		"loading": status = "최근 자료를 찾아보고 있어요. 지금 시작해도 괜찮아요."
-		"recent": status = "최근 자료를 가져왔어요. 오늘 관측된 자료라는 뜻은 아니에요."
-		"frozen_archive": status = "이번 훈련은 보관 자료로 진행해요."
-		"archive_unavailable": status = "관측 자료를 읽지 못했어요. 가상 훈련은 계속할 수 있어요."
-		"timeout", "network_failed", "http_failed", "request_failed", "invalid_data", "no_recent_record", "response_too_large", "unavailable":
-			status = "최근 자료를 가져오지 못해 보관 자료를 사용해요."
-	_weather_text.text = "관측 %s\n조회 %s\n%s\n%s\n실제 사례를 경보 이해에 참고해요. T4와 게임 피해 수치는 교육용 고정 규칙이며 이 등급에서 계산하지 않아요." % [observed if not observed.is_empty() else "확인 불가", fetched if not fetched.is_empty() else "확인 불가", str(data.get("explanation", "")), status]
-	_weather_source.disabled = not str(data.get("source_url", "")).begins_with("https://ccmc.gsfc.nasa.gov/")
+	var profile: Dictionary = data.get("training_profile", {})
+	_weather_text.text = "자료 시각 %s · 조회 %s\n실제 NASA 기록 → 게임 경보·비용·통신 조건. 아래 숫자는 교육용 변환이며 실제 피폭량·전파 지연 예측이 아니에요." % [observed if not observed.is_empty() else "종류별 대표 기록 참고", fetched if not fetched.is_empty() else "종류별 조회 기록 참고"]
+	if not profile.is_empty():
+		var level: String = {"watch":"관심", "warning":"경계", "severe":"심각"}.get(str(profile.get("alert_level", "")), "확인 중")
+		var shelter := "대피 필수" if profile.get("shelter_required", true) else "대피 선택"
+		_weather_text.text += "\n이번 게임 T4 %s · %s · 보호 전력 %d · 통신 %d턴" % [level, shelter, int(profile.get("protection_energy", 0)), int(profile.get("communication_delay", 1))]
+		_weather_event_help.text = "이번 자료 → T4 %s · %s. 대피하면 보호 전력 %d를 더 쓰고 재배는 쉬어요. %s\nNASA 등급·입자 기록은 게임 조건을 고르는 근거예요. 실제 우주인의 피폭량을 계산하지 않아요." % [level, shelter, int(profile.get("protection_energy", 0)), "대피하지 않으면 훈련이 중단돼요." if profile.get("shelter_required", true) else "대피 없이 재배를 계속할 수 있어요."]
+		_communication_help.text = "질문 확정 때 전력 1 사용 · %d턴 뒤 진행 후 답변. CME 기록을 반영한 교육용 대기 시간이에요. 실제 전파 지연 예측은 아니에요. T7 안에 답장을 받을 수 있을 때만 요청해요. 확정 전 취소 가능 · 한 번에 한 요청 · 자원 보너스 없음." % int(profile.get("communication_delay", 1))
+	for kind: String in _source_cards: _refresh_source_card(kind, data, profile)
+	_weather_source.disabled = _source_cards.FLR.link.disabled
+
+func _refresh_source_card(kind: String, data: Dictionary, profile: Dictionary) -> void:
+	var records: Array = data.get("records", {}).get(kind, [])
+	if not data.has("records") and kind == "FLR" and not str(data.get("event_id", "")).is_empty(): records = [data]
+	var source: Dictionary = data.get("sources", {}).get(kind, data if kind == "FLR" else {})
+	var id_key: String = {"FLR":"flare_event_id", "SEP":"sep_event_id", "CME":"cme_event_id"}[kind]
+	var representative: Dictionary = records[0] if not records.is_empty() else {}
+	for record: Dictionary in records:
+		if record.get("event_id", "") == profile.get(id_key, ""): representative = record
+	var mode: String = {"live":"최근 조회", "archive":"보관 자료", "mixed":"혼합"}.get(str(source.get("mode", "archive")), "보관 자료")
+	var status := "조회 상태 확인 필요"
+	match str(source.get("status", "")):
+		"recent", "ok", "success": status = "조회 완료"
+		"loading": status = "조회 중"
+		"archive", "frozen_archive", "offline", "": status = "보관 자료 사용"
+		"no_recent_record", "empty": status = "조회 완료 · 기록 없음"
+		_: status = "최근 조회 실패 · 보관 자료 사용" if source.get("mode", "archive") == "archive" else "조회 상태 확인 필요"
+	var description := "%d건 · %s · %s" % [records.size(), mode, status]
+	var request_url := str(source.get("request_url", ""))
+	var dates: Array[String] = []
+	for key in ["startDate=", "endDate="]:
+		if request_url.contains(key): dates.append(request_url.split(key)[1].split("&")[0])
+	if dates.size() == 2: description += "\n조회 범위 %s ~ %s" % dates
+	description += "\n조회 시각 " + str(source.get("fetched_at", "확인 불가"))
+	if representative.is_empty():
+		description += "\n미관측 · 이 자료에 기록이 없어요. 실제 안전이 확정된 뜻은 아니에요."
+	else:
+		description += "\n대표 %s · %s\n%s" % [str(representative.get("class_type", kind)), str(representative.get("observed_at", "날짜 확인 불가")), str(representative.get("event_id", ""))]
+		if kind == "SEP":
+			var evidence: String = {"model":"모델 기록", "observation":"관측 포함 기록", "mixed":"관측·모델 포함 기록", "catalogue":"NASA 사건 목록 기록"}.get(str(representative.get("evidence_type", "")), "NASA 사건 기록")
+			description += "\n" + evidence + " · 실제 달 피폭량 측정값이 아니에요."
+	var card: Dictionary = _source_cards[kind]
+	card.text.text = description
+	card.url = str(representative.get("source_url", ""))
+	card.link.disabled = not card.url.begins_with("https://ccmc.gsfc.nasa.gov/")
+
+func _open_record_source(kind: String) -> void:
+	var url := str(_source_cards[kind].url)
+	if url.begins_with("https://ccmc.gsfc.nasa.gov/"): _open_source(url)
 
 
 func _open_weather_source() -> void:
-	var url := str(_weather_context.get("source_url", ""))
-	if url.begins_with("https://ccmc.gsfc.nasa.gov/"): _open_source(url)
+	_open_record_source("FLR")
 
 
 func _open_source(url: String) -> void:

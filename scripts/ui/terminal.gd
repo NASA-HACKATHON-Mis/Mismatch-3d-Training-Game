@@ -94,6 +94,7 @@ var _communication_label: Label
 var _communication_data: Dictionary = {}
 var _advice_requested := false
 var _weather_label: Label
+var _weather_context: Dictionary = {}
 var _food_detail: Label
 
 
@@ -193,12 +194,16 @@ func _toggle_advice() -> void:
 
 func _refresh_communication() -> void:
 	var pending: bool = not _communication_data.get("pending", {}).is_empty()
-	var unavailable: bool = _session == null or _session.state.phase != "planning" or int(_session.state.turn_id) >= 7 or int(_session.state.E) < 1
+	var delay := int(_training_profile().get("communication_delay", 1))
+	var too_late: bool = _session != null and int(_session.state.turn_id) + delay > 7
+	var unavailable: bool = _session == null or _session.state.phase != "planning" or too_late or int(_session.state.E) < 1
 	_advice_toggle.disabled = _locked or pending or (unavailable and not _advice_requested)
 	if _session != null:
 		_cancel.disabled = _locked or _session.state.phase != "planning" or (_session.draft.is_empty() and not _advice_requested)
 	_advice_toggle.set_pressed_no_signal(_advice_requested)
 	_advice_toggle.text = "답변 기다리는 중" if pending else ("질문 예약 취소 · 전력 1" if _advice_requested else "지구에 질문 · 전력 1")
+	var timing := "다음 턴 진행 후" if delay == 1 else "%d턴 뒤 진행 후" % delay
+	_advice_toggle.tooltip_text = "이번 턴 확정 때 전력 1 사용 · %s 답변. %s" % [timing, "CME 기록을 반영한 게임 통신 대기예요." if delay > 1 else "실제 전파 지연 시간이 아닌 게임 대기예요."]
 	UI.paint_button(_advice_toggle, UI.PURPLE, _advice_requested)
 	var message := str(_communication_data.get("message", ""))
 	var response_turn := int(_communication_data.get("response_turn", 0))
@@ -211,20 +216,50 @@ func _refresh_communication() -> void:
 	elif not message.is_empty():
 		_communication_label.text = "지구의 답변 · T%d\n%s" % [response_turn, message]
 	elif _advice_requested:
-		_communication_label.text = "질문 예약됨 · 이번 턴 진행 때 전력 1 사용, 다음 턴 진행 후 답변."
+		_communication_label.text = "질문 예약됨 · 이번 턴 진행 때 전력 1 사용, %s 답변." % timing
 	else:
-		_communication_label.text = "지구에 질문하면 조언을 받아요. 전력 1 · 다음 턴 진행 후 답변."
-	if _session != null and int(_session.state.turn_id) >= 7 and not pending and message.is_empty():
-		_communication_label.text = "마지막 턴에는 새 질문의 답변을 받을 시간이 없어요."
+		_communication_label.text = "지구에 질문 · 전력 1 · %s 답변." % timing
+	if delay > 1 and not pending: _communication_label.text += "\nCME 기록 → 게임 통신 대기 %d턴." % delay
+	if too_late and not pending:
+		_communication_label.text = "새 질문은 %d턴 뒤 답변이 와요. T7 안에 받을 수 없어 요청할 수 없어요." % delay
 
 func set_weather_context(data: Dictionary) -> void:
+	_weather_context = data.duplicate(true)
 	if not is_instance_valid(_weather_label): return
+	_refresh_weather_label()
+	if _session != null: refresh(_session)
+
+func _training_profile() -> Dictionary:
+	if _session != null and not _session.state.get("weather", {}).is_empty():
+		return _session.state.weather
+	return _weather_context.get("training_profile", {})
+
+func _refresh_weather_label() -> void:
+	var data := _weather_context
+	var profile := _training_profile()
 	var stamp := str(data.get("observed_at", ""))
+	var class_type := str(profile.get("flare_class", data.get("class_type", "등급 확인 불가")))
+	if data.get("records", {}).has("FLR") and data.records.FLR.is_empty():
+		class_type = "미관측"
+		stamp = ""
+	for record: Dictionary in data.get("records", {}).get("FLR", []):
+		if record.get("event_id", "") == profile.get("flare_event_id", ""):
+			stamp = str(record.get("observed_at", stamp))
 	var observed := stamp.left(10) if not stamp.is_empty() else "날짜 확인 불가"
-	var mode := "최근 조회 사례" if data.get("mode", "archive") == "live" else "보관 사례"
-	var class_type := str(data.get("class_type", "등급 확인 불가"))
-	_weather_label.text = "우주날씨 · %s · %s · %s" % [mode, observed, class_type]
-	_weather_label.tooltip_text = str(data.get("explanation", "")) + "\n실제 관측 사례예요. 게임의 T4 경보와 피해는 정해진 훈련 규칙이에요."
+	var mode: String = {"live":"최근 조회 사례", "archive":"보관 사례", "mixed":"조회·보관 혼합"}.get(str(data.get("mode", "archive")), "보관 사례")
+	_weather_label.text = "NASA · %s · FLR %s · %s" % [mode, class_type, observed]
+	if not profile.is_empty():
+		var sep := " + SEP 기록" if not str(profile.get("sep_event_id", "")).is_empty() else ""
+		_weather_label.text += "%s → 게임 T4 %s" % [sep, _alert_label(profile)]
+		_weather_label.text += "\n%s · 보호 전력 %d · 통신 %d턴" % ["대피 필수" if profile.get("shelter_required", true) else "대피 선택", int(profile.get("protection_energy", 0)), int(profile.get("communication_delay", 1))]
+	_weather_label.tooltip_text = str(data.get("explanation", "")) + "\n실제 기록으로 게임 경보·비용·통신 조건을 골라요. 숫자는 교육용 게임 규칙이며 실제 피폭량·전파 지연 예측이 아니에요."
+
+func _alert_label(profile: Dictionary) -> String:
+	return {"watch":"관심", "warning":"경계", "severe":"심각"}.get(str(profile.get("alert_level", "")), "자료 확인")
+
+func _shield_instruction(profile: Dictionary) -> String:
+	if profile.is_empty(): return ""
+	return "T4 %s · %s\n대피 시 보호 전력 %d" % [_alert_label(profile), "대피 필수" if profile.get("shelter_required", true) else "대피 선택", int(profile.get("protection_energy", 0))]
 
 func _build_outcome(parent: Control) -> void:
 	_outcome_card = UI.panel(parent, Color("#133047"), 16)
@@ -435,7 +470,7 @@ func refresh(session) -> void:
 	_summary.text = "T%d / 7 · 배치 후 남는 건설 토큰 %d" % [turn, edit_state.budget]
 	var has_shelter := Simulation.count_kind(edit_state, "shelter") > 0
 	var shield_status := "selected" if has_shelter and turn == 4 and _choice == "shelter" else ("prepared" if has_shelter else "absent")
-	_resource_overview.set_view_model({"mission_status":true, "shield_status":shield_status, "show_preview": not session.draft.is_empty(), "resources": [
+	_resource_overview.set_view_model({"mission_status":true, "shield_status":shield_status, "shield_detail":_shield_instruction(_training_profile()), "show_preview": not session.draft.is_empty(), "resources": [
 		{"id":"energy", "current":state.E, "capacity":Simulation.energy_cap(state), "preview":edit_state.E, "preview_capacity":Simulation.energy_cap(edit_state)},
 		{"id":"oxygen", "current":state.O, "capacity":100, "preview":edit_state.O, "preview_capacity":100},
 		{"id":"food", "current":state.F, "capacity":100, "preview":edit_state.F, "preview_capacity":100}]})
@@ -460,6 +495,7 @@ func refresh(session) -> void:
 	if not session.draft.is_empty(): _food_detail.text += " · 배치 후 %d/100" % edit_state.F
 	_food_detail.text += "\n매 턴 6을 사용해요. 0이 되면 훈련이 중단돼요."
 	_refresh_communication()
+	if not _weather_context.is_empty(): _refresh_weather_label()
 	selected_slot_changed.emit(_selected_slot)
 
 
@@ -637,6 +673,13 @@ func _refresh_event(turn: int, planning: bool, draft_state: Dictionary) -> void:
 	if planning and Learning.EVENTS.has(turn):
 		_event_title.text = Learning.EVENTS[turn][0] + " · 훈련용 가상 사건"
 		_event_text.text = Learning.EVENTS[turn][1] + "\n" + Preview.current_effect(draft_state,_choice)
+	if planning and turn == 4 and not _training_profile().is_empty():
+		var profile := _training_profile()
+		var required := bool(profile.get("shelter_required", true))
+		var cost := int(profile.get("protection_energy", 0))
+		_event_title.text = "T4 %s · %s" % [_alert_label(profile), "대피 필수" if required else "대피 선택"]
+		captions.assign(["대피 · 전력 %d" % cost, "대피 없이 진행"])
+		_event_text.text = "NASA 기록을 반영한 게임 경보예요. 대피하면 보호 전력 %d를 더 쓰고 재배는 쉬어요.\n%s" % [cost, "대피소를 짓고 대피해야 훈련을 계속해요." if required else "관심 단계에서는 대피 없이 재배를 계속할 수 있어요."]
 	if turn == 4 and _choice == "shelter" and Simulation.count_kind(draft_state, "shelter") == 0:
 		_choice = ""
 	_options.visible = not _event_values.is_empty()

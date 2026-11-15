@@ -187,6 +187,9 @@ func refresh(state: Dictionary) -> void:
 	_food.caption.add_theme_color_override("font_color", UI.ALERT if state.F <= 6 else UI.GREEN)
 	var prepared := Simulation.count_kind(state, "shelter") > 0
 	_shield_status.text = "대피소 준비됨" if prepared else "대피소 없음"
+	var weather: Dictionary = state.get("weather", {})
+	if not weather.is_empty():
+		_shield_status.text += "\nT4 " + ("대피 필수" if weather.get("shelter_required", true) else "대피 선택")
 	_shield_status.add_theme_color_override("font_color", UI.CYAN if prepared else UI.AMBER)
 
 func show_inspection(caption: String) -> void:
