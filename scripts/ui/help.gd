@@ -8,6 +8,10 @@ var _scroll: ScrollContainer
 var _pages: Array[VBoxContainer] = []
 var _tabs: Array[Button] = []
 var _controls: Label
+var _weather_context: Dictionary = {}
+var _weather_title: Label
+var _weather_text: Label
+var _weather_source: Button
 
 
 func _ready() -> void:
@@ -85,7 +89,7 @@ func _build_facilities(parent: Control) -> void:
 		_card(parent, UI.name_for(kind), Learning.FACILITIES[kind], UI.FACILITY_COLORS[kind])
 
 func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
-	_controls.text = "WASD로 걷고 마우스로 둘러봐요. 단말기를 보고 E로 열고 Esc로 멈춰요."
+	_controls.text = "WASD로 걷고 마우스로 둘러봐요. 가까운 빈 칸을 내려다보거나 건물·단말기를 보고 E로 열어요. E는 선택만 하고, ‘여기에 짓기’로 건설해요. Esc로 멈춰요."
 	if jump_enabled:
 		_controls.text += " Space로 점프해요. 바닥에 내려온 뒤 다시 누르면 또 점프할 수 있어요."
 	if drag_available:
@@ -94,6 +98,7 @@ func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
 
 func _build_events(parent: Control) -> void:
 	UI.label(parent, "훈련용 가상 사건 · 턴과 자원은 게임 단위예요.", 18, UI.AMBER, true)
+	_card(parent, "지구에 조언 요청하기", "요청은 이번 턴을 확정할 때 전력 1을 써요. 확정 전에는 취소할 수 있어요. 답장은 다음 턴을 마칠 때 도착해요. 한 번에 한 요청만 보낼 수 있고 마지막 턴에는 새 요청을 보내지 않아요. 답장은 조언이며 자원을 주지는 않아요. 한 턴 대기는 게임의 상담 처리 시간이며 실제 달의 전파 지연이 아니에요.")
 	for turn: int in Learning.EVENTS:
 		var event: Array = Learning.EVENTS[turn]
 		_card(parent, event[0], event[1], UI.AMBER)
@@ -103,6 +108,11 @@ func _build_events(parent: Control) -> void:
 
 func _build_sources(parent: Control) -> void:
 	UI.label(parent, "우주 임무에 참고하는 실제 자료예요.", 18, UI.MUTED, true)
+	var current := _card(parent, "이번 훈련의 우주날씨 참고 자료", "자료를 확인하고 있어요. 기다리지 않고 시작할 수 있어요.")
+	_weather_title = current.get_child(0)
+	_weather_text = current.get_child(1)
+	_weather_source = UI.button(current, "이번 사례 원문", _open_weather_source, UI.CYAN, 36)
+	_weather_source.disabled = true
 	var archived := Learning.archived_flare()
 	if not archived.is_empty():
 		var record: Dictionary = archived.record
@@ -127,7 +137,21 @@ func _build_sources(parent: Control) -> void:
 	UI.label(csa, "출처 Canadian Space Agency · 게임 제작팀의 한국어 요약 · CSA 공식 번역 아님",
 		15, UI.MUTED, true)
 	UI.button(csa, "캐나다 우주국 원문 ↗", _open_source.bind(Learning.CSA_ARTICLE), UI.GREEN, 36)
-	UI.label(parent, "과거 기록과 요약은 게임 안에 담았어요. 원문을 열 때 인터넷 연결이 필요해요.", 15, UI.MUTED, true)
+	UI.label(parent, "시작 전 최근 DONKI 자료를 한 번 조회해요. 실패하거나 조회 중 시작하면 내장 자료를 사용해요. 한 판의 자료는 고정돼 되감아도 바뀌지 않아요. 아래 보관 기록과 요약은 오프라인에서도 읽을 수 있어요.", 15, UI.MUTED, true)
+
+
+func set_weather_context(data: Dictionary) -> void:
+	_weather_context = data.duplicate(true)
+	if not is_instance_valid(_weather_title): return
+	var mode := "최근 API 조회" if str(data.get("mode", "archive")) == "live" else "내장 과거 자료"
+	_weather_title.text = "%s · %s %s" % [mode, str(data.get("record_type", "FLR")), str(data.get("class_type", ""))]
+	_weather_text.text = "관측 %s\n조회 %s\n%s\n%s\n실제 사례를 경보 이해에 참고해요. T4와 게임 피해 수치는 교육용 고정 규칙이며 이 등급에서 계산하지 않아요." % [str(data.get("observed_at", "확인 불가")), str(data.get("fetched_at", "확인 불가")), str(data.get("explanation", "")), str(data.get("status", ""))]
+	_weather_source.disabled = not str(data.get("source_url", "")).begins_with("https://ccmc.gsfc.nasa.gov/")
+
+
+func _open_weather_source() -> void:
+	var url := str(_weather_context.get("source_url", ""))
+	if url.begins_with("https://ccmc.gsfc.nasa.gov/"): _open_source(url)
 
 
 func _open_source(url: String) -> void:

@@ -6,7 +6,10 @@ const Rules = preload("res://scripts/simulation/scenario.gd")
 const Session = preload("res://scripts/simulation/snapshot_store.gd")
 const UI = preload("res://scripts/ui/ui_style.gd")
 const SiteInteraction = preload("res://scripts/world/site_interaction.gd")
+const SpaceWeather = preload("res://scripts/data/space_weather.gd")
 var _site_interaction = SiteInteraction.new()
+var _weather = SpaceWeather.new()
+var _weather_context: Dictionary = {}
 
 @onready var station = $Station
 @onready var player = $Player
@@ -32,6 +35,9 @@ var _has_explored := false
 func _ready() -> void:
 	add_child(_site_interaction)
 	_site_interaction.configure(station)
+	add_child(_weather)
+	_weather.updated.connect(_on_weather_updated)
+	terminal.advice_request_changed.connect(_set_advice_request)
 	get_window().focus_exited.connect(_pause)
 	terminal.closed.connect(_pause)
 	terminal.selected_slot_changed.connect(_highlight_selected)
@@ -63,6 +69,37 @@ func _ready() -> void:
 	station.sync_facilities(session.state)
 	_refresh()
 	_set_mode("pause")
+	# Tests/offline launches can opt out without changing the shipped service.
+	if OS.get_environment("LUNAR_OFFLINE") == "1":
+		_on_weather_updated(_weather.freeze())
+	else:
+		_weather.start()
+		_on_weather_updated(_weather.get_context())
+
+
+func _on_weather_updated(data: Dictionary) -> void:
+	_weather_context = data.duplicate(true)
+	terminal.set_weather_context(_weather_context)
+	help.set_weather_context(_weather_context)
+
+
+func _freeze_weather() -> void:
+	_on_weather_updated(_weather.freeze())
+
+
+func _set_advice_request(enabled: bool) -> void:
+	var result: Dictionary = session.set_advice_request(enabled)
+	_refresh()
+	if result.has("error"):
+		terminal.set_notice(_advice_error(str(result.error)), true)
+
+
+func _advice_error(code: String) -> String:
+	match code:
+		"advice_pending": return "지구의 답장을 기다리는 중이에요."
+		"advice_too_late": return "마지막 턴에는 새 조언을 요청할 수 없어요."
+		"advice_power": return "조언 요청에 저장 전력 1이 필요해요."
+	return "지금은 요청을 바꿀 수 없어요. 턴과 남은 전력을 확인해요."
 
 
 func _highlight_selected(slot: int) -> void:
@@ -154,6 +191,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _start_exploring() -> void:
 	if mode == "pause" and not help.visible:
+		_freeze_weather()
 		_capture_elapsed = 0.0
 		hud.set_input_notice(UI.trn("마우스 잠금을 기다리고 있어요. Esc로 취소할 수 있어요.",
 			"Waiting for mouse capture. Press Esc to cancel."))
@@ -238,6 +276,7 @@ func _set_mode(new_mode: String, requested_look_mode: String = "captured") -> vo
 func _refresh() -> void:
 	hud.refresh(session.state)
 	terminal.refresh(session)
+	terminal.set_communication_state(session.state.get("communication", {}), session.advice_requested)
 
 
 func _edit(action: String, slot_id: int, kind: String) -> void:
@@ -259,9 +298,11 @@ func _cancel_draft() -> void:
 
 
 func _commit(event_choice: String) -> void:
+	_freeze_weather()
 	_command_serial += 1
 	var command := {"attempt_id": session.attempt_id, "turn_id": session.state.turn_id,
-		"command_id": _command_serial, "draft": session.draft.duplicate(true), "event_choice": event_choice}
+		"command_id": _command_serial, "draft": session.draft.duplicate(true), "event_choice": event_choice,
+		"advice_request": session.advice_requested}
 	var result: Dictionary = session.commit_turn(command, player.pose(), mode)
 	if result.has("error"):
 		terminal.set_notice(UI.error_text(result.error), true)
