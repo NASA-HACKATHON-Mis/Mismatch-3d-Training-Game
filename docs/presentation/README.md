@@ -9,6 +9,8 @@ Updated 15 November 2026. Team Mismatch's English presentation contains seven sl
 - Page ID: `page_9e457a7f503c8191b880e1686caf1818`
 - Download `.pptx` from the ChatGPT/Codex presentation viewer. This is the existing saved deck, updated in place; its account link is not a public judging URL.
 
+The earlier local PowerPoint export in the owner's documents folder is an unchanged Korean snapshot. Download the updated English deck again from the viewer before presenting or submitting it.
+
 ## Seven-slide outline
 
 | Slide | Title | Main point |
