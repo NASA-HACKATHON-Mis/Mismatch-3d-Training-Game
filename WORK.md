@@ -380,8 +380,8 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | done / PR #19 검증·main 통합 |
 | UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | done / PR #20 검증·main 통합 |
 | UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | done / PR #21 검증·main 통합 |
-| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | ready / UX-R04 완료, 착수 claim 전 |
-| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | blocked / UX-R05 통합 대기 |
+| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | done / PR #22 검증·main 통합 |
+| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | ready / UX-R05 완료, 착수 claim 전 |
 
 저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
 
@@ -476,3 +476,22 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 
 - 검사 소스 `f6fd78460f02af280ca6db8094ade09a4c618004`와 독립 검증 snapshot 해시 일치 확인. PM Native 실패 GUI PASS: 기존 계산으로 준비한 T3 전력 중단 HUD→결과 다시 보기에서 필요14/남은0/후속계산 중단, 실제T1~3 및 T2재배 유지 선택을 확인했다. 최종 Native 성공·실패 UI 인수 완료.
 - [PR #21](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/21)을 일반 merge하며 이 완료 작업판을 함께 반영한다. 실제 merge SHA와 #14 CLOSED 재조회는 이슈에 기록한다. #15는 ready/미착수이며 구현하지 않았다. localhost8072는 최종 새 게임 시작용 Web 출력을 유지한다.
+
+
+## UX-R05 되감기·같은 턴 비교 — 2026-11-15
+
+- 시작 패킷: main/origin/main `4c965e2aedc92df565d46838b4738a3145925854` clean, 실제 #15/댓글 없음·UX016/024/025 확인 후 `feature/UX-R05-rewind` 생성·claim. 사람 담당 jsjavsj, Worker ux12_worker, 독립 ux11_verifier, PM root. 규칙·snapshot_store·기존 계산 helper는 변경하지 않는다.
+- 실패 때 현재 보관된 snapshot만 사용해 탐색 후보 최대2개와 자원·토큰·재배·선택 근거를 제공한다. 후보를 누르면 내용만 선택하고 기존 복원 버튼으로 되감는다. 성공 보장·최적 경로·항상T1은 주장하지 않으며 후보가 없으면 수동 기록 탐색을 안내한다. 초기 T1 시작도 조회할 수 있다.
+- 양쪽 기록의 합집합으로 조회할 턴을 열고 실제 복원은 현재 snapshot 존재 여부로 제한한다. 이전 시도에만 남은 미래 턴은 조회 전용이다. 양쪽 시도번호·턴·종료상태/결과없음을 유지하고 저장된 시작 자원·토큰·재배와 실제 최종 자원·계산내역·선택/배치 차이를 구분한다. 여러 시작조건의 영향을 단일 원인으로 단정하지 않는다. 중단 뒤 생략된 계산은0 대신 계산 전 중단으로 표시한다.
+- 지도는 칸번호/시설 또는 빈 칸/일조·차폐·일반의 세 줄을 유지한다. 기존 25칸과 배치/선택 인터페이스를 보존한다.
+- 자체 신규483개 검사 통과: 계약T3 중단 E0/O64/F24 대 절전완료E8/O66/F18(차이+8/+2/-6), 후보의 실제 복원 가능성과 원본 불변성, 식량T6/안전T4 후보, 기록없음fallback, 초기T1, 이전미래조회/복원금지, 반복복원·old_attempt거절, 복수변경·시작성장차이·산소상한99/100의 실제증가1/0을 확인했다. 네크기 렌더와 독립회귀·GUI 인수 결과는 후속 기록한다.
+- 실제 아동 이해도·영문 런타임·Chrome/Edge 전체 환경 행렬은 미검증이며 #16은 이번에 구현하지 않는다.
+
+- 최종4크기(1920×1080/1280×720/1024×768/800×900) 실제렌더507개/0fail, 초기기록·후보·후보2·T3비교·이전미래조회·말단24PNG는 logs/ux15에 보존했다. Web export 성공, Godot4.7.2 Windows/OpenGL/격리APPDATA.
+- PM Native GUI PASS: 코드로 기존정상배치·계산을 실행해 준비한 T3실패에서 후보T3/T2 근거, T2후보선택만 수행/복원preview초점, T2복원E20/O62/F30/가동1→절전/T2확정E14/O64/F24→T3확정E8/O66/F18→시도1실패/2완료와 가동2/3 대1/3·미계산·차이+8/+2/-6을 직접 확인했다. 01발전기 일조·차폐/25대피소 일반 속성 유지도 확인했다. 전체7턴 수동검사로 확대하지 않는다.
+
+- 독립검토에서 무재배식량중단의 너무늦은 T6/F6·T5/F12 후보 한계를 확인해 선정 기준을 보강했다. 실제 저장된 식량이 남은 가동횟수×소비6 이상인 시작점을 탐색한다(새재배실3회→18, 기존은 가장 자란 시설의 남은 가동횟수·칸번호 표시). 무재배 예시는 T4/F18·T3/F24로 바뀐다. 이는 최소 소비량에 견준 탐색 기준이며 정지·전력부족이면 더 필요하므로 더 이른 기록도 살펴보도록 안내한다. 미래 계산이나 수확·생존 보장은 추가하지 않았다.
+
+- 최종 소스 `a4293ea0e10bce1646fe0d0e39d97be00dbf29e4`와 독립 snapshot 일치. 최종 독립3,782개/0fail: 기존 core/generator/facility/learning/navigation246 + preview635 + outcome1,069 + guidance1,249 + rewind583. 식량후보 수정 뒤 영향받은 rewind/guidance를 재검사하고 불변 회귀 결과를 보존했다. 최종 실제렌더611개/0fail·28PNG와 Web export 성공.
+- PM Native는 전력 경로의 b55d4b0과 동일한 최종 UI 흐름에서 확인했으며, 이후 식량후보 개선은 실제렌더·코드·독립 검사로 확인했다. 800세로 화면에서 T4/F18·T3/F24의 가동3회/소비기준/정지·전력 추가제약/저장상태 가독성도 PM이 확인했다.
+- [PR #22](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/22)을 일반 merge하며 이 완료 작업판을 함께 반영한다. 실제 merge SHA와 #15 CLOSED 재조회는 이슈에 기록한다. #16은 ready/미착수이며 구현하지 않았다.
