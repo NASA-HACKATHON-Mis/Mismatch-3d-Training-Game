@@ -378,8 +378,8 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | --- | --- | --- | --- | --- |
 | UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | jsjavsj | in-progress / 수정·자동검사 완료, 실제 브라우저 인수·main 통합 대기 |
 | UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | done / PR #19 검증·main 통합 |
-| UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | ready / #13 착수 claim 전 |
-| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | blocked / UX-R03 통합 대기 |
+| UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | done / PR #20 검증·main 통합 |
+| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | ready / UX-R03 완료, 착수 claim 전 |
 | UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | blocked / UX-R04 통합 대기 |
 | UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | blocked / UX-R05 통합 대기 |
 
@@ -447,3 +447,17 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - PM은 네 크기 렌더, 자체·독립861개 검사와 실제 Native 흐름을 근거로 #12의 구현 인수를 확인하고 일반 merge를 진행하도록 했다. 다음 #13은 최신 main에서 착수 준비만 하며 이번 작업에서 코딩하지 않는다.
 
 - UX-R02 PR [#19](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/19)을 `main` 대상으로 생성했다. 검증 소스는 위 `12f7f96`이며 이후 커밋은 문서만 바꾼다. 이 완료 작업판은 PR #19의 일반 merge와 함께 main에 반영한다. 실제 merge SHA와 #12 CLOSED 확인은 해당 이슈에 기록한다. #13은 ready/미착수이고 제품 코딩은 진행하지 않았다.
+
+
+## UX-R03 시설·자원 설명 — 2026-11-15
+
+- 시작 패킷: 최신 main `37c8db173065dbb10046e559a3063cfdcb073a3f` clean에서 `feature/UX-R03-preview` 생성. 실제 #13과 UX006/007/008/013/014/021/023을 확인하고 claim/in-progress를 기록·재조회했다. 사람 담당 jsjavsj, Worker ux12_worker, 독립 Verifier ux11_verifier.
+- 현재 턴 snapshot·draft의 깊은 사본에 기존 simulate_turn을 적용하는 읽기 전용 preview를 추가했다. 현재 E/용량, 배치 후 용량, 확정 때 초과 전력 감소, 이번 턴 진행 후 예상은 분리한다. 사건 미선택은 선택별 조건부 결과이며 다음 미공개 턴은 계산하지 않는다.
+- 시설 카드에 비용·효과·대가, 선택 칸의 대피소 할인과 예산 부족량을 표시한다. 부족해도 설명 선택은 가능하며 실제 배치 대상 칸으로 비용을 판단한다. 필수 사건 대응은 진행 버튼 옆에서 안내하고 선택·취소 때 오래된 알림을 해소한다.
+- 산소 생산/소비/실제 증가/상한, 가동 횟수 기준 재배·정지·수확, 공개된 보급의 1회 여부를 표시한다. 안전/전력 중단의 미계산 항목은 0과 구분하며 전력 중단에서는 소비 대신 필요 전력으로 표시한다. 계산 규칙·수치·원본 모델은 변경하지 않았다.
+- 독립 검사 2,070개 통과: 기존 246 + 현재 턴 preview 635 + guidance UI 1,189. 실제 commit 결과 대조, 깊은 반환값 변형·반복 조회 불변성, 배터리 추가/철거/취소, 사건 조건부, 재배 가동/정지, 산소 상한, 보급 중복, 예산 3에서 차폐 칸 대피소 배치 경계를 확인했다.
+- 실제 렌더 1,219개 검사 통과. 1920×1080, 1280×720, 1024×768, 800×900 및 경계 1100×720/1152×720의 시작·단말기·사건·미리보기·안내서 PNG 30개는 로컬 logs/ux13에 보존한다. 펼친 예상 높이가 지도 셀을 늘리지 않는 검사도 포함한다. Godot 4.7.2 Windows/OpenGL, 격리 APPDATA를 사용했다.
+- Web export 성공. 최종 Native·Web GUI 인수 결과와 검사 소스 SHA는 다음 기록에 추가한다. 실제 아동 이해도 관찰·영문 런타임·Chrome/Edge 전체 환경 행렬은 이번 자동 검사에 포함하지 않는다. #14 구현은 시작하지 않았다.
+
+- 검사 소스 `c47ac0677918a26243faed15f951136e62160746`. PM은 최종 Native PID9724에서 시작/E, 배터리12 배치(현재20/20·배치용량40)와 취소, 발전기01+배터리12+재배실14의 T1 예상28/40·O62·F30 및 확정 실제값 일치를 확인했다. T2 조건부 재배 유지18/40·절전22/40, 절전 선택의 단일 예상22/40·O64·F24와 확정 실제값, T3까지 지속되는 정지 안내를 확인했다. 미리보기·지도·스크롤도 정상이다.
+- PM은 독립2,070개 및 실제 GUI로 #13 인수 충족을 확인했다. Web export와 HTTP200/PCK 확인을 완료했으며 실제 Chrome/Edge 전체 행렬은 이번에 실행하지 않았다. [PR #20](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/20)을 일반 merge하며 이 완료 작업판을 함께 반영한다. 이후 실제 merge SHA·#13 CLOSED 재조회는 이슈에 기록한다. #14는 ready/미착수이며 구현하지 않았다.
