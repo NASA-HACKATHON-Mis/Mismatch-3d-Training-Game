@@ -9,6 +9,7 @@ signal advanced(choice: String)
 signal rewound(turn_id: int)
 signal help_requested
 signal guidance_changed(enabled: bool)
+signal advice_request_changed(enabled: bool)
 
 const UI = preload("res://scripts/ui/ui_style.gd")
 const Rules = preload("res://scripts/simulation/scenario.gd")
@@ -86,6 +87,14 @@ var _outcome_reason: Label
 var _outcome_details: Label
 var _outcome_toggle: Button
 var _outcome_action: Button
+var _action_dock: PanelContainer
+var _event_row: HBoxContainer
+var _advice_toggle: Button
+var _communication_label: Label
+var _communication_data: Dictionary = {}
+var _advice_requested := false
+var _weather_label: Label
+var _food_detail: Label
 
 
 func _ready() -> void:
@@ -94,22 +103,25 @@ func _ready() -> void:
 	shade.color = Color("#06101de9")
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
-	var scroll := ScrollContainer.new()
-	_scroll = scroll
-	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	scroll.offset_left = 24
-	scroll.offset_right = -24
-	scroll.offset_top = 8
-	scroll.offset_bottom = -8
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.follow_focus = true
-	add_child(scroll)
+	var frame := VBoxContainer.new()
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.offset_left = 16
+	frame.offset_right = -16
+	frame.offset_top = 8
+	frame.offset_bottom = -8
+	frame.add_theme_constant_override("separation", 8)
+	add_child(frame)
+	_build_header(frame)
+	_scroll = ScrollContainer.new()
+	_scroll.size_flags_vertical = SIZE_EXPAND_FILL
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.follow_focus = true
+	frame.add_child(_scroll)
 	var outer := VBoxContainer.new()
 	outer.size_flags_horizontal = SIZE_EXPAND_FILL
 	outer.size_flags_vertical = SIZE_EXPAND_FILL
 	outer.add_theme_constant_override("separation", 10)
-	scroll.add_child(outer)
-	_build_header(outer)
+	_scroll.add_child(outer)
 	_build_outcome(outer)
 	_working = BoxContainer.new()
 	_working.add_theme_constant_override("separation", 12)
@@ -118,6 +130,7 @@ func _ready() -> void:
 	_build_controls(_working)
 	_build_guidance(outer)
 	_build_timeline(outer)
+	_build_action_dock(frame)
 	resized.connect(_layout)
 	_layout()
 
@@ -135,6 +148,80 @@ func _build_header(parent: Control) -> void:
 	_resource_overview = ResourceOverview.new()
 	contents.add_child(_resource_overview)
 	_resource_grid = _resource_overview
+	_weather_label = UI.label(contents, "우주날씨 자료 확인 중 · 훈련 사건은 정해진 턴에 발생해요", 16, UI.MUTED, true)
+
+func _build_action_dock(parent: Control) -> void:
+	_action_dock = UI.panel(parent, Color("#133047"), 8)
+	var dock := UI.column(_action_dock, 5)
+	_event_row = UI.row(dock, 8)
+	_event_title.reparent(_event_row)
+	_event_title.add_theme_font_size_override("font_size", 16)
+	_event_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	UI.grow(_event_title)
+	_options.reparent(_event_row)
+	UI.grow(_options)
+	var actions := UI.row(dock, 6)
+	for button: Button in [_place, _remove, _cancel]:
+		button.reparent(actions)
+		button.custom_minimum_size.y = 42
+		button.add_theme_font_size_override("font_size", 16)
+		UI.grow(button)
+	_advice_toggle = UI.button(actions, "지구에 질문 · 전력 1", _toggle_advice, UI.PURPLE, 42)
+	_advice_toggle.toggle_mode = true
+	_advice_toggle.add_theme_font_size_override("font_size", 16)
+	_advice_toggle.tooltip_text = "이번 턴 진행 때 전력 1을 써요. 답변은 다음 턴 진행 후 도착해요."
+	UI.grow(_advice_toggle)
+	_advance.reparent(actions)
+	_advance.add_theme_font_size_override("font_size", 18)
+	UI.grow(_advance)
+	_advance_reason.reparent(dock)
+	_advance_reason.add_theme_font_size_override("font_size", 16)
+	_notice.reparent(dock)
+	_notice.add_theme_font_size_override("font_size", 16)
+	_notice.max_lines_visible = 2
+
+func set_communication_state(data: Dictionary, requested: bool) -> void:
+	_communication_data = data.duplicate(true)
+	_advice_requested = requested
+	if is_instance_valid(_advice_toggle): _refresh_communication()
+
+func _toggle_advice() -> void:
+	if _advice_toggle.disabled: return
+	# This is a request signal; only the session owner may accept or mutate it.
+	advice_request_changed.emit(_advice_toggle.button_pressed)
+	_advice_toggle.set_pressed_no_signal(_advice_requested)
+
+func _refresh_communication() -> void:
+	var pending: bool = not _communication_data.get("pending", {}).is_empty()
+	var unavailable: bool = _session == null or _session.state.phase != "planning" or int(_session.state.turn_id) >= 7 or int(_session.state.E) < 1
+	_advice_toggle.disabled = _locked or pending or (unavailable and not _advice_requested)
+	if _session != null:
+		_cancel.disabled = _locked or _session.state.phase != "planning" or (_session.draft.is_empty() and not _advice_requested)
+	_advice_toggle.set_pressed_no_signal(_advice_requested)
+	_advice_toggle.text = "답변 기다리는 중" if pending else ("질문 예약 취소 · 전력 1" if _advice_requested else "지구에 질문 · 전력 1")
+	UI.paint_button(_advice_toggle, UI.PURPLE, _advice_requested)
+	var message := str(_communication_data.get("message", ""))
+	var response_turn := int(_communication_data.get("response_turn", 0))
+	if pending:
+		var arrival := int(_communication_data.pending.get("reply_turn", response_turn))
+		_communication_label.text = "지구와 통신 중 · T%d 진행 후 답변이 도착해요." % arrival
+	elif not message.is_empty():
+		_communication_label.text = "지구의 답변 · T%d\n%s" % [response_turn, message]
+	elif _advice_requested:
+		_communication_label.text = "질문 예약됨 · 이번 턴 진행 때 전력 1 사용, 다음 턴 진행 후 답변."
+	else:
+		_communication_label.text = "지구에 질문하면 조언을 받아요. 전력 1 · 다음 턴 진행 후 답변."
+	if _session != null and int(_session.state.turn_id) >= 7 and not pending and message.is_empty():
+		_communication_label.text = "마지막 턴에는 새 질문의 답변을 받을 시간이 없어요."
+
+func set_weather_context(data: Dictionary) -> void:
+	if not is_instance_valid(_weather_label): return
+	var stamp := str(data.get("observed_at", ""))
+	var observed := stamp.left(10) if not stamp.is_empty() else "날짜 확인 불가"
+	var mode := "최근 조회 사례" if data.get("mode", "archive") == "live" else "보관 사례"
+	var class_type := str(data.get("class_type", "등급 확인 불가"))
+	_weather_label.text = "우주날씨 · %s · %s · %s" % [mode, observed, class_type]
+	_weather_label.tooltip_text = str(data.get("explanation", "")) + "\n실제 관측 사례예요. 게임의 T4 경보와 피해는 정해진 훈련 규칙이에요."
 
 func _build_outcome(parent: Control) -> void:
 	_outcome_card = UI.panel(parent, Color("#133047"), 16)
@@ -240,7 +327,7 @@ func _build_map(parent: Control) -> void:
 	_clear_selection = UI.button(selection_actions,"선택 해제",func(): open_context(),UI.MUTED, 30)
 	var buttons := UI.row(map)
 	_remove = UI.button(buttons, UI.trn("선택 시설 철거", "Remove selected"),
-		func(): edited.emit("remove", _selected_slot, ""), UI.ALERT, 36)
+		func(): _on_facility_action("remove"), UI.ALERT, 36)
 	_cancel = UI.button(buttons, UI.trn("이번 변경 취소", "Cancel this turn’s changes"),
 		func(): cancelled.emit(), UI.MUTED, 36)
 	UI.grow(_remove)
@@ -275,6 +362,8 @@ func _build_controls(parent: Control) -> void:
 	_notice = UI.label(controls, "", 18, UI.ALERT, true)
 	_notice.hide()
 	_capacity = UI.label(controls, "", 18, UI.CYAN, true)
+	_food_detail = UI.label(controls, "", 16, UI.GREEN, true)
+	_communication_label = UI.label(controls, "", 16, UI.PURPLE, true)
 	_event_title = UI.label(controls, "", 18, UI.AMBER)
 	_event_text = UI.label(controls, "", 18, UI.TEXT, true)
 	_options = UI.row(controls, 6)
@@ -341,7 +430,9 @@ func refresh(session) -> void:
 		_last_turn = turn
 	var planning: bool = state.phase == "planning"
 	_summary.text = "T%d / 7 · 배치 후 남는 건설 토큰 %d" % [turn, edit_state.budget]
-	_resource_overview.set_view_model({"show_preview": not session.draft.is_empty(), "resources": [
+	var has_shelter := Simulation.count_kind(edit_state, "shelter") > 0
+	var shield_status := "selected" if has_shelter and turn == 4 and _choice == "shelter" else ("prepared" if has_shelter else "absent")
+	_resource_overview.set_view_model({"mission_status":true, "shield_status":shield_status, "show_preview": not session.draft.is_empty(), "resources": [
 		{"id":"energy", "current":state.E, "capacity":Simulation.energy_cap(state), "preview":edit_state.E, "preview_capacity":Simulation.energy_cap(edit_state)},
 		{"id":"oxygen", "current":state.O, "capacity":100, "preview":edit_state.O, "preview_capacity":100},
 		{"id":"food", "current":state.F, "capacity":100, "preview":edit_state.F, "preview_capacity":100}]})
@@ -362,6 +453,10 @@ func refresh(session) -> void:
 	_inspect.disabled = _selected_slot < 0
 	_clear_selection.disabled = _selected_slot < 0
 	_refresh_info_card(edit_state, planning)
+	_food_detail.text = "비축 식량 · 현재 %d/100" % state.F
+	if not session.draft.is_empty(): _food_detail.text += " · 배치 후 %d/100" % edit_state.F
+	_food_detail.text += "\n매 턴 6을 사용해요. 0이 되면 훈련이 중단돼요."
+	_refresh_communication()
 	selected_slot_changed.emit(_selected_slot)
 
 
@@ -376,18 +471,13 @@ func _refresh_info_card(layout: Dictionary, planning: bool) -> void:
 	elif _locked: reason = "처리 중이에요."
 	elif not occupied and _place.disabled: reason = "건설 토큰이 부족해요."
 	elif kind == "habitat": reason = "거주실은 고정된 집이에요."
+	# Build/remove live in the pinned action dock, not duplicated in this card.
 	var actions: Array = []
-	if not occupied:
-		actions.append({"id":"place", "label":"여기에 짓기", "enabled":not _place.disabled, "reason":reason})
-	else:
-		actions.append({"id":"remove", "label":"철거하기", "enabled":not _remove.disabled and not _locked, "reason":reason})
-	if _selected_slot >= 0:
-		actions.append({"id":"inspect", "label":"3D로 보기", "enabled":true, "reason":""})
 	var effect := _card_effect(kind)
 	if kind == "habitat": effect = "기지의 중심 · 철거 불가"
 	var cost_text := "건설 토큰 " + _cost_caption(kind) if not occupied else (_remove.text if kind != "habitat" else "고정 시설")
 	_facility_info.set_view_model({"slot_id":_selected_slot, "kind":kind, "title":UI.name_for(kind),
-		"summary":summaries.get(kind,""), "cost_text":cost_text,
+		"summary":summaries.get(kind,"") + ("\n" + reason if not reason.is_empty() else ""), "cost_text":cost_text,
 		"effects":[{"icon_id":kind,"label":"역할","value_text":effect}], "details":UI.description(kind), "actions":actions})
 
 func _on_facility_action(action_id: String) -> void:
@@ -435,6 +525,8 @@ func _refresh_facilities(layout: Dictionary, planning: bool) -> void:
 		_selection_detail.text += "\n건설 토큰 %d개 부족해요. 설명은 계속 볼 수 있어요." % gap
 	if not planning: _selection_detail.text += "\n완료된 턴에서는 배치할 수 없어요. 과거 턴으로 돌아가요."
 	var occupied := not Simulation.facility_at(layout, _selected_slot).is_empty()
+	_place.visible = not occupied
+	_remove.visible = occupied
 	_place.disabled = _locked or not planning or _selected_slot < 0 or occupied or gap > 0
 	_place.text = "여기에 짓기 · 토큰 %d" % cost
 	_place.tooltip_text = "빈 칸을 먼저 골라요." if _selected_slot < 0 else ("이미 건물이 있는 칸이에요." if occupied else "")
@@ -507,7 +599,7 @@ func _refresh_map(state: Dictionary, planning: bool) -> void:
 		UI.paint_button(button, tint, _selected_slot == slot_id)
 	_map_help.text = "칸 선택 → 시설 선택 → 여기에 짓기" if planning else "칸을 골라 살펴봐요. 바꾸려면 과거 턴으로 돌아가요."
 	var selected := Simulation.facility_at(state, _selected_slot)
-	_remove.disabled = not planning or selected.is_empty() or selected.get("type") == "habitat"
+	_remove.disabled = _locked or not planning or selected.is_empty() or selected.get("type") == "habitat"
 	if not selected.is_empty() and selected.type != "habitat":
 		@warning_ignore("integer_division")
 		var refund: int = selected.actual_paid_cost if selected.instance_id >= _session.state.next_instance_id else int(selected.actual_paid_cost) / 2
@@ -545,6 +637,7 @@ func _refresh_event(turn: int, planning: bool, draft_state: Dictionary) -> void:
 	if turn == 4 and _choice == "shelter" and Simulation.count_kind(draft_state, "shelter") == 0:
 		_choice = ""
 	_options.visible = not _event_values.is_empty()
+	_event_row.visible = not _event_values.is_empty()
 	for i in _event_buttons.size():
 		var button := _event_buttons[i]
 		button.visible = i < _event_values.size()

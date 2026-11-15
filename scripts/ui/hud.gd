@@ -17,6 +17,7 @@ var _meters: GridContainer
 var _energy: ResourceMeter
 var _oxygen: ResourceMeter
 var _food: ResourceMeter
+var _shield_status: Label
 var _hint: Label
 var _status_box: PanelContainer
 var _intro: PanelContainer
@@ -56,8 +57,16 @@ func _ready() -> void:
 	_energy = ResourceMeter.new()
 	_oxygen = ResourceMeter.new()
 	_food = ResourceMeter.new()
-	for meter in [_energy, _oxygen, _food]:
-		_meters.add_child(meter)
+	_meters.add_child(_energy)
+	var life := UI.column(_meters, 2)
+	UI.grow(life)
+	life.add_child(_oxygen)
+	life.add_child(_food)
+	_food.bar.hide()
+	var shield := UI.column(_meters, 4)
+	UI.grow(shield)
+	UI.label(shield, "차폐 준비", 16, UI.PURPLE)
+	_shield_status = UI.label(shield, "대피소 없음", 16, UI.AMBER)
 	_energy.set_color(UI.AMBER)
 	_oxygen.set_color(UI.CYAN)
 	_food.set_color(UI.GREEN)
@@ -88,7 +97,7 @@ func _ready() -> void:
 	_training_copy.append(UI.label(text, "키보드와 마우스가 있는 PC에서 시작해요.", 18, UI.AMBER, true))
 	_controls = UI.label(text, "", 18, UI.MUTED, true)
 	configure_controls(false, false)
-	_first_step = UI.label(text, "1  단말기 가까이 가서 E를 눌러요.", 20, UI.CYAN, true)
+	_first_step = UI.label(text, "1  빈 칸·건물·단말기 가까이에서 E를 눌러요.", 20, UI.CYAN, true)
 	_guide_toggle = UI.button(text, "첫 안내 건너뛰기", _toggle_guidance, UI.MUTED)
 	_input_notice = UI.label(text, "", 18, UI.AMBER, true)
 	_input_notice.hide()
@@ -109,7 +118,7 @@ func _layout() -> void:
 	var narrow := size.x < 960
 	_header.position = Vector2(20, 18)
 	_meters.columns = 1 if size.x < 520 else 3
-	_header.size = Vector2(minf(size.x - 40, 490), 0)
+	_header.size = Vector2(minf(size.x - 40, 660), 0)
 	var width := minf(560, size.x - 40) if narrow else minf(560, size.x * 0.47)
 	var height := minf(440, size.y - 170) if narrow else minf(540, size.y - 174)
 	# Keep the start/pause card below the actual resource header at short heights.
@@ -159,7 +168,7 @@ func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
 	_jump_enabled = jump_enabled
 	_drag_available = drag_available
 	_controls.text = "WASD 이동" + (" · Space 점프" if _jump_enabled else "")
-	_controls.text += " · 마우스로 둘러보기\n단말기를 보고 E · Esc 일시 정지"
+	_controls.text += " · 마우스로 둘러보기\n빈 칸·건물·단말기를 보고 E · Esc 일시 정지"
 	if _drag_available:
 		_controls.text += "\n마우스 잠금이 안 되면 왼쪽 버튼 드래그로 둘러봐요."
 
@@ -171,8 +180,14 @@ func refresh(state: Dictionary) -> void:
 	_outcome_heading = Outcome.heading(state) if _ended else ""
 	_mission.text = "달기지 리와인드 / T%d" % state.turn_id
 	_energy.set_values("전력", state.E, Simulation.energy_cap(state))
-	_oxygen.set_values("산소", state.O, 100)
+	_oxygen.set_values("생명 유지 · 산소", state.O, 100)
 	_food.set_values("식량", state.F, 100)
+	if state.F <= 0: _food.caption.text += " · 고갈!"
+	elif state.F <= 6: _food.caption.text += " · 부족!"
+	_food.caption.add_theme_color_override("font_color", UI.ALERT if state.F <= 6 else UI.GREEN)
+	var prepared := Simulation.count_kind(state, "shelter") > 0
+	_shield_status.text = "대피소 준비됨" if prepared else "대피소 없음"
+	_shield_status.add_theme_color_override("font_color", UI.CYAN if prepared else UI.AMBER)
 
 func show_inspection(caption: String) -> void:
 	_inspection_label.text = caption + "\n관찰 화면이에요. 이동하거나 턴을 진행하지 않아요."

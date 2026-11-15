@@ -44,7 +44,7 @@ func _run() -> void:
 		await settle()
 		var hud = game.hud
 		var initial: Dictionary = game.session.state.duplicate(true)
-		check(hud._energy.caption.text == "전력 20/20" and hud._oxygen.caption.text == "산소 60/100" and hud._food.caption.text == "식량 36/100", "Initial resources")
+		check(hud._energy.caption.text == "전력 20/20" and hud._oxygen.caption.text == "생명 유지 · 산소 60/100" and hud._food.caption.text == "식량 36/100", "Initial resources")
 		game._edit("place", 11, "battery")
 		check(hud._energy.caption.text == "전력 20/20", "Unconfirmed battery does not change HUD")
 		game._edit("place", 0, "generator")

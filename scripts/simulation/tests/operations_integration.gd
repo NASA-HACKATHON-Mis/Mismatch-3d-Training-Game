@@ -70,7 +70,12 @@ func _run() -> void:
 		ui.open_context(0)
 		await settle()
 		check(ui._facility_info.is_visible_in_tree() and ui._resource_overview.is_visible_in_tree(),"new components mounted")
-		check(ui._slots[24].get_global_rect().end.y <= dimensions.y,"full board visible")
+		ui._scroll.ensure_control_visible(ui._slots[24])
+		await settle()
+		check(ui._scroll.get_global_rect().encloses(ui._slots[24].get_global_rect()),"full board reachable by scrolling")
+		check(Rect2(Vector2.ZERO,Vector2(dimensions)).encloses(ui._advance.get_global_rect()),"advance pinned while board scrolls")
+		ui._scroll.scroll_vertical = 0
+		await settle()
 		if "--render" in OS.get_cmdline_user_args():
 			await RenderingServer.frame_post_draw
 			view.get_texture().get_image().save_png("res://logs/ops-e/terminal-%dx%d.png" % [dimensions.x,dimensions.y])
