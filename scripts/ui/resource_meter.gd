@@ -26,7 +26,7 @@ func set_color(color: Color) -> void:
 
 func set_values(label_text: String, current_value: int, maximum_value: int) -> void:
 	if maximum_value <= 0:
-		caption.text = "%s %d / 확인 불가" % [label_text, current_value]
+		caption.text = "%s %d / Unknown" % [label_text, current_value]
 		bar.value = 0.0
 	else:
 		caption.text = "%s %d/%d" % [label_text, current_value, maximum_value]

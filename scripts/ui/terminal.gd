@@ -141,15 +141,15 @@ func _build_header(parent: Control) -> void:
 	var contents := UI.column(panel, 4)
 	_header_actions = BoxContainer.new()
 	contents.add_child(_header_actions)
-	var title := UI.label(_header_actions, "기지 운영 대시보드", 22)
+	var title := UI.label(_header_actions, "Base dashboard", 22)
 	UI.grow(title)
-	help_button = UI.button(_header_actions, "안내서  H", func(): help_requested.emit(), UI.CYAN)
-	_close = UI.button(_header_actions, "닫기  Esc", func(): closed.emit(), UI.MUTED)
+	help_button = UI.button(_header_actions, "Guide  H", func(): help_requested.emit(), UI.CYAN)
+	_close = UI.button(_header_actions, "Close  Esc", func(): closed.emit(), UI.MUTED)
 	_summary = UI.label(contents, "", 18, UI.TEXT, true)
 	_resource_overview = ResourceOverview.new()
 	contents.add_child(_resource_overview)
 	_resource_grid = _resource_overview
-	_weather_label = UI.label(contents, "우주날씨 자료 확인 중 · 훈련 사건은 정해진 턴에 발생해요", 16, UI.MUTED, true)
+	_weather_label = UI.label(contents, "Checking space weather records · Training events occur on fixed turns", 16, UI.MUTED, true)
 
 func _build_action_dock(parent: Control) -> void:
 	_action_dock = UI.panel(parent, Color("#133047"), 8)
@@ -162,10 +162,10 @@ func _build_action_dock(parent: Control) -> void:
 	_options.reparent(_event_row)
 	UI.grow(_options)
 	var actions := UI.row(dock, 6)
-	_advice_toggle = UI.button(actions, "지구에 질문 · 전력 1", _toggle_advice, UI.PURPLE, 42)
+	_advice_toggle = UI.button(actions, "Ask Earth · 1 power", _toggle_advice, UI.PURPLE, 42)
 	_advice_toggle.toggle_mode = true
 	_advice_toggle.add_theme_font_size_override("font_size", 16)
-	_advice_toggle.tooltip_text = "이번 턴 진행 때 전력 1을 써요. 답변은 다음 턴 진행 후 도착해요."
+	_advice_toggle.tooltip_text = "Uses 1 power when you run this turn. The reply arrives after the next turn."
 	UI.grow(_advice_toggle)
 	_advance.reparent(actions)
 	_advance.add_theme_font_size_override("font_size", 18)
@@ -194,27 +194,27 @@ func _refresh_communication() -> void:
 	var unavailable: bool = _session == null or _session.state.phase != "planning" or too_late or int(_session.state.E) < 1
 	_advice_toggle.disabled = _locked or pending or (unavailable and not _advice_requested)
 	_advice_toggle.set_pressed_no_signal(_advice_requested)
-	_advice_toggle.text = "답변 기다리는 중" if pending else ("질문 예약 취소 · 전력 1" if _advice_requested else "지구에 질문 · 전력 1")
-	var timing := "다음 턴 진행 후" if delay == 1 else "%d턴 뒤 진행 후" % delay
-	_advice_toggle.tooltip_text = "이번 턴 확정 때 전력 1 사용 · %s 답변. %s" % [timing, "CME 기록을 반영한 게임 통신 대기예요." if delay > 1 else "실제 전파 지연 시간이 아닌 게임 대기예요."]
+	_advice_toggle.text = "Waiting for a reply" if pending else ("Cancel advice request" if _advice_requested else "Ask Earth · 1 power")
+	var timing := "After the next turn" if delay == 1 else "After %d turns" % delay
+	_advice_toggle.tooltip_text = "Confirming this turn costs 1 power · Reply %s. %s" % [timing, "CME records set this training reply delay." if delay > 1 else "This is a game delay, not a real signal travel time."]
 	UI.paint_button(_advice_toggle, UI.PURPLE, _advice_requested)
 	var message := str(_communication_data.get("message", ""))
 	var response_turn := int(_communication_data.get("response_turn", 0))
 	if pending:
 		var arrival := int(_communication_data.pending.get("reply_turn", response_turn))
-		_communication_label.text = "지구와 통신 중 · T%d 진행 후 답변이 도착해요." % arrival
+		_communication_label.text = "Contacting Earth · Reply arrives after T%d." % arrival
 		if _session != null and _session.state.phase != "planning":
-			_advice_toggle.text = "통신 중단"
-			_communication_label.text = "훈련이 중단됐어요. 과거 턴으로 되감아 다시 준비해요."
+			_advice_toggle.text = "Transmission interrupted"
+			_communication_label.text = "Mission stopped. Rewind to a past turn and try another plan."
 	elif not message.is_empty():
-		_communication_label.text = "지구의 답변 · T%d\n%s" % [response_turn, message]
+		_communication_label.text = "Earth's reply · T%d\n%s" % [response_turn, message]
 	elif _advice_requested:
-		_communication_label.text = "질문 예약됨 · 이번 턴 진행 때 전력 1 사용, %s 답변." % timing
+		_communication_label.text = "Advice queued · Uses 1 power when the turn runs. Reply %s." % timing
 	else:
-		_communication_label.text = "지구에 질문 · 전력 1 · %s 답변." % timing
-	if delay > 1 and not pending: _communication_label.text += "\nCME 기록 → 게임 통신 대기 %d턴." % delay
+		_communication_label.text = "Ask Earth · 1 power · Reply %s." % timing
+	if delay > 1 and not pending: _communication_label.text += "\nCME records → training reply delay %d turns." % delay
 	if too_late and not pending:
-		_communication_label.text = "새 질문은 %d턴 뒤 답변이 와요. T7 안에 받을 수 없어 요청할 수 없어요." % delay
+		_communication_label.text = "A new reply takes %d turns and would arrive after T7. You cannot request it now." % delay
 
 func set_weather_context(data: Dictionary) -> void:
 	_weather_context = data.duplicate(true)
@@ -231,43 +231,43 @@ func _refresh_weather_label() -> void:
 	var data := _weather_context
 	var profile := _training_profile()
 	var stamp := str(data.get("observed_at", ""))
-	var class_type := str(profile.get("flare_class", data.get("class_type", "등급 확인 불가")))
+	var class_type := str(profile.get("flare_class", data.get("class_type", "Class unavailable")))
 	if data.get("records", {}).has("FLR") and data.records.FLR.is_empty():
-		class_type = "미관측"
+		class_type = "No observation"
 		stamp = ""
 	for record: Dictionary in data.get("records", {}).get("FLR", []):
 		if record.get("event_id", "") == profile.get("flare_event_id", ""):
 			stamp = str(record.get("observed_at", stamp))
-	var observed := stamp.left(10) if not stamp.is_empty() else "날짜 확인 불가"
-	var mode: String = {"live":"최근 조회 사례", "archive":"보관 사례", "mixed":"조회·보관 혼합"}.get(str(data.get("mode", "archive")), "보관 사례")
+	var observed := stamp.left(10) if not stamp.is_empty() else "Date unavailable"
+	var mode: String = {"live":"Fetched NASA records", "archive":"Embedded historical data · not live", "mixed":"Mixed: fetched + historical"}.get(str(data.get("mode", "archive")), "Embedded historical data · not live")
 	_weather_label.text = "NASA · %s · FLR %s · %s" % [mode, class_type, observed]
 	if not profile.is_empty():
-		var sep := " + SEP 기록" if not str(profile.get("sep_event_id", "")).is_empty() else ""
-		_weather_label.text += "%s → 게임 T4 %s" % [sep, _alert_label(profile)]
-		_weather_label.text += "\n%s · 보호 전력 %d · 통신 %d턴" % ["대피 필수" if profile.get("shelter_required", true) else "대피 선택", int(profile.get("protection_energy", 0)), int(profile.get("communication_delay", 1))]
-	_weather_label.tooltip_text = str(data.get("explanation", "")) + "\n실제 기록으로 게임 경보·비용·통신 조건을 골라요. 숫자는 교육용 게임 규칙이며 실제 피폭량·전파 지연 예측이 아니에요."
+		var sep := " + SEP records" if not str(profile.get("sep_event_id", "")).is_empty() else ""
+		_weather_label.text += "%s → Training T4 %s" % [sep, _alert_label(profile)]
+		_weather_label.text += "\n%s · Shielding power %d · Reply delay %d turns" % ["Shelter required" if profile.get("shelter_required", true) else "Shelter optional", int(profile.get("protection_energy", 0)), int(profile.get("communication_delay", 1))]
+	_weather_label.tooltip_text = str(data.get("explanation", "")) + "\nReal records select training alerts, costs and reply delays. These are game rules, not radiation or signal-delay predictions."
 
 func _alert_label(profile: Dictionary) -> String:
-	return {"watch":"관심", "warning":"경계", "severe":"심각"}.get(str(profile.get("alert_level", "")), "자료 확인")
+	return {"watch":"Watch", "warning":"Warning", "severe":"High alert"}.get(str(profile.get("alert_level", "")), "Check records")
 
 func _shield_instruction(profile: Dictionary) -> String:
 	if profile.is_empty(): return ""
-	return "T4 %s · %s\n대피 시 보호 전력 %d" % [_alert_label(profile), "대피 필수" if profile.get("shelter_required", true) else "대피 선택", int(profile.get("protection_energy", 0))]
+	return "T4 %s · %s\nSheltering costs %d extra power" % [_alert_label(profile), "Shelter required" if profile.get("shelter_required", true) else "Shelter optional", int(profile.get("protection_energy", 0))]
 
 func _build_outcome(parent: Control) -> void:
 	_outcome_card = UI.panel(parent, Color("#133047"), 16)
 	var contents := UI.column(_outcome_card, 10)
 	_outcome_title = UI.label(contents, "", 28, UI.CYAN, true)
 	_outcome_reason = UI.label(contents, "", 18, UI.TEXT, true)
-	_outcome_action = UI.button(contents, "과거 기록에서 다시 시도하기", _open_outcome_history, UI.AMBER)
-	_outcome_toggle = UI.button(contents, "내 선택·자원 기록 보기", _toggle_outcome_details, UI.MUTED)
+	_outcome_action = UI.button(contents, "Retry from history", _open_outcome_history, UI.AMBER)
+	_outcome_toggle = UI.button(contents, "Show choices and resources", _toggle_outcome_details, UI.MUTED)
 	_outcome_details = UI.label(contents, "", 18, UI.TEXT, true)
 	_outcome_details.hide()
 	_outcome_card.hide()
 
 func _toggle_outcome_details() -> void:
 	_outcome_details.visible = not _outcome_details.visible
-	_outcome_toggle.text = "내 선택·자원 기록 접기" if _outcome_details.visible else "내 선택·자원 기록 보기"
+	_outcome_toggle.text = "Hide choices and resources" if _outcome_details.visible else "Show choices and resources"
 
 func scroll_to_outcome() -> void:
 	_scroll.scroll_vertical = 0
@@ -283,21 +283,21 @@ func _refresh_outcome() -> void:
 	_outcome_card.visible = Outcome.ended(state)
 	if not _outcome_card.visible:
 		_outcome_details.hide()
-		_outcome_toggle.text = "내 선택·자원 기록 보기"
+		_outcome_toggle.text = "Show choices and resources"
 		return
 	_outcome_title.text = Outcome.heading(state)
 	_outcome_title.add_theme_color_override("font_color", UI.CYAN if state.phase == "completed" else UI.ALERT)
 	_outcome_reason.text = Outcome.reason(_session.result_at(state.turn_id))
 	_outcome_details.text = Outcome.history_lines(_session)
-	_outcome_action.text = "과거 기록·되감기와 비교" if state.phase == "completed" else "과거 기록에서 다시 시도하기"
+	_outcome_action.text = "History · Rewind and compare" if state.phase == "completed" else "Retry from history"
 
 func _build_guidance(parent: Control) -> void:
 	var card := UI.panel(parent, Color("#133047"), 12)
 	var contents := UI.column(card, 6)
 	var heading := UI.row(contents, 8)
-	var title := UI.label(heading, "지금 할 일", 16, UI.CYAN)
+	var title := UI.label(heading, "Next step", 16, UI.CYAN)
 	UI.grow(title)
-	_guide_toggle = UI.button(heading, "첫 안내 건너뛰기", _toggle_guidance, UI.MUTED, 30)
+	_guide_toggle = UI.button(heading, "Skip tutorial", _toggle_guidance, UI.MUTED, 30)
 	_guide_toggle.add_theme_font_size_override("font_size", 16)
 	_guide_body = UI.column(contents, 4)
 	_guide_text = UI.label(_guide_body, "", 20, UI.TEXT, true)
@@ -309,7 +309,7 @@ func _toggle_guidance() -> void:
 func set_guidance(enabled: bool) -> void:
 	guidance_enabled = enabled
 	_guide_body.visible = enabled
-	_guide_toggle.text = "첫 안내 건너뛰기" if enabled else "첫 안내 다시 보기"
+	_guide_toggle.text = "Skip tutorial" if enabled else "Replay tutorial"
 
 func _layout() -> void:
 	if not is_instance_valid(_working): return
@@ -321,15 +321,15 @@ func _layout() -> void:
 
 func _refresh_guidance(planning: bool, edit_state: Dictionary) -> void:
 	if not planning:
-		_guide_text.text = "결과를 읽고, 과거 기록에서 다시 해 볼 턴을 골라요."
+		_guide_text.text = "Read your results, then choose a past turn to retry."
 	elif not _session.draft.is_empty():
-		_guide_text.text = "현장에서 준비한 배치를 확인해요. 바꾸려면 해당 위치로 가서 1을 눌러요."
+		_guide_text.text = "Review your layout here. To change it, go to a pad and press 1."
 	else:
-		_guide_text.text = "빈 칸 가까이 가서 1로 시설을 지어요. 돌아오면 기지 현황을 확인해요."
+		_guide_text.text = "Go to an empty pad and press 1 to build. Return here to check your base."
 	if planning and not _event_values.is_empty():
-		_guide_text.text = "2  사건에 어떻게 대응할지 골라요." if _choice.is_empty() else "3  준비됐다면 ‘이번 턴 진행’을 눌러요."
+		_guide_text.text = "2  Choose how to respond to the event." if _choice.is_empty() else "3  Ready? Select Run turn."
 	elif planning and Simulation.count_kind(edit_state, "generator") > 0:
-		_guide_text.text = "준비됐다면 ‘이번 턴 진행’을 눌러요. 시설 변경은 현장에서 해요."
+		_guide_text.text = "Ready? Select Run turn. Change facilities at their pads."
 
 
 func _build_map(parent: Control) -> void:
@@ -338,8 +338,8 @@ func _build_map(parent: Control) -> void:
 	UI.grow(card)
 	card.size_flags_stretch_ratio = 0.94
 	var map := UI.column(card, 5)
-	UI.label(map, "기지 지도 · 눌러서 살펴보기", 16, UI.CYAN)
-	UI.label(map, "북쪽 ↑ · 해: 발전 증가 · 방패: 대피소 할인", 14, UI.MUTED, true)
+	UI.label(map, "Base map · Select a pad", 16, UI.CYAN)
+	UI.label(map, "North ↑ · SUN: more power · SH: shelter discount", 14, UI.MUTED, true)
 	var grid := GridContainer.new()
 	grid.columns = 5
 	grid.size_flags_vertical = SIZE_SHRINK_BEGIN
@@ -354,14 +354,14 @@ func _build_map(parent: Control) -> void:
 		_slots.append(button)
 	_map_help = UI.label(map, "", 15, UI.MUTED, true)
 	var selection_actions := UI.row(map, 5)
-	_inspect = UI.button(selection_actions,"3D 보기",_on_facility_action.bind("inspect"),UI.CYAN, 30)
-	_clear_selection = UI.button(selection_actions,"선택 해제",func(): open_context(),UI.MUTED, 30)
+	_inspect = UI.button(selection_actions,"3D view",_on_facility_action.bind("inspect"),UI.CYAN, 30)
+	_clear_selection = UI.button(selection_actions,"Clear selection",func(): open_context(),UI.MUTED, 30)
 	var buttons := UI.row(map)
 	buttons.hide()
 	# Compatibility controls stay inert, including manually emitted pressed signals.
-	_remove = UI.button(buttons, UI.trn("선택 시설 철거", "Remove selected"),
+	_remove = UI.button(buttons, UI.trn("Remove selected", "Remove selected"),
 		func(): _on_facility_action("remove"), UI.ALERT, 36)
-	_cancel = UI.button(buttons, UI.trn("이번 변경 취소", "Cancel this turn’s changes"),
+	_cancel = UI.button(buttons, UI.trn("Cancel this turn’s changes", "Cancel this turn’s changes"),
 		_show_site_required, UI.MUTED, 36)
 	_remove.disabled = true
 	_cancel.disabled = true
@@ -373,13 +373,13 @@ func _build_controls(parent: Control) -> void:
 	UI.grow(card)
 	card.size_flags_stretch_ratio = 1.06
 	var controls := UI.column(card, 6)
-	UI.label(controls, "선택 위치와 기지 현황", 16, UI.CYAN)
+	UI.label(controls, "Selected pad and base status", 16, UI.CYAN)
 	_facility_info = FacilityInfoCard.new()
 	controls.add_child(_facility_info)
 	_facility_info.action_requested.connect(_on_facility_action)
 	_selection_detail = UI.label(controls, "", 18, UI.TEXT, true)
 	_selection_detail.hide()
-	_place = UI.button(controls, "여기에 짓기", _place_selected, UI.GREEN, 38)
+	_place = UI.button(controls, "Build here", _place_selected, UI.GREEN, 38)
 	_place.hide()
 	_place.disabled = true
 	_notice = UI.label(controls, "", 18, UI.ALERT, true)
@@ -398,7 +398,7 @@ func _build_controls(parent: Control) -> void:
 		_event_buttons.append(button)
 	_advance = UI.button(controls, "", _advance_turn, UI.CYAN, 43)
 	_advance_reason = UI.label(controls, "", 18, UI.AMBER, true)
-	_preview_toggle = UI.button(controls, "이번 턴 예상 자세히 보기", _toggle_preview, UI.MUTED, 36)
+	_preview_toggle = UI.button(controls, "Show turn forecast", _toggle_preview, UI.MUTED, 36)
 	_preview_detail = UI.label(controls, "", 18, UI.TEXT, true)
 	_preview_detail.hide()
 	_result = UI.label(controls, "", 18, UI.TEXT, true)
@@ -408,8 +408,8 @@ func _build_controls(parent: Control) -> void:
 func _build_timeline(parent: Control) -> void:
 	var panel := UI.panel(parent, Color("#0d192b"), 12)
 	var content := UI.column(panel, 8)
-	_history_toggle = UI.button(content, "과거 기록 · 되감기와 비교", _toggle_history, UI.CYAN)
-	_history_empty = UI.label(content, "아직 실행 결과가 없어요. 저장된 시작 상태는 아래 기록을 열어 확인해요.", 18, UI.MUTED, true)
+	_history_toggle = UI.button(content, "History · Rewind and compare", _toggle_history, UI.CYAN)
+	_history_empty = UI.label(content, "No result yet. Open a saved starting state below.", 18, UI.MUTED, true)
 	_history_body = UI.column(content, 8)
 	_candidate_note = UI.label(_history_body,"",18,UI.MUTED,true)
 	for index in 2:
@@ -425,7 +425,7 @@ func _build_timeline(parent: Control) -> void:
 		var button := UI.button(turns, "T%d" % turn, _select_turn.bind(turn), UI.CYAN, 40)
 		UI.grow(button)
 		_timeline.append(button)
-	_rewind = UI.button(_timeline_top, "선택 턴 시작으로", func(): rewound.emit(_timeline_turn), UI.PURPLE, 40)
+	_rewind = UI.button(_timeline_top, "Restore turn start", func(): rewound.emit(_timeline_turn), UI.PURPLE, 40)
 	_start_preview = UI.label(_history_body,"",18,UI.MUTED,true)
 	_compare_title = UI.label(_history_body, "", 18, UI.CYAN)
 	_comparison_sides = BoxContainer.new()
@@ -452,7 +452,7 @@ func refresh(session) -> void:
 		_choice = ""
 		_last_turn = turn
 	var planning: bool = state.phase == "planning"
-	_summary.text = "T%d / 7 · 건설 토큰 %d · 설치·철거는 현장에서 1" % [turn, edit_state.budget]
+	_summary.text = "T%d / 7 · Build tokens %d · Build/remove on site: 1" % [turn, edit_state.budget]
 	var has_shelter := Simulation.count_kind(edit_state, "shelter") > 0
 	var shield_status := "selected" if has_shelter and turn == 4 and _choice == "shelter" else ("prepared" if has_shelter else "absent")
 	_resource_overview.set_view_model({"mission_status":true, "shield_status":shield_status, "shield_detail":_shield_instruction(_training_profile()), "show_preview": not session.draft.is_empty(), "resources": [
@@ -462,13 +462,12 @@ func refresh(session) -> void:
 	_refresh_map(edit_state, planning)
 	_refresh_facilities(edit_state, planning)
 	_refresh_event(turn, planning, edit_state)
-	_advance.text = UI.trn("이번 턴 진행 · T%d", "Advance this turn · T%d") % turn if planning else UI.phase_text(state.phase)
+	_advance.text = UI.trn("Run turn · T%d", "Run turn · T%d") % turn if planning else UI.phase_text(state.phase)
 	_advance.disabled = _locked or not planning or (_event_values.size() > 0 and _choice.is_empty())
 	var last: Dictionary = session.result_at(turn - 1 if planning else turn)
 	_result.text = _result_text(last)
 	if last.is_empty():
-		_result.text = UI.trn("아직 결과가 없어요. 이번 턴을 진행하면 자원의 변화를 볼 수 있어요.",
-			"No result yet. Advance this turn to see resource changes.")
+		_result.text = UI.trn("No result yet. Advance this turn to see resource changes.", "No result yet. Advance this turn to see resource changes.")
 	_refresh_preview(planning, edit_state)
 	_refresh_guidance(planning, edit_state)
 	_refresh_timeline()
@@ -476,9 +475,9 @@ func refresh(session) -> void:
 	_inspect.disabled = _selected_slot < 0
 	_clear_selection.disabled = _selected_slot < 0
 	_refresh_info_card(edit_state, planning)
-	_food_detail.text = "비축 식량 · 현재 %d/100" % state.F
-	if not session.draft.is_empty(): _food_detail.text += " · 배치 후 %d/100" % edit_state.F
-	_food_detail.text += "\n매 턴 6을 사용해요. 0이 되면 훈련이 중단돼요."
+	_food_detail.text = "Stored food · Now %d/100" % state.F
+	if not session.draft.is_empty(): _food_detail.text += " · After layout %d/100" % edit_state.F
+	_food_detail.text += "\nUse 6 each turn. At 0, the mission stops."
 	_refresh_communication()
 	if not _weather_context.is_empty(): _refresh_weather_label()
 	selected_slot_changed.emit(_selected_slot)
@@ -488,15 +487,15 @@ func _refresh_info_card(layout: Dictionary, _planning: bool) -> void:
 	var facility: Dictionary = Simulation.facility_at(layout, _selected_slot)
 	var occupied := not facility.is_empty()
 	var kind: String = facility.type if occupied else "empty"
-	var summaries := {"generator":"햇빛으로 전기를 만들어요.", "battery":"전기를 더 많이 저장해요.", "greenhouse":"전기를 써서 식량을 길러요.", "shelter":"위험한 날에는 여기로 대피해요.", "habitat":"우주인이 생활하는 집이에요."}
-	var title := UI.name_for(kind) if occupied else "빈 칸"
-	var summary: String = summaries.get(kind, "이 위치 가까이 가서 1로 시설을 지어요.")
+	var summaries := {"generator":"Make power from sunlight.", "battery":"Store more power.", "greenhouse":"Use power to grow food.", "shelter":"A safe place during alerts.", "habitat":"A home for the crew."}
+	var title := UI.name_for(kind) if occupied else "Empty pad"
+	var summary: String = summaries.get(kind, "Go to this pad and press 1 to build.")
 	if _selected_slot < 0:
-		title = "기지를 살펴봐요"
-		summary = "칸을 골라 시설 정보와 3D 보기를 확인해요."
+		title = "Explore your base"
+		summary = "Select a pad for facility details and a 3D view."
 	var effect := _card_effect(kind)
-	if kind == "habitat": effect = "기지의 중심 · 철거 불가"
-	var effects: Array = [{"icon_id":kind,"label":"역할","value_text":effect}] if occupied else []
+	if kind == "habitat": effect = "Base hub · Cannot remove"
+	var effects: Array = [{"icon_id":kind,"label":"Role","value_text":effect}] if occupied else []
 	_facility_info.set_view_model({"slot_id":_selected_slot, "kind":kind, "title":title,
 		"summary":summary, "cost_text":"", "effects":effects,
 		"details":UI.description(kind) if occupied else "", "actions":[]})
@@ -510,10 +509,10 @@ func _on_facility_action(action_id: String) -> void:
 
 func _card_effect(kind: String) -> String:
 	match kind:
-		"generator": return "일조 전력 +18 / 그 외 +12"
-		"battery": return "저장 공간 +20 · 생산 없음"
-		"greenhouse": return "전력 4 사용 · 가동 3회 식량 +18"
-		"shelter": return "경보 때 대피 · 차폐 칸 할인"
+		"generator": return "Sun pad +18 power / Other +12"
+		"battery": return "Storage +20 · No generation"
+		"greenhouse": return "Uses 4 power · +18 food every 3 active turns"
+		"shelter": return "Shelter during alerts · Shield-pad discount"
 	return ""
 
 func _cost_caption(kind: String) -> String:
@@ -528,36 +527,36 @@ func _refresh_facilities(_layout_state: Dictionary, _planning: bool) -> void:
 func _toggle_preview() -> void:
 	_preview_open = not _preview_open
 	_preview_detail.visible = _preview_open
-	_preview_toggle.text = "이번 턴 예상 접기" if _preview_open else "이번 턴 예상 자세히 보기"
+	_preview_toggle.text = "Hide turn forecast" if _preview_open else "Show turn forecast"
 
 func _refresh_preview(planning: bool, layout: Dictionary) -> void:
 	_advance_reason.text = ""
 	if not planning:
-		_advance_reason.text = "훈련이 끝났어요. 과거 기록에서 다시 해 볼 턴을 골라요."
-	elif _locked: _advance_reason.text = "이번 턴을 처리하고 있어요."
+		_advance_reason.text = "Mission finished. Choose a past turn to retry."
+	elif _locked: _advance_reason.text = "Running this turn."
 	elif not _event_values.is_empty() and _choice.is_empty():
-		_advance_reason.text = "사건 대응을 먼저 골라요."
+		_advance_reason.text = "Choose an event response first."
 	_advance_reason.visible = not _advance_reason.text.is_empty()
 	_preview_toggle.visible = planning
 	_preview_detail.visible = planning and _preview_open
 	if not planning:
-		_capacity.text = "현재 전력 %d/%d" % [_session.state.E,Simulation.energy_cap(_session.state)]
+		_capacity.text = "Current power %d/%d" % [_session.state.E,Simulation.energy_cap(_session.state)]
 		return
 	var prediction: Dictionary = Preview.inspect(_session.snapshot(_session.state.turn_id),_session.draft,_choice,{},_session.advice_requested)
 	if prediction.has("error"):
 		_preview_detail.text = UI.error_text(prediction.error)
 		return
-	_capacity.text = "현재 전력 %d/%d · 배치 후 저장 공간 %d" % [prediction.current_energy,prediction.current_capacity,prediction.layout_capacity]
+	_capacity.text = "Current power %d/%d · Capacity after layout %d" % [prediction.current_energy,prediction.current_capacity,prediction.layout_capacity]
 	if _session.draft.is_empty():
-		_capacity.text = "현재 전력 %d/%d · 배치 변경 없음" % [prediction.current_energy,prediction.current_capacity]
-	if prediction.spill > 0: _capacity.text += "\n배치 확정 때 초과 전력 %d가 줄어든 뒤 턴을 계산해요." % prediction.spill
-	var lines: Array[String] = ["이번 턴 진행 후 예상 · 현재 자원은 아직 바뀌지 않아요."]
-	if prediction.conditional: lines.append("선택에 따라 달라져요. 아래는 각 대응을 골랐을 때의 예상이에요.")
+		_capacity.text = "Current power %d/%d · Layout unchanged" % [prediction.current_energy,prediction.current_capacity]
+	if prediction.spill > 0: _capacity.text += "\nConfirming this layout removes %d excess power before the turn." % prediction.spill
+	var lines: Array[String] = ["Turn forecast · Your current resources have not changed yet."]
+	if prediction.conditional: lines.append("Your choice matters. Compare the forecasts for each response below.")
 	for outcome: Dictionary in prediction.outcomes:
 		var result: Dictionary = outcome.result
 		var label: String = Preview.choice_label(outcome.choice)
 		if not outcome.available:
-			lines.append(label + ": 먼저 대피소를 지어야 선택할 수 있어요.")
+			lines.append(label + ": Build a shelter first.")
 			continue
 		if result.has("error"):
 			lines.append(label + ": " + UI.error_text(result.error))
@@ -576,56 +575,54 @@ func _refresh_map(state: Dictionary, _planning: bool) -> void:
 		var shield: bool = Rules.SHIELDED.has(slot_id)
 		var marks := ""
 		if sun and shield:
-			marks = UI.trn("일조·차폐", "SUN/SH")
+			marks = UI.trn("SUN/SH", "SUN/SH")
 		elif sun:
-			marks = UI.trn("일조", "SUN")
+			marks = UI.trn("SUN", "SUN")
 		elif shield:
-			marks = UI.trn("차폐", "SHIELD")
+			marks = UI.trn("SHIELD", "SHIELD")
 		var button := _slots[slot_id]
-		var contents: String = GLYPHS.get(kind, "빈 칸")
+		var contents: String = GLYPHS.get(kind, "Empty pad")
 		var tint: Color = UI.FACILITY_COLORS.get(kind, UI.AMBER if sun else (UI.PURPLE if shield else UI.MUTED))
 		if not kind.is_empty():
 			contents = UI.name_for(kind)
-		var short_marks := ("해" if sun else "") + ("방패" if shield else "")
+		var short_marks := "SUN/SH" if sun and shield else ("SUN" if sun else ("SH" if shield else ""))
 		button.text = "%02d %s\n%s" % [slot_id + 1, short_marks, contents]
-		button.tooltip_text = marks if kind.is_empty() else UI.description(kind) + " · " + (marks if not marks.is_empty() else "일반 칸")
+		button.tooltip_text = marks if kind.is_empty() else UI.description(kind) + " · " + (marks if not marks.is_empty() else "Normal pad")
 		button.disabled = false # Completed layouts can still be inspected.
 		UI.paint_button(button, tint, _selected_slot == slot_id)
-	_map_help.text = "지도는 조회 전용 · 설치·철거는 해당 위치에서 1"
+	_map_help.text = "Map is read-only · Build/remove at a pad with 1"
 	var selected := Simulation.facility_at(state, _selected_slot)
-	if selected.get("type") == "habitat": _map_help.text = "가운데 거주실은 고정 시설이에요. 옮기거나 철거할 수 없어요."
+	if selected.get("type") == "habitat": _map_help.text = "The central habitat is fixed. It cannot be moved or removed."
 
 func _refresh_event(turn: int, planning: bool, draft_state: Dictionary) -> void:
 	_event_values.clear()
 	var captions: Array[String] = []
-	_event_title.text = "오늘의 임무"
-	_event_text.text = UI.trn("현장에서 배치를 준비한 뒤 ‘이번 턴 진행’을 눌러요. 승무원은 산소와 식량을 각각 6씩 써요.",
-		"Confirm the layout to run a turn. The crew uses 6 oxygen and 6 food each turn.")
+	_event_title.text = "Your mission"
+	_event_text.text = UI.trn("Confirm the layout to run a turn. The crew uses 6 oxygen and 6 food each turn.", "Confirm the layout to run a turn. The crew uses 6 oxygen and 6 food each turn.")
 	if not planning:
-		_event_text.text = UI.trn("아래에서 지난 턴을 골라 되감고 다른 설계를 시험해요.",
-			"Choose an earlier turn below to rewind and try a different plan.")
+		_event_text.text = UI.trn("Choose an earlier turn below to rewind and try a different plan.", "Choose an earlier turn below to rewind and try a different plan.")
 	elif turn == 2:
 		_event_values.assign(["normal", "conserve"])
-		captions.assign([UI.trn("재배 유지", "Keep farms on"), UI.trn("절전", "Conserve power")])
+		captions.assign([UI.trn("Keep farms on", "Keep farms on"), UI.trn("Conserve power", "Conserve power")])
 	elif turn == 4:
 		_event_values.assign(["shelter", "continue"])
-		captions.assign([UI.trn("대피하기", "Take shelter"), UI.trn("대피 없이 진행", "Continue without shelter")])
+		captions.assign([UI.trn("Take shelter", "Take shelter"), UI.trn("Continue without shelter", "Continue without shelter")])
 	elif turn == 5:
 		_event_values.assign(["acknowledge"])
-		captions.assign([UI.trn("확인", "Acknowledge")])
+		captions.assign([UI.trn("Acknowledge", "Acknowledge")])
 	if planning and turn == 3:
-		_event_title.text = "발전기 고장 · 이번 턴까지"
+		_event_title.text = "Solar array fault · Ends this turn"
 		_event_text.text = Preview.current_effect(draft_state,_choice)
 	if planning and Learning.EVENTS.has(turn):
-		_event_title.text = Learning.EVENTS[turn][0] + " · 훈련용 가상 사건"
+		_event_title.text = Learning.EVENTS[turn][0] + " · Training scenario"
 		_event_text.text = Learning.EVENTS[turn][1] + "\n" + Preview.current_effect(draft_state,_choice)
 	if planning and turn == 4 and not _training_profile().is_empty():
 		var profile := _training_profile()
 		var required := bool(profile.get("shelter_required", true))
 		var cost := int(profile.get("protection_energy", 0))
-		_event_title.text = "T4 %s · %s" % [_alert_label(profile), "대피 필수" if required else "대피 선택"]
-		captions.assign(["대피 · 전력 %d" % cost, "대피 없이 진행"])
-		_event_text.text = "NASA 기록을 반영한 게임 경보예요. 대피하면 보호 전력 %d를 더 쓰고 재배는 쉬어요.\n%s" % [cost, "대피소를 짓고 대피해야 훈련을 계속해요." if required else "관심 단계에서는 대피 없이 재배를 계속할 수 있어요."]
+		_event_title.text = "T4 %s · %s" % [_alert_label(profile), "Shelter required" if required else "Shelter optional"]
+		captions.assign(["Shelter · %d power" % cost, "Continue without shelter"])
+		_event_text.text = "A training alert based on NASA records. Sheltering uses %d extra power and pauses farming.\n%s" % [cost, "Build a shelter and choose Shelter to continue the mission." if required else "At Watch level, you can keep farming without sheltering."]
 	if turn == 4 and _choice == "shelter" and Simulation.count_kind(draft_state, "shelter") == 0:
 		_choice = ""
 	_options.visible = not _event_values.is_empty()
@@ -636,7 +633,7 @@ func _refresh_event(turn: int, planning: bool, draft_state: Dictionary) -> void:
 		if button.visible:
 			button.text = captions[i]
 			button.disabled = turn == 4 and i == 0 and Simulation.count_kind(draft_state, "shelter") == 0
-			button.tooltip_text = UI.trn("먼저 대피소를 지어요.", "Build a shelter first.") if button.disabled else ""
+			button.tooltip_text = UI.trn("Build a shelter first.", "Build a shelter first.") if button.disabled else ""
 			UI.paint_button(button, UI.AMBER, _choice == _event_values[i])
 
 
@@ -651,10 +648,10 @@ func _refresh_timeline() -> void:
 	var has_record: bool = not _session.current_history.snapshots.is_empty() or not _session.previous_attempt.is_empty()
 	_history_empty.visible = _session.current_history.results.is_empty() and _session.previous_attempt.get("results",{}).is_empty()
 	_history_toggle.disabled = not has_record
-	_history_toggle.text = "과거 기록 닫기" if _history_open and has_record else "과거 기록 · 되감기와 비교"
+	_history_toggle.text = "Close history" if _history_open and has_record else "History · Rewind and compare"
 	_history_body.visible = has_record and _history_open
 	var candidates := History.candidates(_session)
-	_candidate_note.text = "저장된 시작점의 탐색 후보예요. 성공을 보장하지 않아요. 눌러서 살펴본 뒤 복원할지 골라요." if not candidates.is_empty() else "확실한 후보를 찾지 못했어요. 과거 상태를 함께 살펴봐요. 아래 턴을 눌러 직접 확인해요."
+	_candidate_note.text = "Saved states worth exploring, not guaranteed solutions. Inspect one before restoring." if not candidates.is_empty() else "No clear candidate found. Select a past turn below to inspect its starting state."
 	for i in _candidate_buttons.size():
 		_candidate_buttons[i].visible = i < candidates.size()
 		if i < candidates.size(): _candidate_buttons[i].text = candidates[i].text
@@ -666,9 +663,9 @@ func _refresh_timeline() -> void:
 		UI.paint_button(_timeline[i], UI.CYAN, id == _timeline_turn)
 	var start: Dictionary = _session.snapshot(_timeline_turn)
 	_rewind.disabled = _locked or start.is_empty()
-	_start_preview.text = "복원 대상 · T%d 시작\n%s" % [_timeline_turn,History.start_line(start)] if not start.is_empty() else "T%d는 이전 시도의 조회 전용 기록이에요. 현재 보관된 시작점이 없어 복원할 수 없어요." % _timeline_turn
-	if not start.is_empty(): _start_preview.text += "\n복원하면 지금 편집 중인 배치는 버리고, 저장된 시작 상태로 돌아가요."
-	_compare_title.text = "T%d / 같은 턴 비교 · 시작 상태와 실행 결과를 구분해요" % _timeline_turn
+	_start_preview.text = "Restore target · Start of T%d\n%s" % [_timeline_turn,History.start_line(start)] if not start.is_empty() else "T%d is a read-only record from a previous attempt. There is no saved starting state to restore." % _timeline_turn
+	if not start.is_empty(): _start_preview.text += "\nRestore replaces your draft layout with this saved starting state."
+	_compare_title.text = "T%d / Compare attempts · Starting states and recorded results" % _timeline_turn
 	_prior.text = History.side(_session,_timeline_turn,true)
 	_current.text = History.side(_session,_timeline_turn,false)
 	_delta.text = History.changes(_session,_timeline_turn)
@@ -676,7 +673,7 @@ func _refresh_timeline() -> void:
 
 func _result_line(result: Dictionary) -> String:
 	var ending: Dictionary = result.state_after
-	return UI.trn("T%d %s · 전력 %d / 산소 %d / 식량 %d", "T%d %s · P %d / O %d / F %d") % [
+	return UI.trn("T%d %s · P %d / O %d / F %d", "T%d %s · P %d / O %d / F %d") % [
 		result.turn_id, UI.phase_text(result.phase), ending.E, ending.O, ending.F]
 
 
@@ -688,9 +685,9 @@ func _result_text(result: Dictionary) -> String:
 	text += "\n" + Preview.flow_lines(before,result)
 	match result.phase:
 		"failed_power":
-			text += UI.trn("\n산소·재배·보급·식량 계산 전에 멈췄어요.", "\nStopped before oxygen, growth, supply, and food.")
+			text += UI.trn("\nStopped before oxygen, growth, supply, and food.", "\nStopped before oxygen, growth, supply, and food.")
 		"failed_safety":
-			text += UI.trn("\n대피소를 짓고 대피하면 계속할 수 있어요.", "\nBuild a shelter and take cover to continue.")
+			text += UI.trn("\nBuild a shelter and take cover to continue.", "\nBuild a shelter and take cover to continue.")
 	return text
 
 
@@ -717,7 +714,7 @@ func _select_kind(_kind: String) -> void:
 
 func _show_site_required() -> void:
 	if is_instance_valid(_notice):
-		set_notice("설치·철거는 해당 위치 가까이에서 1을 눌러요.")
+		set_notice("Go to a pad and press 1 to build or remove.")
 
 func _choose_event(index: int) -> void:
 	if index < 0 or index >= _event_values.size() or _event_buttons[index].disabled: return

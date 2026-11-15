@@ -5,7 +5,7 @@ signal action_requested(action_id: String)
 const UI = preload("res://scripts/ui/ui_style.gd")
 const ALLOWED_ACTIONS := ["place", "remove", "inspect"]
 const ICON_PATH := "res://assets/ui/operations/facilities/"
-const ACTION_LABELS := {"place":"여기에 짓기", "remove":"철거하기", "inspect":"3D로 보기"}
+const ACTION_LABELS := {"place":"Build here", "remove":"Remove", "inspect":"View in 3D"}
 
 var _column: VBoxContainer
 var _model: Dictionary = {}
@@ -48,10 +48,10 @@ func set_view_model(data: Dictionary) -> void:
 	_enabled_actions.clear()
 	_details_button = null
 	_details_label = null
-	UI.label(_column, "%02d번 칸" % (slot + 1) if slot >= 0 else "선택한 시설", 16, UI.CYAN, true)
+	UI.label(_column, "Pad %02d" % (slot + 1) if slot >= 0 else "Selected facility", 16, UI.CYAN, true)
 	var empty := kind in ["", "empty"]
-	UI.label(_column, _text(_model.get("title"), "빈 칸" if empty and slot >= 0 else "시설 정보"), 24, UI.TEXT, true)
-	UI.label(_column, _text(_model.get("summary"), "칸을 고르면 정보를 볼 수 있어요." if slot < 0 else "할 수 있는 행동을 아래에서 골라요."), 18, UI.TEXT, true)
+	UI.label(_column, _text(_model.get("title"), "Empty pad" if empty and slot >= 0 else "Facility info"), 24, UI.TEXT, true)
+	UI.label(_column, _text(_model.get("summary"), "Select a pad to see its details." if slot < 0 else "Choose an available action below."), 18, UI.TEXT, true)
 	var effects = _model.get("effects", [])
 	if effects is Array:
 		for effect in effects:
@@ -89,7 +89,7 @@ func set_view_model(data: Dictionary) -> void:
 			button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 			_action_buttons[id] = button
 			if not enabled:
-				var reason := _text(action.get("reason"), "지금은 할 수 없어요.")
+				var reason := _text(action.get("reason"), "Unavailable right now.")
 				button.tooltip_text = reason
 				UI.label(_column, reason, 16, UI.ALERT, true)
 	var details := _text(_model.get("details"))
@@ -117,7 +117,7 @@ func _toggle_details(generation: int) -> void:
 
 
 func _update_details() -> void:
-	_details_button.text = "자세한 설명 접기" if _expanded else "자세한 설명 보기"
+	_details_button.text = "Hide details" if _expanded else "Show details"
 	_details_button.set_pressed_no_signal(_expanded)
 	_details_label.visible = _expanded
 

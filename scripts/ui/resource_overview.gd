@@ -2,7 +2,7 @@ extends GridContainer
 ## Read-only resource/status overview; confirmed and draft values stay separate.
 const UI = preload("res://scripts/ui/ui_style.gd")
 const IDS := ["energy", "oxygen", "food"]
-const LABELS := {"energy": "전력", "oxygen": "산소", "food": "식량"}
+const LABELS := {"energy": "Power", "oxygen": "Oxygen", "food": "Food"}
 const COLORS := {"energy": UI.AMBER, "oxygen": UI.CYAN, "food": UI.GREEN}
 var _cards: Dictionary = {}
 var _life_food: Label
@@ -49,11 +49,11 @@ func _init() -> void:
 		var title := UI.label(heading, LABELS[id], 18)
 		title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		var current := UI.label(body, "현재 · 확인 불가", 16)
+		var current := UI.label(body, "Now · Unknown", 16)
 		current.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		var current_bar := _bar(body, COLORS[id], false)
 		var preview_box := UI.column(body, 4)
-		var preview := UI.label(preview_box, "배치 후 예상 · 확인 불가", 16, UI.MUTED)
+		var preview := UI.label(preview_box, "After layout · Unknown", 16, UI.MUTED)
 		preview.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		var preview_bar := _bar(preview_box, COLORS[id], true)
 		if id == "oxygen":
@@ -66,9 +66,9 @@ func _init() -> void:
 	var shield_body := UI.column(_shield_panel, 4)
 	var shield_heading := UI.row(shield_body, 8)
 	shield_heading.add_child(ResourceIcon.new("shield", UI.PURPLE))
-	UI.label(shield_heading, "차폐 준비", 18)
-	_shield_label = UI.label(shield_body, "대피소 없음", 18, UI.AMBER, true)
-	_shield_detail = UI.label(shield_body, "대피소를 지어 준비해요", 16, UI.MUTED, true)
+	UI.label(shield_heading, "Shelter readiness", 18)
+	_shield_label = UI.label(shield_body, "No shelter", 18, UI.AMBER, true)
+	_shield_detail = UI.label(shield_body, "Build a shelter to prepare", 16, UI.MUTED, true)
 	resized.connect(_layout)
 	set_view_model({})
 
@@ -102,23 +102,23 @@ func set_view_model(data: Dictionary) -> void:
 		var entry: Dictionary = entries.get(id, {})
 		var title: String = str(entry.get("label", LABELS[id]))
 		card.title.text = title if not title.is_empty() else LABELS[id]
-		_set_value(card.current, card.current_bar, "현재", entry.get("current"), entry.get("capacity"))
-		_set_value(card.preview, card.preview_bar, "배치 후 예상", entry.get("preview"), entry.get("preview_capacity"))
+		_set_value(card.current, card.current_bar, "Now", entry.get("current"), entry.get("capacity"))
+		_set_value(card.preview, card.preview_bar, "After layout", entry.get("preview"), entry.get("preview_capacity"))
 		card.preview_box.visible = bool(data.get("show_preview", false))
 	_cards.food.panel.visible = not mission_status
 	_life_food.visible = mission_status
 	_shield_panel.visible = mission_status
 	if mission_status:
-		_cards.oxygen.title.text = "생명 유지"
-		_cards.oxygen.current.text = _cards.oxygen.current.text.replace("현재", "산소")
+		_cards.oxygen.title.text = "Life support"
+		_cards.oxygen.current.text = _cards.oxygen.current.text.replace("Now", "Oxygen")
 		var food: Variant = entries.get("food", {}).get("current")
-		_life_food.text = "식량 확인 불가"
+		_life_food.text = "Food unknown"
 		if _finite_number(food):
-			_life_food.text = "식량 %s · %s" % [str(food), "고갈! 생명 유지 위험" if float(food) <= 0 else ("부족! 다음 턴 주의" if float(food) <= 6 else "비축 중")]
+			_life_food.text = "Food %s · %s" % [str(food), "Empty! Life support at risk" if float(food) <= 0 else ("Low! Check the next turn" if float(food) <= 6 else "In stock")]
 		_life_food.add_theme_color_override("font_color", UI.ALERT if _finite_number(food) and float(food) <= 6 else UI.GREEN)
 		var status: String = str(data.get("shield_status", "absent"))
-		_shield_label.text = {"absent":"대피소 없음", "prepared":"대피소 준비됨", "selected":"대피 선택됨"}.get(status, "대피소 없음")
-		_shield_detail.text = {"absent":"대피소를 지어 준비해요", "prepared":"경보 때 ‘대피하기’를 골라요", "selected":"이번 턴을 진행하면 대피해요"}.get(status, "")
+		_shield_label.text = {"absent":"No shelter", "prepared":"Shelter ready", "selected":"Shelter selected"}.get(status, "No shelter")
+		_shield_detail.text = {"absent":"Build a shelter to prepare", "prepared":"Choose Shelter when an alert requires it", "selected":"Shelter when this turn runs"}.get(status, "")
 		if not str(data.get("shield_detail", "")).is_empty(): _shield_detail.text = str(data.shield_detail)
 		_shield_label.add_theme_color_override("font_color", UI.AMBER if status == "absent" else UI.CYAN)
 	_layout()
@@ -126,10 +126,10 @@ func set_view_model(data: Dictionary) -> void:
 func _set_value(caption: Label, bar: ProgressBar, prefix: String, value: Variant, cap: Variant) -> void:
 	bar.value = 0
 	if not _finite_number(value):
-		caption.text = prefix + " · 확인 불가"
+		caption.text = prefix + " · Unknown"
 		return
 	if not _finite_number(cap) or float(cap) <= 0:
-		caption.text = "%s %s / 확인 불가" % [prefix, str(value)]
+		caption.text = "%s %s / Unknown" % [prefix, str(value)]
 		return
 	caption.text = "%s %s / %s" % [prefix, str(value), str(cap)]
 	bar.value = clampf(float(value) / float(cap), 0, 1)

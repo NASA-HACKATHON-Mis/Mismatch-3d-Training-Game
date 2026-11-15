@@ -34,13 +34,13 @@ func _ready() -> void:
 	var panel := UI.panel(frame, UI.DARK, 20)
 	var body := UI.column(panel, 12)
 	var header := UI.row(body, 14)
-	var title := UI.label(header, "달 기지 안내서", 29)
+	var title := UI.label(header, "Moon base guide", 29)
 	UI.grow(title)
-	var close := UI.button(header, "닫기  Esc", func(): closed.emit(), UI.MUTED)
+	var close := UI.button(header, "Close  Esc", func(): closed.emit(), UI.MUTED)
 	close.custom_minimum_size.x = 110
 
 	var nav := UI.row(body, 8)
-	var tabs := ["시설", "사건과 되감기", "실제 자료"]
+	var tabs := ["Facilities", "Events and rewind", "Real data"]
 	for index in tabs.size():
 		var tab := UI.button(nav, tabs[index], _select_page.bind(index), UI.CYAN)
 		UI.grow(tab)
@@ -59,7 +59,7 @@ func _ready() -> void:
 	_build_events(_pages[1])
 	_build_sources(_pages[2])
 	_select_page(0)
-	UI.label(body, "Tab으로 항목 이동 · Enter로 선택 · Esc로 닫기", 14, UI.MUTED)
+	UI.label(body, "Tab to move · Enter to select · Esc to close", 14, UI.MUTED)
 
 
 func open(page: int) -> void:
@@ -83,87 +83,88 @@ func _card(parent: Control, title: String, description: String, color: Color = U
 
 
 func _build_facilities(parent: Control) -> void:
-	UI.label(parent, "무엇을 지으면 도움이 될까요? 자원과 시간은 게임 단위예요.", 19, UI.MUTED, true)
-	var controls := _card(parent, "이동과 시점 조작", "")
+	UI.label(parent, "What could help your base? Resources and time use game units.", 19, UI.MUTED, true)
+	var controls := _card(parent, "Move and look", "")
 	_controls = controls.get_child(1) as Label
 	configure_controls(false, false)
-	_card(parent,"대시보드와 안내 로봇","기지 남쪽 입구의 로봇 옆 단말기를 보고 E 또는 2를 눌러요. 대시보드에서는 자원·기지 지도·사건·과거 기록을 확인하고 턴을 진행해요. 설치·철거는 해당 위치에서만 할 수 있어요. 이동 중에는 턴이 흐르지 않아요. 로봇은 위치 표식이에요. 안내서는 대시보드 또는 일시 정지 화면에서 H로 열어요.")
+	_card(parent,"Dashboard and guide robot","At the south entrance, face the terminal beside the guide robot and press E or 2. Check resources, the map, events and history, then run a turn. Build or remove only at a pad. Walking does not advance time. Press H from the dashboard or pause menu for this guide.")
 	for kind: String in Learning.FACILITIES:
 		_card(parent, UI.name_for(kind), Learning.FACILITIES[kind], UI.FACILITY_COLORS[kind])
 
 func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
-	_controls.text = "WASD로 걷고 마우스로 둘러봐요. 현장 1은 설치·철거 메뉴, 2 또는 E는 상세, 3은 3D 관찰이에요. 어디서든 4로 기지 격자와 설치 현황을 봐요. 지도에서는 설치나 턴 진행을 할 수 없어요. 중앙 단말기는 E 또는 2로 열어요. 메뉴에서 Esc를 누르면 탐색으로 돌아가요. 탐색 중 Esc는 잠시 멈춤이에요."
+	_controls.text = "Move with WASD and look with the mouse. At a pad: 1 build/remove, 2 or E details, 3 inspect in 3D. Press 4 anywhere for the read-only base map. Face the terminal and press E or 2 for the dashboard. Esc closes a menu; during exploration it pauses."
 	if jump_enabled:
-		_controls.text += " Space로 점프해요. 바닥에 내려온 뒤 다시 누르면 또 점프할 수 있어요."
+		_controls.text += " Press Space to jump. Land before jumping again."
 	if drag_available:
-		_controls.text += " 마우스 잠금이 안 되면 게임 화면에서 왼쪽 버튼을 누른 채 드래그해요. 버튼을 놓으면 시점 회전이 멈춰요. 다시 잠그려면 Esc로 멈춘 뒤 재개해요."
+		_controls.text += " If mouse capture is unavailable, hold the left mouse button and drag to look. Release to stop. Pause with Esc, then resume to capture again."
 
 
 func _build_events(parent: Control) -> void:
-	UI.label(parent, "훈련용 가상 사건 · 턴과 자원은 게임 단위예요.", 18, UI.AMBER, true)
-	_communication_help = _card(parent, "지구에 조언 요청하기", "요청을 확정할 때 전력 1을 써요. 확정 전에는 취소할 수 있어요. NASA CME 기록을 반영해 답장은 1~2턴 뒤 도착해요. T7 안에 답장을 받을 수 있을 때만 요청해요. 한 번에 한 요청만 보내요. 답장은 조언이며 자원을 주지 않아요. 대기 시간은 교육용 규칙이며 실제 달의 전파 지연이 아니에요.").get_child(1)
+	UI.label(parent, "Training scenario · Turns and resources use game units.", 18, UI.AMBER, true)
+	_communication_help = _card(parent, "Ask Earth for advice", "A confirmed request costs 1 power. Cancel before confirming. NASA CME records set a 1–2 turn reply delay. Request only if the reply can arrive by T7. One request at a time. Advice gives no resources. This is a training delay, not real lunar signal travel time.").get_child(1)
 	for turn: int in Learning.EVENTS:
 		var event: Array = Learning.EVENTS[turn]
 		var event_card := _card(parent, event[0], event[1], UI.AMBER)
 		if turn == 4: _weather_event_help = event_card.get_child(1)
-	_card(parent, "같은 턴 두 번 해 보기",
-		"완료한 턴의 시작으로 되감아요. 시설 배치나 대처 방법을 한 가지만 바꾸고 같은 턴을 실행해요. 남은 자원과 발전·수확을 비교해 보세요.")
+	_card(parent, "Try the same turn twice",
+		"Rewind to the start of a completed turn. Change one part of your layout or response, then run the same turn. Compare remaining resources, power generated and food harvested.")
 
 
 func _build_sources(parent: Control) -> void:
-	UI.label(parent, "우주 임무에 참고하는 실제 자료예요.", 18, UI.MUTED, true)
-	var current := _card(parent, "이번 훈련의 우주날씨 참고 자료", "자료를 확인하고 있어요. 기다리지 않고 시작할 수 있어요.")
+	UI.label(parent, "Real records used to learn about space missions.", 18, UI.MUTED, true)
+	var current := _card(parent, "Space weather records for this mission", "Checking records. You may start with historical data without waiting.")
 	_weather_title = current.get_child(0)
 	_weather_text = current.get_child(1)
-	_weather_source = UI.button(current, "FLR 대표 근거 원문", _open_weather_source, UI.CYAN, 36)
+	_weather_source = UI.button(current, "FLR source record", _open_weather_source, UI.CYAN, 36)
 	_weather_source.disabled = true
 	for kind: String in ["FLR", "SEP", "CME"]:
-		var source_card := _card(parent, {"FLR":"FLR · 태양 플레어", "SEP":"SEP · 태양 고에너지 입자", "CME":"CME · 코로나 질량 방출"}[kind], "NASA 사건 기록을 확인하고 있어요.")
-		var link := UI.button(source_card, "대표 기록 원문 ↗", _open_record_source.bind(kind), UI.CYAN, 36)
+		var source_card := _card(parent, {"FLR":"FLR · Solar flares", "SEP":"SEP · Solar energetic particles", "CME":"CME · Coronal mass ejections"}[kind], "Checking NASA event records.")
+		var link := UI.button(source_card, "Example source record ↗", _open_record_source.bind(kind), UI.CYAN, 36)
 		link.disabled = true
 		_source_cards[kind] = {"text":source_card.get_child(1), "link":link, "url":""}
 	var archived := Learning.archived_flare()
 	if not archived.is_empty():
 		var record: Dictionary = archived.record
 		var meta: Dictionary = archived.metadata
-		var title := "학습용 보관 이력 · 2016년 태양 플레어 %s" % record.classType
-		var description := "태양에서 아주 큰 에너지가 갑자기 나오는 현상을 태양 플레어라고 해요. 우주 임무를 계획할 때는 이런 기록도 살펴봐요."
+		var title := "Learning archive · 2016 solar flare %s" % record.classType
+		var description := "A solar flare is a sudden release of energy from the Sun. Space mission planners study these records."
 		var donki := _card(parent, title, description)
-		UI.label(donki, "시작 %s    최대 %s    종료 %s" % [
+		UI.label(donki, "Start %s    Peak %s    End %s" % [
 			Learning.utc_label(record.beginTime), Learning.utc_label(record.peakTime),
 			Learning.utc_label(record.endTime)], 15, UI.MUTED, true)
-		UI.label(donki, "NASA Goddard CCMC / DONKI · %s\n자료 조회 %s (한국 날짜) · 기록 개정판 %d" % [
+		UI.label(donki, "NASA Goddard CCMC / DONKI · %s\nRetrieved %s (as recorded) · Archive revision %d" % [
 			record.flrID, str(meta.retrieved_at).left(10), int(record.versionId)], 15, UI.MUTED, true)
-		UI.label(donki, "학습용 이력 1건이에요. 이번 플레이 자료는 위의 대표 기록을 확인해요. 게임 4턴 경보는 가상 사건이며 NASA 기록을 교육용 조건 선택에 활용해요. 실제 피폭량 예측은 아니에요.",
+		UI.label(donki, "One historical learning example. See the records above for this mission's inputs. T4 is a training scenario informed by NASA records, not a real radiation forecast.",
 			15, UI.AMBER, true)
 		var links := UI.row(donki, 8)
-		UI.button(links, "NASA 사건 원문 ↗", _open_source.bind(str(meta.event_link)), UI.CYAN, 36)
-		UI.button(links, "처음 조회한 API 주소 ↗", _open_source.bind(str(meta.request_url)), UI.CYAN, 36)
+		UI.button(links, "NASA source record ↗", _open_source.bind(str(meta.event_link)), UI.CYAN, 36)
+		UI.button(links, "Original API request ↗", _open_source.bind(str(meta.request_url)), UI.CYAN, 36)
 	else:
-		_card(parent, "과거 관측 · NASA DONKI", "보관한 기록을 불러오지 못했어요.")
-	var csa := _card(parent, "과학 읽기 · 멀리 갈수록 식량을 준비해요",
-		"지구에서 멀어질수록 새 식량을 자주 받기 어려워요. 가져온 식량을 아끼고 직접 기를 방법을 준비해요. 우주 식량은 영양과 함께 무게, 부피, 보관 기간도 중요해요.", UI.GREEN)
-	UI.label(csa, "출처 Canadian Space Agency · 게임 제작팀의 한국어 요약 · CSA 공식 번역 아님",
+		_card(parent, "Historical observation · NASA DONKI", "Could not load the archived record.")
+	var csa := _card(parent, "Science reading · Food for long journeys",
+		"Far from Earth, fresh deliveries are harder to get. Save your food and prepare to grow more. Space food must balance nutrition, weight, volume and storage life.", UI.GREEN)
+	UI.label(csa, "Source: Canadian Space Agency · Summary by the game team, not an official CSA publication",
 		15, UI.MUTED, true)
-	UI.button(csa, "캐나다 우주국 원문 ↗", _open_source.bind(Learning.CSA_ARTICLE), UI.GREEN, 36)
-	UI.label(parent, "시작 전 FLR·SEP·CME를 조회하고 실패한 종류는 내장 자료로 채워요. 한 판의 자료와 교육용 변환 규칙은 고정돼 되감아도 바뀌지 않아요. 최근 조회 성공은 오늘 발생했거나 지금 안전하다는 뜻이 아니에요.", 15, UI.MUTED, true)
+	UI.button(csa, "Canadian Space Agency article ↗", _open_source.bind(Learning.CSA_ARTICLE), UI.GREEN, 36)
+	UI.label(parent, "Before play, request FLR, SEP and CME records once. Failed products use embedded historical data. Records and training rules freeze when the mission starts, including rewind. Fetched records are not a live feed or proof of today's safety.", 15, UI.MUTED, true)
 
 
 func set_weather_context(data: Dictionary) -> void:
 	_weather_context = data.duplicate(true)
 	if not is_instance_valid(_weather_title): return
-	var mode: String = {"live":"최근 API 조회", "archive":"내장 보관 자료", "mixed":"최근 조회·보관 자료 혼합"}.get(str(data.get("mode", "archive")), "내장 보관 자료")
-	_weather_title.text = "이번 플레이 · NASA 사건 기록 · " + mode
+	var mode: String = {"live":"Fetched NASA records", "archive":"Embedded historical data · not live", "mixed":"Mixed: fetched + historical"}.get(str(data.get("mode", "archive")), "Embedded historical data · not live")
+	_weather_title.text = "Mission records · NASA DONKI · " + mode
 	var observed := str(data.get("observed_at", ""))
 	var fetched := str(data.get("fetched_at", ""))
 	var profile: Dictionary = data.get("training_profile", {})
-	_weather_text.text = "자료 시각 %s · 조회 %s\n실제 NASA 기록 → 게임 경보·비용·통신 조건. 아래 숫자는 교육용 변환이며 실제 피폭량·전파 지연 예측이 아니에요." % [observed if not observed.is_empty() else "종류별 대표 기록 참고", fetched if not fetched.is_empty() else "종류별 조회 기록 참고"]
+	_weather_text.text = "Observation %s · Retrieved %s\nReal NASA records select training alerts, costs and reply delays. Values below are game rules, not radiation or signal-delay predictions." % [observed if not observed.is_empty() else "See each product's example record", fetched if not fetched.is_empty() else "See each product's retrieval record"]
+	_weather_text.text += "\nSession snapshot: frozen for play and rewind." if data.get("snapshot_frozen", false) else "\nRecords freeze when you start; rewinding keeps the same records."
 	if not profile.is_empty():
-		var level: String = {"watch":"관심", "warning":"경계", "severe":"심각"}.get(str(profile.get("alert_level", "")), "확인 중")
-		var shelter := "대피 필수" if profile.get("shelter_required", true) else "대피 선택"
-		_weather_text.text += "\n이번 게임 T4 %s · %s · 보호 전력 %d · 통신 %d턴" % [level, shelter, int(profile.get("protection_energy", 0)), int(profile.get("communication_delay", 1))]
-		_weather_event_help.text = "이번 자료 → T4 %s · %s. 대피하면 보호 전력 %d를 더 쓰고 재배는 쉬어요. %s\nNASA 등급·입자 기록은 게임 조건을 고르는 근거예요. 실제 우주인의 피폭량을 계산하지 않아요." % [level, shelter, int(profile.get("protection_energy", 0)), "대피하지 않으면 훈련이 중단돼요." if profile.get("shelter_required", true) else "대피 없이 재배를 계속할 수 있어요."]
-		_communication_help.text = "질문 확정 때 전력 1 사용 · %d턴 뒤 진행 후 답변. CME 기록을 반영한 교육용 대기 시간이에요. 실제 전파 지연 예측은 아니에요. T7 안에 답장을 받을 수 있을 때만 요청해요. 확정 전 취소 가능 · 한 번에 한 요청 · 자원 보너스 없음." % int(profile.get("communication_delay", 1))
+		var level: String = {"watch":"Watch", "warning":"Warning", "severe":"High alert"}.get(str(profile.get("alert_level", "")), "Checking")
+		var shelter := "Shelter required" if profile.get("shelter_required", true) else "Shelter optional"
+		_weather_text.text += "\nThis mission: T4 %s · %s · Shielding power %d · Reply delay %d turns" % [level, shelter, int(profile.get("protection_energy", 0)), int(profile.get("communication_delay", 1))]
+		_weather_event_help.text = "These records → T4 %s · %s. Sheltering uses %d extra power and pauses farming. %s\nNASA classes and particle records select game conditions, not an astronaut's radiation dose." % [level, shelter, int(profile.get("protection_energy", 0)), "Without sheltering, the mission stops." if profile.get("shelter_required", true) else "You may keep farming without sheltering."]
+		_communication_help.text = "A confirmed request costs 1 power · Reply after %d turns. CME records set this training delay, not a real signal-delay prediction. Reply must arrive by T7. Cancel before confirming · One request at a time · No resource bonus." % int(profile.get("communication_delay", 1))
 	for kind: String in _source_cards: _refresh_source_card(kind, data, profile)
 	_weather_source.disabled = _source_cards.FLR.link.disabled
 
@@ -175,28 +176,28 @@ func _refresh_source_card(kind: String, data: Dictionary, profile: Dictionary) -
 	var representative: Dictionary = records[0] if not records.is_empty() else {}
 	for record: Dictionary in records:
 		if record.get("event_id", "") == profile.get(id_key, ""): representative = record
-	var mode: String = {"live":"최근 조회", "archive":"보관 자료", "mixed":"혼합"}.get(str(source.get("mode", "archive")), "보관 자료")
-	var status := "조회 상태 확인 필요"
+	var mode: String = {"live":"Fetched NASA records", "archive":"Embedded historical data · not live", "mixed":"Mixed: fetched + historical"}.get(str(source.get("mode", "archive")), "Historical data")
+	var status := "Check retrieval status"
 	match str(source.get("status", "")):
-		"recent", "ok", "success": status = "조회 완료"
-		"loading": status = "조회 중"
-		"archive", "frozen_archive", "offline", "": status = "보관 자료 사용"
-		"no_recent_record", "empty": status = "조회 완료 · 기록 없음"
-		_: status = "최근 조회 실패 · 보관 자료 사용" if source.get("mode", "archive") == "archive" else "조회 상태 확인 필요"
-	var description := "%d건 · %s · %s" % [records.size(), mode, status]
+		"recent", "ok", "success": status = "Fetched NASA records"
+		"loading": status = "Fetching records"
+		"archive", "frozen_archive", "offline", "ready", "": status = "Using historical data"
+		"no_recent_record", "empty": status = "Fetched NASA records · No records"
+		_: status = "Fetch failed · Embedded historical data · not live" if source.get("mode", "archive") == "archive" else "Check retrieval status"
+	var description := "%d records · %s\n%s" % [records.size(), mode, status]
 	var request_url := str(source.get("request_url", ""))
 	var dates: Array[String] = []
 	for key in ["startDate=", "endDate="]:
 		if request_url.contains(key): dates.append(request_url.split(key)[1].split("&")[0])
-	if dates.size() == 2: description += "\n조회 범위 %s ~ %s" % dates
-	description += "\n조회 시각 " + str(source.get("fetched_at", "확인 불가"))
+	if dates.size() == 2: description += "\nRecord window %s to %s" % dates
+	description += "\nRetrieved " + str(source.get("fetched_at", "Unknown"))
 	if representative.is_empty():
-		description += "\n미관측 · 이 자료에 기록이 없어요. 실제 안전이 확정된 뜻은 아니에요."
+		description += "\nNo observation in these records. This does not establish real-world safety."
 	else:
-		description += "\n대표 %s · %s\n%s" % [str(representative.get("class_type", kind)), str(representative.get("observed_at", "날짜 확인 불가")), str(representative.get("event_id", ""))]
+		description += "\nExample %s · %s\n%s" % [str(representative.get("class_type", kind)), str(representative.get("observed_at", "Date unavailable")), str(representative.get("event_id", ""))]
 		if kind == "SEP":
-			var evidence: String = {"model":"모델 기록", "observation":"관측 포함 기록", "mixed":"관측·모델 포함 기록", "catalogue":"NASA 사건 목록 기록"}.get(str(representative.get("evidence_type", "")), "NASA 사건 기록")
-			description += "\n" + evidence + " · 실제 달 피폭량 측정값이 아니에요."
+			var evidence: String = {"model":"Model records", "observation":"Includes observations", "mixed":"Includes observations and models", "catalogue":"NASA event catalogue"}.get(str(representative.get("evidence_type", "")), "NASA event records")
+			description += "\n" + evidence + " · Not a measured lunar radiation dose."
 	var card: Dictionary = _source_cards[kind]
 	card.text.text = description
 	card.url = str(representative.get("source_url", ""))
