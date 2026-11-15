@@ -399,7 +399,13 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 
 - 사용자 결정: “나는 이번에 디자인만 볼 거야, 나머지 개선사항은 전부 다 팀원이 작업할 거야.” dyhan0528는 디자인 검토만, jsjavsj는 개선 구현 전체와 이슈·작업 브랜치 담당으로 정정한다. 사용자에게 개발·기술 검증 작업을 배정하지 않는다. 구현자의 자체 검사와 별도 독립 검증은 유지하며 독립 담당은 착수 전에 지정한다.
 - UX-ROLE-001 completed: refactor_docs_worker가 README.md, UX_REDESIGN_SPEC.md, docs/UX_ACCEPTANCE.md, WORK.md의 현재 역할을 정정한다. 상세 요구·검사·보류 항목·선행 순서는 유지하며 과거 담당 기록은 이력으로 보존한다. docs/UX-refactoring-plan 기준 e672f9c0a851e51c75c4d660791bb8a6ae040a2d, 기존 SUBMISSION dirty 및 LOCAL_BACKLOG 해시를 보존한다.
-- UX-ROLE-PUBLISH-001 executing: 사용자 역할 정정 승인으로 독립 검토한 문서4개만 같은 문서 브랜치에 commit/push한다. GitHub #11~16 본문을 새 명세 커밋과 역할에 맞추고 실제 assignee를 jsjavsj로 설정한다. 코드·이전 완료 이슈·core/main·배포는 변경하지 않는다.
+- UX-ROLE-PUBLISH-001 completed: 사용자 역할 정정 승인으로 독립 검토한 문서4개만 같은 문서 브랜치에 commit/push한다. GitHub #11~16 본문을 새 명세 커밋과 역할에 맞추고 실제 assignee를 jsjavsj로 설정한다. 코드·이전 완료 이슈·core/main·배포는 변경하지 않는다.
 - 다음 행동: 팀원 jsjavsj가 자신의 복사본에서 명세·기준·브랜치를 확인하고 #11 claim 및 독립 검증 담당을 확정한 뒤 구현을 시작한다. 이 역할 문서 수정은 팀원의 실제 착수나 검사 완료를 뜻하지 않는다.
 
 - refactor_docs_verify 역할 정정 초안 독립 검토 통과: 문서4개와 이슈6개에서 디자인 검토/팀원 구현/독립 검증 분리 일치. 보호 파일 해시 유지, 게임 검사는 수행하지 않음.
+
+- UX-ROLE-ISSUES-001 completed: 명세 v1.2 커밋 5ccae7f023cc18495b1ba536442bff2be7bb95dc의 원격 반영을 확인했다. #11~16은 검토한 logs/ux-refactor 본문으로 gh issue edit --body-file 및 --add-assignee jsjavsj를 적용하고 각각 실제 본문·담당·상태를 재조회한다.
+
+- 실제 대조 결과: #11~16 모두 OPEN, assignee는 jsjavsj 한 명, 본문은 검토한 v1.2 역할과 명세 5ccae7f023cc18495b1ba536442bff2be7bb95dc에 일치한다. R01 ready/착수 claim 전, R02~06 선행 통합 대기를 유지했다. 기존 SUBMISSION.md 및 LOCAL_BACKLOG.md 해시는 작업 전과 동일하며 제품 구현은 시작하지 않았다.
+
+- refactor_docs_verify 원격 독립 검토 통과: 이슈6개 실제 담당 jsjavsj만, 본문·새 명세 SHA·OPEN 상태·원격 커밋 일치 및 보호 파일 유지. UX-ROLE-TRACK-001: 이 완료 기록만 WORK.md에 commit/push해 인계한다.
