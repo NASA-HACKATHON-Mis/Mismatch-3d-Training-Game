@@ -27,8 +27,17 @@ static func candidates(session) -> Array[Dictionary]:
 		elif phase == "failed_life_support":
 			if start.F <= session.state.F: continue
 			var farms := Simulation.count_kind(start,"greenhouse")
-			if farms > 0: evidence = "식량과 재배 가동 기록을 살펴볼 시작점이에요."
-			elif start.budget >= Rules.cost("greenhouse",0): evidence = "이 시작점에는 재배실 비용만큼 토큰이 있어요. 빈 칸과 전력도 확인해요."
+			var remaining := 3
+			var growing_slot := -1
+			for facility: Dictionary in start.facilities:
+				if facility.type == "greenhouse" and (growing_slot < 0 or 3-int(facility.growth) < remaining):
+					remaining = 3-int(facility.growth)
+					growing_slot = facility.slot_id
+			# Preparation margin only, not a simulation of future harvest/survival.
+			if start.F < remaining * 6: continue
+			if farms > 0: evidence = "가장 자란 %02d번 재배실은 수확까지 가동 %d회가 남았어요." % [growing_slot+1,remaining]
+			elif start.budget >= Rules.cost("greenhouse",0): evidence = "새 재배실 비용이 있고 수확까지 가동 3회가 필요해요. 빈 칸도 확인해요."
+			if not evidence.is_empty(): evidence += "\n식량 %d / 매턴 소비 6 · %d회 소비량에 견준 탐색 기준이에요. 정지·전력 부족이면 더 필요하니 더 이른 기록도 살펴봐요." % [start.F,remaining]
 		elif phase == "failed_safety":
 			if Simulation.count_kind(start,"shelter") > 0: evidence = "대피소가 있는 시작점이에요. 사건 대응도 확인해요."
 			else:

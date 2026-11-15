@@ -128,6 +128,20 @@ func _run() -> void:
 		game._restore(1)
 		check(game.session.state.turn_id == 1 and game.session.draft.is_empty(),"Repeated restore preserves contract")
 		check(History.candidates(game.session).is_empty(),"No candidates from archived future")
+		game.session = Session.new(Scenario)
+		game._refresh()
+		game._edit("place",0,"generator")
+		game._edit("place",11,"battery")
+		game._edit("place",24,"shelter")
+		while game.session.state.phase == "planning":
+			var food_turn: int = game.session.state.turn_id
+			game._commit("conserve" if food_turn == 2 else "shelter" if food_turn == 4 else "acknowledge" if food_turn == 5 else "")
+		ui._open_outcome_history()
+		await settle()
+		geometry(view,ui)
+		ui._scroll.ensure_control_visible(ui._candidate_buttons[1])
+		await settle()
+		await capture(view,tag+"-food-candidates")
 		view.queue_free()
 		await settle()
 	var sparse = Session.new(Scenario)
@@ -150,6 +164,9 @@ func _run() -> void:
 			check(candidate.text.contains(History.start_line(session.snapshot(candidate.turn))),route+" facts match snapshot")
 			check(candidate.text.contains("재배실 비용") if route == "life" else candidate.text.contains("대피소"),route+" relevant evidence")
 			check(candidate.turn > 1,"Candidate is not always T1")
+			if route == "life":
+				check(candidate.turn in [3,4] and session.snapshot(candidate.turn).F >= 18,"Late F6/F12 new farm starts skipped")
+				check(candidate.text.contains("가동 3회") and candidate.text.contains("정지·전력 부족"),"Growth time and extra margin explicit")
 		check(fingerprint(session) == original,"Candidate lookup immutable")
 	# Clamp explanation uses each branch's real starting oxygen, not a guessed +2.
 	var capped = Session.new(Scenario)
