@@ -29,51 +29,51 @@ static func use_korean_theme(panel_root: Control) -> void:
 	panel_root.theme = _korean_theme
 
 
-static func trn(ko: String, _en: String) -> String:
-	return ko
+static func trn(_ko: String, en: String) -> String:
+	return en
 
 
 static func name_for(kind: String) -> String:
 	match kind:
-		"habitat": return trn("거주실", "Habitat")
-		"generator": return trn("발전기", "Solar array")
-		"battery": return trn("배터리", "Battery")
-		"greenhouse": return trn("재배실", "Greenhouse")
-		"shelter": return trn("대피소", "Shelter")
+		"habitat": return trn("Habitat", "Habitat")
+		"generator": return trn("Solar array", "Solar array")
+		"battery": return trn("Battery", "Battery")
+		"greenhouse": return trn("Greenhouse", "Greenhouse")
+		"shelter": return trn("Shelter", "Shelter")
 	return ""
 
 
 static func description(kind: String) -> String:
 	match kind:
-		"generator": return trn("3 토큰 · 일조 칸 +18 전력, 그 외 +12", "3 tokens · +18 power in sun, +12 elsewhere")
-		"battery": return trn("2 토큰 · 공용 전력 저장 한도 +20", "2 tokens · stores up to 20 extra power")
-		"greenhouse": return trn("3 토큰 · 전력 4, 3번 가동하면 식량 +18", "3 tokens · costs 4 power, yields food after 3 active turns")
-		"shelter": return trn("3–4 토큰 · 우주날씨 경보 때 대피", "3–4 tokens · protects the crew during an alert")
-		"habitat": return trn("거주실 · 전력 6을 써서 산소 8 생산", "Habitat · uses 6 power to make 8 oxygen")
+		"generator": return trn("3 tokens · +18 power in sun, +12 elsewhere", "3 tokens · +18 power in sun, +12 elsewhere")
+		"battery": return trn("2 tokens · stores up to 20 extra power", "2 tokens · stores up to 20 extra power")
+		"greenhouse": return trn("3 tokens · costs 4 power, yields food after 3 active turns", "3 tokens · costs 4 power, yields food after 3 active turns")
+		"shelter": return trn("3–4 tokens · protects the crew during an alert", "3–4 tokens · protects the crew during an alert")
+		"habitat": return trn("Habitat · uses 6 power to make 8 oxygen", "Habitat · uses 6 power to make 8 oxygen")
 	return ""
 
 
 static func phase_text(phase: String) -> String:
 	match phase:
-		"turn_complete": return trn("턴 완료", "Turn cleared")
-		"completed": return trn("훈련 완료", "Mission complete")
-		"failed_power": return trn("중단 · 전력 부족", "Stopped · out of power")
-		"failed_safety": return trn("중단 · 대피 필요", "Stopped · shelter needed")
-		"failed_life_support": return trn("중단 · 생명 유지 자원 부족", "Stopped · life support depleted")
+		"turn_complete": return trn("Turn cleared", "Turn cleared")
+		"completed": return trn("Mission complete", "Mission complete")
+		"failed_power": return trn("Stopped · out of power", "Stopped · out of power")
+		"failed_safety": return trn("Stopped · shelter needed", "Stopped · shelter needed")
+		"failed_life_support": return trn("Stopped · life support depleted", "Stopped · life support depleted")
 	return ""
 
 
 static func error_text(error: String) -> String:
 	match error:
-		"invalid_slot": return trn("기지 격자 안에서만 지을 수 있어요.", "Build inside the station grid.")
-		"occupied": return trn("이미 시설이 있는 칸이에요.", "That pad already holds a module.")
-		"budget": return trn("건설 토큰이 부족해요.", "You need more build tokens.")
-		"fixed_habitat": return trn("가운데 거주실은 옮기거나 철거할 수 없어요.", "The central habitat must stay.")
-		"player_overlap": return trn("이 위치에 서 있어요. 비운 뒤 다시 지어 보세요.", "Step off this pad before building.")
-		"empty": return trn("철거할 시설을 먼저 골라요.", "Select a module to remove.")
+		"invalid_slot": return trn("Build inside the station grid.", "Build inside the station grid.")
+		"occupied": return trn("That pad already holds a module.", "That pad already holds a module.")
+		"budget": return trn("You need more build tokens.", "You need more build tokens.")
+		"fixed_habitat": return trn("The central habitat must stay.", "The central habitat must stay.")
+		"player_overlap": return trn("Step off this pad before building.", "Step off this pad before building.")
+		"empty": return trn("Select a module to remove.", "Select a module to remove.")
 		"choose_fault", "choose_weather", "acknowledge_delay":
-			return trn("사건에 어떻게 대응할지 먼저 골라요.", "Choose a response to this event first.")
-	return trn("현재 턴에서는 할 수 없어요.", "This action is unavailable on the current turn.")
+			return trn("Choose a response to this event first.", "Choose a response to this event first.")
+	return trn("This action is unavailable on the current turn.", "This action is unavailable on the current turn.")
 
 
 static func box(fill: Color, border: Color = LINE, radius: int = 12, margin: int = 0) -> StyleBoxFlat:
