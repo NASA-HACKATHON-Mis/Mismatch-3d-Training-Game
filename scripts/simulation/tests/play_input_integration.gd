@@ -81,10 +81,11 @@ func _run() -> void:
 		player._physics_process(1.0/60.0)
 	check(player.avatar._phase > 0, "Movement advances body animation")
 	Input.action_release("walk_back")
+	var grounded_leg: Transform3D = player.avatar._legs[0].transform
 	Input.action_press("jump")
 	await physics_frame
 	player._physics_process(1.0/60.0)
-	check(player.velocity.y > 0 and is_equal_approx(player.avatar._arms[0].rotation.x,-0.22), "Real jump drives airborne body pose")
+	check(player.velocity.y > 0 and not player.is_on_floor() and player.avatar._legs[0].transform != grounded_leg, "Real jump drives airborne body pose")
 	Input.action_release("jump")
 	game._pause()
 	var limb: Transform3D = player.avatar._arms[0].transform

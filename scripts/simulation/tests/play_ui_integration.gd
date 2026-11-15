@@ -33,18 +33,18 @@ func _run() -> void:
 		await settle()
 		var terminal = game.terminal
 		var original: Dictionary = game.session.state.duplicate(true)
-		check(terminal._resource_overview._cards.energy.current.text == "Current 20 / 20" and terminal._resource_overview._cards.oxygen.current.text == "Oxygen 60 / 100" and terminal._food_detail.text.contains("36/100"), "Terminal current values")
+		check(terminal._resource_overview._cards.energy.current.text == "Now 20 / 20" and terminal._resource_overview._cards.oxygen.current.text == "Oxygen 60 / 100" and terminal._food_detail.text.contains("36/100"), "Terminal current values")
 		Fixture.edit(game, "place", 11, "battery")
-		check(terminal._resource_overview._cards.energy.current.text == "Current 20 / 20" and "40" in terminal._capacity.text, "Current meter separate from draft capacity")
+		check(terminal._resource_overview._cards.energy.current.text == "Now 20 / 20" and "40" in terminal._capacity.text, "Current meter separate from draft capacity")
 		check(game.session.state == original, "Meters and previews do not commit draft")
 		Fixture.cancel_draft(game)
 		check(terminal._resource_overview._cards.energy.current_bar.value == 1.0 and game.session.draft.is_empty(), "Cancel preserves current ratio")
 		Fixture.edit(game, "place", 0, "generator")
 		Fixture.edit(game, "place", 11, "battery")
 		game._commit("")
-		check(terminal._resource_overview._cards.energy.current.text == "Current %d / 40" % game.session.state.E and game.hud._energy.caption.text == "Power %d/40" % game.session.state.E, "Commit synchronizes terminal and HUD")
+		check(terminal._resource_overview._cards.energy.current.text == "Now %d / 40" % game.session.state.E and game.hud._energy.caption.text == "Power %d/40" % game.session.state.E, "Commit synchronizes terminal and HUD")
 		game._restore(1)
-		check(terminal._resource_overview._cards.energy.current.text == "Current 20 / 20" and is_equal_approx(terminal._resource_overview._cards.food.current_bar.value,0.36), "Rewind synchronizes terminal")
+		check(terminal._resource_overview._cards.energy.current.text == "Now 20 / 20" and is_equal_approx(terminal._resource_overview._cards.food.current_bar.value,0.36), "Rewind synchronizes terminal")
 		await settle()
 		for id in ["energy", "oxygen"]:
 			var meter: Dictionary = terminal._resource_overview._cards[id]
