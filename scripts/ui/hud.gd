@@ -1,5 +1,6 @@
 extends Control
 
+signal inspection_closed
 signal result_requested
 signal started
 signal help_requested
@@ -7,6 +8,9 @@ signal guidance_changed(enabled: bool)
 
 const UI = preload("res://scripts/ui/ui_style.gd")
 const Simulation = preload("res://scripts/simulation/simulation.gd")
+var _inspection: PanelContainer
+var _inspection_label: Label
+var _inspection_back: Button
 var _mission: Label
 var _meters: Label
 var _hint: Label
@@ -69,6 +73,11 @@ func _ready() -> void:
 	_result_button = UI.button(text, "결과 다시 보기", func(): result_requested.emit(), UI.CYAN)
 	_result_button.hide()
 	help_button = UI.button(text, "안내서  H", func(): help_requested.emit(), UI.MUTED)
+	_inspection = UI.panel(self,Color("#0b182cf8"),16)
+	var observation := UI.column(_inspection,8)
+	_inspection_label = UI.label(observation,"",18,UI.TEXT,true)
+	_inspection_back = UI.button(observation,"단말기로 돌아가기 · Esc",func(): inspection_closed.emit(),UI.CYAN)
+	_inspection.hide()
 	resized.connect(_layout)
 	_layout()
 
@@ -81,9 +90,11 @@ func _layout() -> void:
 	var height := minf(440, size.y - 170) if narrow else minf(540, size.y - 174)
 	_intro.position = Vector2((size.x - width) / 2 if narrow else 28, size.y - height - 38)
 	_intro.size = Vector2(width, height)
-	_status_box.position = Vector2(20, size.y - 108)
-	_status_box.size = Vector2(maxf(1, size.x - 40), 66)
+	_status_box.position = Vector2(20, size.y - 150)
+	_status_box.size = Vector2(maxf(1, size.x - 40), 108)
 	_footnote.position = Vector2(20, size.y - 30)
+	_inspection.position = Vector2(20,size.y-180)
+	_inspection.size = Vector2(maxf(1,size.x-40),140)
 
 func _toggle_guidance() -> void:
 	set_guidance(not guidance_enabled)
@@ -97,6 +108,8 @@ func set_guidance(enabled: bool) -> void:
 func show_mode(mode: String) -> void:
 	visible = mode != "terminal"
 	_intro.visible = mode in ["pause", "capturing"]
+	_inspection.visible = mode == "inspect"
+	if mode == "inspect": _inspection_back.grab_focus()
 	_start.disabled = mode == "capturing"
 	help_button.disabled = mode == "capturing"
 	_guide_toggle.disabled = mode == "capturing"
@@ -122,6 +135,17 @@ func refresh(state: Dictionary) -> void:
 	_mission.text = "달기지 리와인드 / T%d" % state.turn_id
 	_meters.text = "전력 %d/%d · 산소 %d · 식량 %d" % [state.E, Simulation.energy_cap(state), state.O, state.F]
 
-func set_target(active: bool) -> void:
+func show_inspection(caption: String) -> void:
+	_inspection_label.text = caption + "\n관찰 화면이에요. 이동하거나 턴을 진행하지 않아요."
+
+func _direction(vector: Vector3) -> String:
+	if absf(vector.x) > absf(vector.z): return "동쪽" if vector.x > 0 else "서쪽"
+	return "남쪽" if vector.z > 0 else "북쪽"
+
+func set_target(active: bool, position_3d: Vector3 = Vector3.ZERO, facing: Vector3 = Vector3.FORWARD) -> void:
 	_reticle.modulate = UI.CYAN if active else UI.MUTED
-	_hint.text = "[ E ] 단말기를 열어요" if active else "단말기 가까이 가서 정면을 바라봐요.  WASD 이동 · 마우스 시선"
+	var target := preload("res://scripts/simulation/scenario.gd").CONSOLE - position_3d
+	var angle := Vector2(facing.x,facing.z).angle_to(Vector2(target.x,target.z))
+	var relative := "앞쪽" if absf(angle) < PI/4 else ("뒤쪽" if absf(angle) > 3*PI/4 else "오른쪽" if angle > 0 else "왼쪽")
+	_hint.text = "[ E ] 단말기를 열어요" if active else "단말기 %s(%s) · 약 %dm. 시설 사이·바깥 통로를 따라 남쪽 입구 로봇 옆으로 돌아와 정면을 바라봐요." % [relative,_direction(target),roundi(Vector2(target.x,target.z).length())]
+	_hint.text += "\n이동 중에는 턴·자원이 바뀌지 않아요."

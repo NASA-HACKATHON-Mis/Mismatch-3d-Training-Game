@@ -381,7 +381,7 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | done / PR #20 검증·main 통합 |
 | UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | done / PR #21 검증·main 통합 |
 | UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | done / PR #22 검증·main 통합 |
-| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | ready / UX-R05 완료, 착수 claim 전 |
+| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | in-progress / PR #23 구현 통합, 브라우저 인수 대기 |
 
 저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
 
@@ -495,3 +495,17 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 최종 소스 `a4293ea0e10bce1646fe0d0e39d97be00dbf29e4`와 독립 snapshot 일치. 최종 독립3,782개/0fail: 기존 core/generator/facility/learning/navigation246 + preview635 + outcome1,069 + guidance1,249 + rewind583. 식량후보 수정 뒤 영향받은 rewind/guidance를 재검사하고 불변 회귀 결과를 보존했다. 최종 실제렌더611개/0fail·28PNG와 Web export 성공.
 - PM Native는 전력 경로의 b55d4b0과 동일한 최종 UI 흐름에서 확인했으며, 이후 식량후보 개선은 실제렌더·코드·독립 검사로 확인했다. 800세로 화면에서 T4/F18·T3/F24의 가동3회/소비기준/정지·전력 추가제약/저장상태 가독성도 PM이 확인했다.
 - [PR #22](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/22)을 일반 merge하며 이 완료 작업판을 함께 반영한다. 실제 merge SHA와 #15 CLOSED 재조회는 이슈에 기록한다. #16은 ready/미착수이며 구현하지 않았다.
+
+
+## UX-R06 사용성 정리·통합 검증 — 2026-11-15
+
+- 시작 패킷: 최신 main/origin/main `2da6d0c1fc2520f994bebb54eba45dcc1bc95a20` clean에서 `feature/UX-R06-integration` 생성. 실제#16·UX019/026/027/028/029·원계약을 대조하고 claim/in-progress를 기록했다. 사람 담당 jsjavsj, Worker ux12_worker, 독립 ux11_verifier, PM root.
+- 선택 slot_id를 별도 3D 테두리·번호/시설명에 연결했다. 관찰 전용 카메라는 현재 preview 배치를 보여 주되 미확정 배치 포함 여부를 표시한다. 플레이어 위치·충돌·원본 모델 재질·논리 상태를 바꾸지 않는다. Esc/복귀 버튼으로 기존 단말기·원래 카메라에 돌아오고 포커스 상실은 pause로 나간다. 종료된 턴도 조회 가능하며 배치는 planning만 허용한다.
+- HUD는 현재 위치/방향에 근거한 앞뒤좌우·방위·거리와 남쪽 입구 로봇 옆 단말기 복귀 통로를 안내한다. 이동 중 턴 정지를 설명한다. 안내서에 로봇의 위치 표식 역할 및 대화·퀘스트 미제공을 명시했다. 원격 단말기/자동이동/새 활동은 추가하지 않았다.
+- PM은 실제 렌더 PNG의 모서리/중앙/빈칸/시설별 강조, 800세로 배치·안내서·현재 playerpose와 일치하는 먼곳복귀 방향을 확인했다. 코드 구동 시험은 inspect→H→Esc, 종료/Esc/포커스상실 신호, 카메라 복귀/pose·상태 불변을 확인한다. 이 결과를 실제 OS 키보드/Alt-Tab 검증으로 확대하지 않는다.
+- 이번 turn의 Computer Use는 Edge 현재URL 확신 불가로 종료됐다. Chrome의 이전 빌드T7 화면과 Edge의 이전빌드 로딩 화면만 관찰했으며 최종 빌드 정상 입력 PASS가 아니다. 추가 GUI도구로 우회하지 않았다. 최종 Chrome/Edge 실제 입력·Alt-Tab·cold load/초기화 검증은 미실행이므로 #16은 OPEN 검증 대기로 유지한다. #7 제출 보류, 배포·서버 설정 변경 없음.
+
+- 최종 독립4,338 checks/0fail(246+guidance1273+preview635+outcome1117+rewind583+world484), 규칙/기존계산 불변. 실제4크기 world32 PNG(484검사) 및 종료4종관찰16 PNG(outcome렌더1149검사), Web export와 최종HTTP200/본문SHA 일치. 측정 수치·제한은 docs/UX_R06_VERIFICATION.md에 기록했다.
+- UX019 최종localhost실측: wasm39,514,754B, pck7,409,668B, Content-Encoding/Content-Length 없음, no-store/chunked. 원본과수신본문해시일치. GET초는브라우저coldload/wasm초기화시간이 아니다. 배포환경으로 확대하지 않는다.
+
+- 검사 소스 `3d6372ae79e0f4927d1b30eeb222c93024992e69`. [PR #23](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/23)은 `Refs #16` 구현 통합이며 일반 merge한다. #16을 자동 close하지 않고 OPEN 브라우저 인수 대기로 유지한다. 실제 merge SHA·상태는 해당 이슈에 기록한다.
