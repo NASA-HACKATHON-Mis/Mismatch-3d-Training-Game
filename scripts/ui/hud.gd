@@ -5,6 +5,7 @@ signal result_requested
 signal started
 signal help_requested
 signal guidance_changed(enabled: bool)
+signal site_action_requested(action: String)
 
 const UI = preload("res://scripts/ui/ui_style.gd")
 const Simulation = preload("res://scripts/simulation/simulation.gd")
@@ -20,9 +21,14 @@ var _food: ResourceMeter
 var _shield_status: Label
 var _hint: Label
 var _status_box: PanelContainer
+var _site_actions: HBoxContainer
+var _site_buttons: Dictionary = {}
+var _site_target: Dictionary = {"kind": "none", "slot_id": -1}
+var _mode := "pause"
 var _intro: PanelContainer
 var _reticle: Label
 var _footnote: Label
+var _wayfinding: Label
 var help_button: Button
 var _start: Button
 var _input_notice: Label
@@ -80,10 +86,22 @@ func _ready() -> void:
 	_reticle.offset_right = 22
 	_reticle.offset_bottom = 24
 	_status_box = UI.panel(self, Color("#0b1728f5"), 12)
-	_hint = UI.label(_status_box, "", 18, UI.TEXT, true)
+	var site_column := UI.column(_status_box, 8)
+	_hint = UI.label(site_column, "", 18, UI.TEXT, true)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_site_actions = UI.row(site_column, 8)
+	for action: String in ["edit", "details", "inspect"]:
+		var card := UI.button(_site_actions, "", _request_site_action.bind(action), UI.CYAN, 64)
+		card.custom_minimum_size.x = 116
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		card.focus_mode = Control.FOCUS_NONE
+		_site_buttons[action] = card
 	_status_box.minimum_size_changed.connect(_layout)
 	_footnote = UI.label(self, "교육용 가상 훈련 · 수치는 게임 단위", 16, UI.MUTED)
+	_wayfinding = UI.label(self, "", 17, UI.CYAN)
+	_wayfinding.add_theme_color_override("font_outline_color", UI.DARK)
+	_wayfinding.add_theme_constant_override("outline_size", 4)
+	_wayfinding.hide()
 	_intro = UI.panel(self, Color("#0b182cf8"), 22)
 	_intro_scroll = ScrollContainer.new()
 	_intro_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -97,7 +115,7 @@ func _ready() -> void:
 	_training_copy.append(UI.label(text, "키보드와 마우스가 있는 PC에서 시작해요.", 18, UI.AMBER, true))
 	_controls = UI.label(text, "", 18, UI.MUTED, true)
 	configure_controls(false, false)
-	_first_step = UI.label(text, "1  빈 칸·건물·단말기 가까이에서 E를 눌러요.", 20, UI.CYAN, true)
+	_first_step = UI.label(text, "빈 칸 앞에서 1 · 건물 정보는 2 · 크게 보려면 3", 20, UI.CYAN, true)
 	_guide_toggle = UI.button(text, "첫 안내 건너뛰기", _toggle_guidance, UI.MUTED)
 	_input_notice = UI.label(text, "", 18, UI.AMBER, true)
 	_input_notice.hide()
@@ -125,9 +143,10 @@ func _layout() -> void:
 	height = minf(height, maxf(80, size.y - _header.get_combined_minimum_size().y - 72))
 	_intro.position = Vector2((size.x - width) / 2 if narrow else 28, size.y - height - 38)
 	_intro.size = Vector2(width, height)
-	_status_box.size = Vector2(maxf(1, size.x - 40), maxf(108, _status_box.get_combined_minimum_size().y))
-	_status_box.position = Vector2(20, size.y - _status_box.size.y - 42)
+	_status_box.size = Vector2(minf(448, maxf(1, size.x - 40)), _status_box.get_combined_minimum_size().y)
+	_status_box.position = Vector2((size.x - _status_box.size.x) * 0.5, size.y - _status_box.size.y - 42)
 	_footnote.position = Vector2(20, size.y - 30)
+	_wayfinding.position = Vector2(20, size.y - 62)
 	_inspection.position = Vector2(20,size.y-180)
 	_inspection.size = Vector2(maxf(1,size.x-40),140)
 
@@ -141,6 +160,7 @@ func set_guidance(enabled: bool) -> void:
 	_guide_toggle.text = "첫 안내 건너뛰기" if enabled else "첫 안내 다시 보기"
 
 func show_mode(mode: String) -> void:
+	_mode = mode
 	visible = mode != "terminal"
 	_intro.visible = mode in ["pause", "capturing"]
 	_inspection.visible = mode == "inspect"
@@ -149,7 +169,8 @@ func show_mode(mode: String) -> void:
 	help_button.disabled = mode == "capturing"
 	_guide_toggle.disabled = mode == "capturing"
 	_reticle.visible = mode == "explore"
-	_status_box.visible = mode == "explore"
+	_status_box.visible = mode == "explore" and _site_target.get("kind", "none") != "none"
+	_wayfinding.visible = mode == "explore" and _site_target.get("kind", "none") == "none"
 	if mode == "explore": has_started = true
 	_heading.text = _outcome_heading if _ended else ("계속 기지를 살펴봐요" if has_started else "달 기지를 지켜요")
 	for item in _training_copy: item.visible = not _ended
@@ -168,7 +189,7 @@ func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
 	_jump_enabled = jump_enabled
 	_drag_available = drag_available
 	_controls.text = "WASD 이동" + (" · Space 점프" if _jump_enabled else "")
-	_controls.text += " · 마우스로 둘러보기\n빈 칸·건물·단말기를 보고 E · Esc 일시 정지"
+	_controls.text += " · 마우스로 둘러보기\n현장 1 설치·철거 / 2 상세 / 3 관찰 · 단말기 E\nEsc 닫기·일시 정지"
 	if _drag_available:
 		_controls.text += "\n마우스 잠금이 안 되면 왼쪽 버튼 드래그로 둘러봐요."
 
@@ -201,11 +222,43 @@ func _direction(vector: Vector3) -> String:
 
 func set_target(active: bool, position_3d: Vector3 = Vector3.ZERO, facing: Vector3 = Vector3.FORWARD, prompt: String = "") -> void:
 	_reticle.modulate = UI.CYAN if active else UI.MUTED
-	var target := preload("res://scripts/simulation/scenario.gd").CONSOLE - position_3d
-	var angle := Vector2(facing.x,facing.z).angle_to(Vector2(target.x,target.z))
-	var relative := "앞쪽" if absf(angle) < PI/4 else ("뒤쪽" if absf(angle) > 3*PI/4 else "오른쪽" if angle > 0 else "왼쪽")
-	_hint.text = "[ E ] 단말기를 열어요" if active else "단말기 %s(%s) · 약 %dm. 시설 사이·바깥 통로를 따라 남쪽 입구 로봇 옆으로 돌아와 정면을 바라봐요." % [relative,_direction(target),roundi(Vector2(target.x,target.z).length())]
+	var offset := preload("res://scripts/simulation/scenario.gd").CONSOLE - position_3d
+	var angle := Vector2(facing.x, facing.z).angle_to(Vector2(offset.x, offset.z))
+	var arrow := "↑" if absf(angle) < PI / 4 else ("↓" if absf(angle) > 3 * PI / 4 else "→" if angle > 0 else "←")
+	_wayfinding.text = "기지 단말기 %s · %dm" % [arrow, roundi(Vector2(offset.x, offset.z).length())]
+	# Legacy callers can still update the reticle and a short prompt.
 	if active and not prompt.is_empty(): _hint.text = prompt
-	_hint.text += "\n이동 중에는 턴·자원이 바뀌지 않아요."
-	if _look_mode == "drag":
-		_hint.text = "마우스 잠금 대신 왼쪽 버튼 드래그로 둘러봐요.\n" + _hint.text
+
+func set_site_target(target: Dictionary, state: Dictionary) -> void:
+	_site_target = target.duplicate(true)
+	var kind: String = target.get("kind", "none")
+	var slot: int = target.get("slot_id", -1)
+	var facility: Dictionary = Simulation.facility_at(state, slot) if kind == "slot" else {}
+	_reticle.modulate = UI.CYAN if kind != "none" else UI.MUTED
+	_status_box.visible = _mode == "explore" and kind in ["slot", "console"]
+	_wayfinding.visible = _mode == "explore" and kind == "none"
+	_site_buttons.edit.visible = kind == "slot"
+	_site_buttons.inspect.visible = kind == "slot"
+	_site_buttons.details.visible = kind in ["slot", "console"]
+	if kind == "console":
+		_hint.text = "기지 운영 단말기"
+		_site_buttons.details.text = "[ 2 / E ]\n대시보드"
+		_site_buttons.details.disabled = false
+	elif kind == "slot":
+		_hint.text = "%02d번 · %s" % [slot + 1, "빈 부지 · 여기 짓기" if facility.is_empty() else UI.name_for(facility.type)]
+		_site_buttons.edit.text = "[ 1 ]\n설치·철거"
+		_site_buttons.details.text = "[ 2 ]\n상세 보기"
+		_site_buttons.inspect.text = "[ 3 ]\n3D 보기"
+		_site_buttons.edit.disabled = state.get("phase", "") != "planning" or facility.get("type", "") == "habitat"
+		_site_buttons.details.disabled = false
+		_site_buttons.inspect.disabled = slot < 0 or slot >= preload("res://scripts/simulation/scenario.gd").SLOT_COUNT
+	_layout()
+
+func _request_site_action(action: String) -> void:
+	if _mode != "explore" or not _site_buttons.has(action): return
+	var button: Button = _site_buttons[action]
+	if not button.visible or button.disabled: return
+	site_action_requested.emit(action)
+
+func set_inspection_return(caption: String) -> void:
+	_inspection_back.text = caption

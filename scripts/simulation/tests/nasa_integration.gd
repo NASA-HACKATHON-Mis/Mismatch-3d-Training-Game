@@ -1,6 +1,7 @@
 extends SceneTree
 ## Actual shipped NASA archive -> mission -> decisions, preview, results and replay.
 const Mission = preload("res://scenes/main.tscn")
+const Rules = preload("res://scripts/simulation/scenario.gd")
 var checks := 0
 var failures := 0
 
@@ -37,9 +38,22 @@ func _run() -> void:
 		check(game.session.snapshot(1).weather == profile, "source and mapping stored in initial snapshot")
 		var ui = game.terminal
 		for entry in [[0,"generator"],[11,"battery"],[13,"greenhouse"],[24,"shelter"]]:
-			ui.open_context(entry[0])
-			ui._select_kind(entry[1])
-			ui._place.pressed.emit()
+			game._set_mode("explore", "drag")
+			var target: Vector3 = Rules.slot_position(entry[0])
+			game.player.position = target + Vector3(0, 0, 3)
+			game.player.camera.look_at(target + Vector3(0, 0.02, 0))
+			await physics_frame
+			await physics_frame
+			game._site_action("edit")
+			game._site_panel._select_kind(entry[1])
+			game._site_panel._place.pressed.emit()
+		game._set_mode("explore", "drag")
+		game.player.position = Vector3(0, 0, 20)
+		game.player.camera.look_at(Vector3(0, 1.4, 18))
+		await physics_frame
+		await physics_frame
+		game._site_action("details")
+		check(game.mode == "terminal", "physical console opens dashboard after local building")
 		check(game.session.draft.size() == 4 and game.session.state.E == 20, "build actions edit draft without consuming resources")
 		ui.advice_request_changed.emit(true)
 		ui.advanced.emit("")

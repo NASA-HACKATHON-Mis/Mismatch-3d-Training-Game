@@ -1,5 +1,5 @@
 extends Node3D
-## Read-only gaze query. Mission owns E input, UI modes and all state changes.
+## Read-only gaze query. Mission owns input, UI modes and all state changes.
 const Rules = preload("res://scripts/simulation/scenario.gd")
 const PAD_HALF_SIZE := 2.16
 const PAD_HEIGHT := 0.02
@@ -44,11 +44,19 @@ func resolve_target(camera: Camera3D, max_distance: float = 4.0) -> Dictionary:
 					var center: Vector3 = Rules.slot_position(slot)
 					if absf(point.x - center.x) <= PAD_HALF_SIZE and absf(point.z - center.z) <= PAD_HALF_SIZE:
 						if not _station.interaction_slot_occupied(slot):
-							return {"kind": "slot", "slot_id": slot, "prompt": "E · 여기 짓기"}
+							return {"kind": "slot", "slot_id": slot, "prompt": "1 · 여기 짓기"}
 						break
 	if not hit.is_empty():
 		return _station.interaction_target_for(hit.collider)
 	return _none()
+
+func can_access_slot(camera: Camera3D, slot_id: int, max_distance: float = 4.0) -> bool:
+	if slot_id < 0 or slot_id >= Rules.SLOT_COUNT:
+		return false
+	# Re-query the first visible surface every time. A panel never grants remote
+	# access, and a rebuilt mesh at the same site keeps the same site identity.
+	var target := resolve_target(camera, max_distance)
+	return target.get("kind") == "slot" and target.get("slot_id", -1) == slot_id
 
 func _none() -> Dictionary:
 	return {"kind": "none", "slot_id": -1, "prompt": ""}

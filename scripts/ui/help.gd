@@ -87,12 +87,12 @@ func _build_facilities(parent: Control) -> void:
 	var controls := _card(parent, "이동과 시점 조작", "")
 	_controls = controls.get_child(1) as Label
 	configure_controls(false, false)
-	_card(parent,"단말기로 돌아가기와 안내 로봇","단말기는 기지 남쪽 입구의 로봇 옆에 있어요. 시설 사이와 바깥 통로를 따라 돌아와 단말기를 정면으로 보고 E를 눌러요. 이동 중에는 턴이 흐르지 않아요. 로봇은 위치를 알아보는 표식이며 별도 대화·퀘스트는 제공하지 않아요. 안내서는 단말기 또는 일시 정지 화면에서 H로 열어요.")
+	_card(parent,"대시보드와 안내 로봇","기지 남쪽 입구의 로봇 옆 단말기를 보고 E 또는 2를 눌러요. 대시보드에서는 자원·기지 지도·사건·과거 기록을 확인하고 턴을 진행해요. 설치·철거는 해당 위치에서만 할 수 있어요. 이동 중에는 턴이 흐르지 않아요. 로봇은 위치 표식이에요. 안내서는 대시보드 또는 일시 정지 화면에서 H로 열어요.")
 	for kind: String in Learning.FACILITIES:
 		_card(parent, UI.name_for(kind), Learning.FACILITIES[kind], UI.FACILITY_COLORS[kind])
 
 func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
-	_controls.text = "WASD로 걷고 마우스로 둘러봐요. 가까운 빈 칸을 내려다보거나 건물·단말기를 보고 E로 열어요. E는 선택만 하고, ‘여기에 짓기’로 건설해요. Esc로 멈춰요."
+	_controls.text = "WASD로 걷고 마우스로 둘러봐요. 가까운 빈 칸·건물의 테두리를 확인해요. 1은 설치·철거 메뉴, 2 또는 E는 상세 정보, 3은 3D 관찰이에요. 1을 눌러도 바로 철거되지 않아요. 중앙 단말기는 E 또는 2로 대시보드를 열어요. Esc로 닫거나 멈춰요."
 	if jump_enabled:
 		_controls.text += " Space로 점프해요. 바닥에 내려온 뒤 다시 누르면 또 점프할 수 있어요."
 	if drag_available:

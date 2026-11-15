@@ -1,4 +1,5 @@
 extends SceneTree
+const Fixture = preload("res://scripts/simulation/tests/ui_fixture.gd")
 const Mission = preload("res://scenes/main.tscn")
 const Outcome = preload("res://scripts/ui/outcome_summary.gd")
 var checks := 0
@@ -18,10 +19,10 @@ func fingerprint(game) -> Array:
 	return [game.session.state.duplicate(true),game.session.draft.duplicate(true),game.session.current_history.duplicate(true),game.session.previous_attempt.duplicate(true),game.session.attempt_id,game.session.committed_command_ids.duplicate(true),game._command_serial]
 func prepare(game, route: String) -> void:
 	game._set_mode("terminal")
-	game._edit("place",0,"generator")
-	game._edit("place",11,"greenhouse" if route == "power" else "battery")
-	if route != "life": game._edit("place",13,"greenhouse")
-	game._edit("place",20,"shelter")
+	Fixture.edit(game, "place",0,"generator")
+	Fixture.edit(game, "place",11,"greenhouse" if route == "power" else "battery")
+	if route != "life": Fixture.edit(game, "place",13,"greenhouse")
+	Fixture.edit(game, "place",20,"shelter")
 func finish(game, route: String) -> void:
 	while game.session.state.phase == "planning":
 		var turn: int = game.session.state.turn_id

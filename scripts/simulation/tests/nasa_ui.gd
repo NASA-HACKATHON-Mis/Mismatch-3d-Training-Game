@@ -52,7 +52,7 @@ func _run() -> void:
 		check(ui._event_buttons[0].text.contains("전력 6") and ui._event_text.text.contains("재배는 쉬어요"), "Protection cost and farm pause visible")
 		check(ui._resource_overview._shield_detail.text.contains("대피 필수"), "Shield tag has current condition")
 		check(ui._communication_label.text.contains("2턴") and ui._communication_label.text.contains("CME"), "CME timing explanation")
-		for action in [ui._advance,ui._place,ui._advice_toggle,ui._event_buttons[0],ui._event_buttons[1]]:
+		for action in [ui._advance,ui._advice_toggle,ui._event_buttons[0],ui._event_buttons[1]]:
 			check(Rect2(Vector2.ZERO,Vector2(dimensions)).encloses(action.get_global_rect()) and not ui._scroll.is_ancestor_of(action), "Pinned action fits " + action.text)
 		await capture(view,"%dx%d-severe" % [dimensions.x,dimensions.y])
 		session.state.turn_id = 6

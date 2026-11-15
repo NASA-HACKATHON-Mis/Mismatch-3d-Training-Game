@@ -42,7 +42,7 @@ func _run() -> void:
 		ui.set_weather_context({"mode":"archive", "observed_at":"2016-07-23T02:11Z", "class_type":"M5.0", "explanation":"실제 태양 플레어의 보관 자료"})
 		ui.advice_request_changed.connect(func(enabled: bool): requests.append(enabled))
 		await settle()
-		for action in [ui._place, ui._advance, ui._advice_toggle]:
+		for action in [ui._advance, ui._advice_toggle]:
 			visible_action(ui, action, dimensions, "T1 " + action.text)
 		check(ui._resource_overview._cards.oxygen.title.text == "생명 유지", "Life support main area")
 		check(not ui._resource_overview._cards.food.panel.visible, "Food removed as standalone main gauge")
@@ -56,7 +56,8 @@ func _run() -> void:
 		check(requests.back() and session.state == before, "Advice toggle emits request without changing state")
 		ui.set_communication_state({}, true)
 		check(ui._advice_toggle.button_pressed and ui._communication_label.text.contains("다음 턴 진행"), "Reserved request shows timing")
-		check(not ui._cancel.disabled, "Advice-only reservation can be cancelled")
+		check(ui._cancel.disabled and not ui._cancel.is_visible_in_tree(), "Remote draft cancellation is unavailable")
+		check(not ui._advice_toggle.disabled and ui._advice_toggle.text.contains("취소"), "Advice reservation can be cancelled independently")
 		ui.set_communication_state({"pending":{"requested_turn":1,"reply_turn":2}}, false)
 		check(ui._advice_toggle.disabled and ui._communication_label.text.contains("T2"), "Waiting prevents duplicate requests")
 		ui.set_communication_state({"pending":{},"message":"대피소를 준비해요.","response_turn":2}, false)
@@ -67,7 +68,7 @@ func _run() -> void:
 		ui.refresh(session)
 		ui._toggle_preview()
 		await settle()
-		visible_action(ui, ui._remove, dimensions, "Draft remove")
+		check(ui._remove.disabled and not ui._remove.is_visible_in_tree(), "Draft removal stays local to its site")
 		visible_action(ui, ui._advance, dimensions, "Expanded preview advance")
 		await capture(view, "%dx%d-preview" % [dimensions.x,dimensions.y])
 		session.state.turn_id = 2
@@ -80,7 +81,7 @@ func _run() -> void:
 		check(not ui._advance.disabled, "Choosing event enables advance")
 		ui._scroll.scroll_vertical = 500
 		await settle()
-		for action in [ui._remove, ui._advance, ui._event_buttons[0], ui._event_buttons[1]]:
+		for action in [ui._advance, ui._event_buttons[0], ui._event_buttons[1]]:
 			visible_action(ui, action, dimensions, "Scrolled content action")
 		await capture(view, "%dx%d-t2-scrolled" % [dimensions.x,dimensions.y])
 		session.draft.clear()

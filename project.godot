@@ -14,6 +14,18 @@ window/size/window_height_override=720
 window/stretch/mode="disabled"
 
 [input]
+site_edit={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":49), Object(InputEventKey,"keycode":49)]
+}
+site_details={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":50), Object(InputEventKey,"keycode":50)]
+}
+site_inspect={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":51), Object(InputEventKey,"keycode":51)]
+}
 jump={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":32), Object(InputEventKey,"keycode":32)]

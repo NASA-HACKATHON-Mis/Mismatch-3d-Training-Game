@@ -141,7 +141,7 @@ func _build_header(parent: Control) -> void:
 	var contents := UI.column(panel, 4)
 	_header_actions = BoxContainer.new()
 	contents.add_child(_header_actions)
-	var title := UI.label(_header_actions, "기지 운영 단말기", 22)
+	var title := UI.label(_header_actions, "기지 운영 대시보드", 22)
 	UI.grow(title)
 	help_button = UI.button(_header_actions, "안내서  H", func(): help_requested.emit(), UI.CYAN)
 	_close = UI.button(_header_actions, "닫기  Esc", func(): closed.emit(), UI.MUTED)
@@ -162,11 +162,6 @@ func _build_action_dock(parent: Control) -> void:
 	_options.reparent(_event_row)
 	UI.grow(_options)
 	var actions := UI.row(dock, 6)
-	for button: Button in [_place, _remove, _cancel]:
-		button.reparent(actions)
-		button.custom_minimum_size.y = 42
-		button.add_theme_font_size_override("font_size", 16)
-		UI.grow(button)
 	_advice_toggle = UI.button(actions, "지구에 질문 · 전력 1", _toggle_advice, UI.PURPLE, 42)
 	_advice_toggle.toggle_mode = true
 	_advice_toggle.add_theme_font_size_override("font_size", 16)
@@ -198,8 +193,6 @@ func _refresh_communication() -> void:
 	var too_late: bool = _session != null and int(_session.state.turn_id) + delay > 7
 	var unavailable: bool = _session == null or _session.state.phase != "planning" or too_late or int(_session.state.E) < 1
 	_advice_toggle.disabled = _locked or pending or (unavailable and not _advice_requested)
-	if _session != null:
-		_cancel.disabled = _locked or _session.state.phase != "planning" or (_session.draft.is_empty() and not _advice_requested)
 	_advice_toggle.set_pressed_no_signal(_advice_requested)
 	_advice_toggle.text = "답변 기다리는 중" if pending else ("질문 예약 취소 · 전력 1" if _advice_requested else "지구에 질문 · 전력 1")
 	var timing := "다음 턴 진행 후" if delay == 1 else "%d턴 뒤 진행 후" % delay
@@ -330,13 +323,13 @@ func _refresh_guidance(planning: bool, edit_state: Dictionary) -> void:
 	if not planning:
 		_guide_text.text = "결과를 읽고, 과거 기록에서 다시 해 볼 턴을 골라요."
 	elif not _session.draft.is_empty():
-		_guide_text.text = "2  배치를 확인해요. 바꾸려면 ‘이번 변경 취소’를 눌러요."
+		_guide_text.text = "현장에서 준비한 배치를 확인해요. 바꾸려면 해당 위치로 가서 1을 눌러요."
 	else:
-		_guide_text.text = "1  빈 칸과 시설을 고른 뒤 ‘여기에 짓기’를 눌러요."
+		_guide_text.text = "빈 칸 가까이 가서 1로 시설을 지어요. 돌아오면 기지 현황을 확인해요."
 	if planning and not _event_values.is_empty():
 		_guide_text.text = "2  사건에 어떻게 대응할지 골라요." if _choice.is_empty() else "3  준비됐다면 ‘이번 턴 진행’을 눌러요."
 	elif planning and Simulation.count_kind(edit_state, "generator") > 0:
-		_guide_text.text = "3  준비됐다면 ‘이번 턴 진행’을 눌러요. 시설은 더 놓아도 돼요."
+		_guide_text.text = "준비됐다면 ‘이번 턴 진행’을 눌러요. 시설 변경은 현장에서 해요."
 
 
 func _build_map(parent: Control) -> void:
@@ -345,7 +338,7 @@ func _build_map(parent: Control) -> void:
 	UI.grow(card)
 	card.size_flags_stretch_ratio = 0.94
 	var map := UI.column(card, 5)
-	UI.label(map, "배치 지도", 16, UI.CYAN)
+	UI.label(map, "기지 지도 · 눌러서 살펴보기", 16, UI.CYAN)
 	UI.label(map, "북쪽 ↑ · 해: 발전 증가 · 방패: 대피소 할인", 14, UI.MUTED, true)
 	var grid := GridContainer.new()
 	grid.columns = 5
@@ -361,15 +354,17 @@ func _build_map(parent: Control) -> void:
 		_slots.append(button)
 	_map_help = UI.label(map, "", 15, UI.MUTED, true)
 	var selection_actions := UI.row(map, 5)
-	_inspect = UI.button(selection_actions,"3D 보기",func(): inspect_requested.emit(),UI.CYAN, 30)
+	_inspect = UI.button(selection_actions,"3D 보기",_on_facility_action.bind("inspect"),UI.CYAN, 30)
 	_clear_selection = UI.button(selection_actions,"선택 해제",func(): open_context(),UI.MUTED, 30)
 	var buttons := UI.row(map)
+	buttons.hide()
+	# Compatibility controls stay inert, including manually emitted pressed signals.
 	_remove = UI.button(buttons, UI.trn("선택 시설 철거", "Remove selected"),
 		func(): _on_facility_action("remove"), UI.ALERT, 36)
 	_cancel = UI.button(buttons, UI.trn("이번 변경 취소", "Cancel this turn’s changes"),
-		func(): cancelled.emit(), UI.MUTED, 36)
-	UI.grow(_remove)
-	UI.grow(_cancel)
+		_show_site_required, UI.MUTED, 36)
+	_remove.disabled = true
+	_cancel.disabled = true
 
 
 func _build_controls(parent: Control) -> void:
@@ -378,18 +373,7 @@ func _build_controls(parent: Control) -> void:
 	UI.grow(card)
 	card.size_flags_stretch_ratio = 1.06
 	var controls := UI.column(card, 6)
-	UI.label(controls, "시설 고르기", 16, UI.CYAN)
-	var facility_grid := GridContainer.new()
-	facility_grid.columns = 2
-	facility_grid.add_theme_constant_override("h_separation", 6)
-	facility_grid.add_theme_constant_override("v_separation", 6)
-	controls.add_child(facility_grid)
-	for kind: String in Rules.BUILDABLE:
-		var label := UI.name_for(kind) + "   /   " + ("3–4" if kind == "shelter" else str(Rules.cost(kind, 1)))
-		var button := UI.button(facility_grid, label, _select_kind.bind(kind), UI.FACILITY_COLORS[kind], 35)
-		UI.grow(button)
-		button.tooltip_text = UI.description(kind)
-		_facilities[kind] = button
+	UI.label(controls, "선택 위치와 기지 현황", 16, UI.CYAN)
 	_facility_info = FacilityInfoCard.new()
 	controls.add_child(_facility_info)
 	_facility_info.action_requested.connect(_on_facility_action)
@@ -397,6 +381,7 @@ func _build_controls(parent: Control) -> void:
 	_selection_detail.hide()
 	_place = UI.button(controls, "여기에 짓기", _place_selected, UI.GREEN, 38)
 	_place.hide()
+	_place.disabled = true
 	_notice = UI.label(controls, "", 18, UI.ALERT, true)
 	_notice.hide()
 	_capacity = UI.label(controls, "", 18, UI.CYAN, true)
@@ -467,7 +452,7 @@ func refresh(session) -> void:
 		_choice = ""
 		_last_turn = turn
 	var planning: bool = state.phase == "planning"
-	_summary.text = "T%d / 7 · 배치 후 남는 건설 토큰 %d" % [turn, edit_state.budget]
+	_summary.text = "T%d / 7 · 건설 토큰 %d · 설치·철거는 현장에서 1" % [turn, edit_state.budget]
 	var has_shelter := Simulation.count_kind(edit_state, "shelter") > 0
 	var shield_status := "selected" if has_shelter and turn == 4 and _choice == "shelter" else ("prepared" if has_shelter else "absent")
 	_resource_overview.set_view_model({"mission_status":true, "shield_status":shield_status, "shield_detail":_shield_instruction(_training_profile()), "show_preview": not session.draft.is_empty(), "resources": [
@@ -499,35 +484,27 @@ func refresh(session) -> void:
 	selected_slot_changed.emit(_selected_slot)
 
 
-func _refresh_info_card(layout: Dictionary, planning: bool) -> void:
+func _refresh_info_card(layout: Dictionary, _planning: bool) -> void:
 	var facility: Dictionary = Simulation.facility_at(layout, _selected_slot)
 	var occupied := not facility.is_empty()
-	var kind: String = facility.type if occupied else _selected_kind
+	var kind: String = facility.type if occupied else "empty"
 	var summaries := {"generator":"햇빛으로 전기를 만들어요.", "battery":"전기를 더 많이 저장해요.", "greenhouse":"전기를 써서 식량을 길러요.", "shelter":"위험한 날에는 여기로 대피해요.", "habitat":"우주인이 생활하는 집이에요."}
-	var reason := ""
-	if _selected_slot < 0: reason = "지도에서 빈 칸을 먼저 골라요."
-	elif not planning: reason = "과거 기록으로 돌아가면 바꿀 수 있어요."
-	elif _locked: reason = "처리 중이에요."
-	elif not occupied and _place.disabled: reason = "건설 토큰이 부족해요."
-	elif kind == "habitat": reason = "거주실은 고정된 집이에요."
-	# Build/remove live in the pinned action dock, not duplicated in this card.
-	var actions: Array = []
+	var title := UI.name_for(kind) if occupied else "빈 칸"
+	var summary: String = summaries.get(kind, "이 위치 가까이 가서 1로 시설을 지어요.")
+	if _selected_slot < 0:
+		title = "기지를 살펴봐요"
+		summary = "칸을 골라 시설 정보와 3D 보기를 확인해요."
 	var effect := _card_effect(kind)
 	if kind == "habitat": effect = "기지의 중심 · 철거 불가"
-	var cost_text := "건설 토큰 " + _cost_caption(kind) if not occupied else (_remove.text if kind != "habitat" else "고정 시설")
-	_facility_info.set_view_model({"slot_id":_selected_slot, "kind":kind, "title":UI.name_for(kind),
-		"summary":summaries.get(kind,"") + ("\n" + reason if not reason.is_empty() else ""), "cost_text":cost_text,
-		"effects":[{"icon_id":kind,"label":"역할","value_text":effect}], "details":UI.description(kind), "actions":actions})
+	var effects: Array = [{"icon_id":kind,"label":"역할","value_text":effect}] if occupied else []
+	_facility_info.set_view_model({"slot_id":_selected_slot, "kind":kind, "title":title,
+		"summary":summary, "cost_text":"", "effects":effects,
+		"details":UI.description(kind) if occupied else "", "actions":[]})
 
 func _on_facility_action(action_id: String) -> void:
 	if _session == null or not visible: return
-	var layout: Dictionary = _session.preview().state
-	var facility: Dictionary = Simulation.facility_at(layout, _selected_slot)
 	match action_id:
-		"place": _place_selected()
-		"remove":
-			if not _locked and _session.state.phase == "planning" and not facility.is_empty() and facility.type != "habitat":
-				edited.emit("remove", _selected_slot, "")
+		"place", "remove": _show_site_required()
 		"inspect":
 			if _selected_slot >= 0 and _selected_slot < Rules.SLOT_COUNT: inspect_requested.emit()
 
@@ -543,32 +520,10 @@ func _cost_caption(kind: String) -> String:
 	if kind == "shelter" and _selected_slot < 0: return "3~4"
 	return str(Rules.cost(kind, maxi(0,_selected_slot)))
 
-func _refresh_facilities(layout: Dictionary, planning: bool) -> void:
-	for kind: String in _facilities:
-		var button: Button = _facilities[kind]
-		var price: int = Rules.cost(kind, maxi(0,_selected_slot))
-		var shortfall: int = maxi(0,price - layout.budget)
-		var shortage := "\n건설 토큰 %d개 부족" % shortfall if shortfall > 0 else ""
-		if kind == "shelter" and _selected_slot < 0 and layout.budget >= 3: shortage = ""
-		button.text = "%s · 토큰 %s" % [UI.name_for(kind),_cost_caption(kind)]
-		button.tooltip_text = "%s\n%s%s" % [UI.description(kind), _card_effect(kind), shortage]
-		button.add_theme_font_size_override("font_size",16)
-		button.disabled = false # Descriptions remain accessible even when placement is unavailable.
-		UI.paint_button(button, UI.MUTED if shortfall > 0 else UI.FACILITY_COLORS[kind], kind == _selected_kind)
-	var cost: int = Rules.cost(_selected_kind, maxi(0,_selected_slot))
-	var gap: int = maxi(0,cost - layout.budget)
-	var location := "선택 칸 %02d" % (_selected_slot + 1) if _selected_slot >= 0 else "칸을 고르면 실제 비용을 확인해요"
-	_selection_detail.text = "%s · %s\n%s" % [UI.name_for(_selected_kind),location,_card_effect(_selected_kind)]
-	_selection_detail.tooltip_text = UI.description(_selected_kind)
-	if gap > 0:
-		_selection_detail.text += "\n건설 토큰 %d개 부족해요. 설명은 계속 볼 수 있어요." % gap
-	if not planning: _selection_detail.text += "\n완료된 턴에서는 배치할 수 없어요. 과거 턴으로 돌아가요."
-	var occupied := not Simulation.facility_at(layout, _selected_slot).is_empty()
-	_place.visible = not occupied
-	_remove.visible = occupied
-	_place.disabled = _locked or not planning or _selected_slot < 0 or occupied or gap > 0
-	_place.text = "여기에 짓기 · 토큰 %d" % cost
-	_place.tooltip_text = "빈 칸을 먼저 골라요." if _selected_slot < 0 else ("이미 건물이 있는 칸이에요." if occupied else "")
+func _refresh_facilities(_layout_state: Dictionary, _planning: bool) -> void:
+	for button: Button in [_place, _remove, _cancel]:
+		button.hide()
+		button.disabled = true
 
 func _toggle_preview() -> void:
 	_preview_open = not _preview_open
@@ -613,7 +568,7 @@ func _refresh_preview(planning: bool, layout: Dictionary) -> void:
 	lines.append(Preview.growth_lines(layout,_choice))
 	_preview_detail.text = "\n".join(lines)
 
-func _refresh_map(state: Dictionary, planning: bool) -> void:
+func _refresh_map(state: Dictionary, _planning: bool) -> void:
 	for slot_id in Rules.SLOT_COUNT:
 		var facility := Simulation.facility_at(state, slot_id)
 		var kind: String = facility.get("type", "")
@@ -636,24 +591,15 @@ func _refresh_map(state: Dictionary, planning: bool) -> void:
 		button.tooltip_text = marks if kind.is_empty() else UI.description(kind) + " · " + (marks if not marks.is_empty() else "일반 칸")
 		button.disabled = false # Completed layouts can still be inspected.
 		UI.paint_button(button, tint, _selected_slot == slot_id)
-	_map_help.text = "칸 선택 → 시설 선택 → 여기에 짓기" if planning else "칸을 골라 살펴봐요. 바꾸려면 과거 턴으로 돌아가요."
+	_map_help.text = "지도는 조회 전용 · 설치·철거는 해당 위치에서 1"
 	var selected := Simulation.facility_at(state, _selected_slot)
-	_remove.disabled = _locked or not planning or selected.is_empty() or selected.get("type") == "habitat"
-	if not selected.is_empty() and selected.type != "habitat":
-		@warning_ignore("integer_division")
-		var refund: int = selected.actual_paid_cost if selected.instance_id >= _session.state.next_instance_id else int(selected.actual_paid_cost) / 2
-		_remove.text = UI.trn("철거 / 취소  +%d 토큰", "Build tokens returned: %d") % refund
-	else:
-		_remove.text = UI.trn("선택 시설 철거", "Remove selected")
-	_cancel.disabled = not planning or _session.draft.is_empty()
 	if selected.get("type") == "habitat": _map_help.text = "가운데 거주실은 고정 시설이에요. 옮기거나 철거할 수 없어요."
-
 
 func _refresh_event(turn: int, planning: bool, draft_state: Dictionary) -> void:
 	_event_values.clear()
 	var captions: Array[String] = []
 	_event_title.text = "오늘의 임무"
-	_event_text.text = UI.trn("시설을 놓은 뒤 ‘이번 턴 진행’을 눌러요. 승무원은 산소와 식량을 각각 6씩 써요.",
+	_event_text.text = UI.trn("현장에서 배치를 준비한 뒤 ‘이번 턴 진행’을 눌러요. 승무원은 산소와 식량을 각각 6씩 써요.",
 		"Confirm the layout to run a turn. The crew uses 6 oxygen and 6 food each turn.")
 	if not planning:
 		_event_text.text = UI.trn("아래에서 지난 턴을 골라 되감고 다른 설계를 시험해요.",
@@ -762,29 +708,26 @@ func open_context(slot_id: int = -1) -> void:
 
 
 func _place_selected() -> void:
-	if _session == null or _locked or _session.state.phase != "planning": return
-	if _selected_slot < 0 or _selected_slot >= Rules.SLOT_COUNT: return
-	var layout: Dictionary = _session.preview().state
-	if not Simulation.facility_at(layout, _selected_slot).is_empty(): return
-	if layout.budget < Rules.cost(_selected_kind, _selected_slot): return
-	edited.emit("place", _selected_slot, _selected_kind)
+	_show_site_required()
 
 
-func _select_kind(kind: String) -> void:
-	clear_notice()
-	_selected_kind = kind
-	refresh(_session)
-	set_notice("%s 선택 · 빈 칸을 고르고 ‘여기에 짓기’를 눌러요." % UI.name_for(kind))
+func _select_kind(_kind: String) -> void:
+	_show_site_required()
 
+
+func _show_site_required() -> void:
+	if is_instance_valid(_notice):
+		set_notice("설치·철거는 해당 위치 가까이에서 1을 눌러요.")
 
 func _choose_event(index: int) -> void:
+	if index < 0 or index >= _event_values.size() or _event_buttons[index].disabled: return
 	clear_notice()
 	_choice = _event_values[index]
 	refresh(_session)
 
 
 func _advance_turn() -> void:
-	if _locked or _session.state.phase != "planning":
+	if _session == null or _locked or _advance.disabled or _session.state.phase != "planning":
 		return
 	_locked = true
 	_advance.disabled = true
@@ -828,7 +771,7 @@ func clear_notice() -> void:
 func focus_primary() -> void:
 	if _outcome_card.visible:
 		_close.grab_focus()
-	elif not _facilities[_selected_kind].disabled:
-		_facilities[_selected_kind].grab_focus()
+	elif not _advance.disabled:
+		_advance.grab_focus()
 	else:
 		_close.grab_focus()

@@ -1,4 +1,5 @@
 extends SceneTree
+const Fixture = preload("res://scripts/simulation/tests/ui_fixture.gd")
 const Mission = preload("res://scenes/main.tscn")
 const History = preload("res://scripts/ui/history_explanation.gd")
 const Session = preload("res://scripts/simulation/snapshot_store.gd")
@@ -31,10 +32,10 @@ func geometry(view, ui) -> void:
 	for item in ui.find_children("*","Label",true,false):
 		if item.is_visible_in_tree(): check(item.get_theme_font_size("font_size") >= 16,"Readable history label")
 func layout(game, battery := false) -> void:
-	game._edit("place",0,"generator")
-	if battery: game._edit("place",11,"battery")
-	game._edit("place",13,"greenhouse")
-	game._edit("place",24,"shelter")
+	Fixture.edit(game, "place",0,"generator")
+	if battery: Fixture.edit(game, "place",11,"battery")
+	Fixture.edit(game, "place",13,"greenhouse")
+	Fixture.edit(game, "place",24,"shelter")
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute("res://logs/ux15")
 	for dimensions in [Vector2i(1920,1080),Vector2i(1280,720),Vector2i(1024,768),Vector2i(800,900)]:
@@ -58,7 +59,7 @@ func _run() -> void:
 		geometry(view,ui)
 		await capture(view,tag+"-initial")
 		layout(game)
-		check(ui._slots[0].text.contains("일조·차폐") and ui._slots[0].text.contains("발전기"),"Occupied zone remains visible")
+		check(ui._slots[0].text.contains("해방패") and ui._slots[0].tooltip_text.contains("일조·차폐") and ui._slots[0].text.contains("발전기"),"Occupied tile retains compact terrain markers and full tooltip")
 		game._commit("")
 		game._commit("normal")
 		game._commit("")
@@ -130,9 +131,9 @@ func _run() -> void:
 		check(History.candidates(game.session).is_empty(),"No candidates from archived future")
 		game.session = Session.new(Scenario)
 		game._refresh()
-		game._edit("place",0,"generator")
-		game._edit("place",11,"battery")
-		game._edit("place",24,"shelter")
+		Fixture.edit(game, "place",0,"generator")
+		Fixture.edit(game, "place",11,"battery")
+		Fixture.edit(game, "place",24,"shelter")
 		while game.session.state.phase == "planning":
 			var food_turn: int = game.session.state.turn_id
 			game._commit("conserve" if food_turn == 2 else "shelter" if food_turn == 4 else "acknowledge" if food_turn == 5 else "")

@@ -196,7 +196,6 @@ func _run() -> void:
 	game.set_physics_process(false)
 	game.player.set_physics_process(false)
 	game._set_mode("terminal")
-	game._edit("place",0,"generator")
 	game._commit("")
 	game._set_mode("explore")
 	await tick(game.player,20)
