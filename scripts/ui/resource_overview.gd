@@ -119,6 +119,7 @@ func set_view_model(data: Dictionary) -> void:
 		var status: String = str(data.get("shield_status", "absent"))
 		_shield_label.text = {"absent":"대피소 없음", "prepared":"대피소 준비됨", "selected":"대피 선택됨"}.get(status, "대피소 없음")
 		_shield_detail.text = {"absent":"대피소를 지어 준비해요", "prepared":"경보 때 ‘대피하기’를 골라요", "selected":"이번 턴을 진행하면 대피해요"}.get(status, "")
+		if not str(data.get("shield_detail", "")).is_empty(): _shield_detail.text = str(data.shield_detail)
 		_shield_label.add_theme_color_override("font_color", UI.AMBER if status == "absent" else UI.CYAN)
 	_layout()
 
