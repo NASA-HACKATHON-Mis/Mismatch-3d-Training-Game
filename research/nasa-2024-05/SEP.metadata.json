@@ -1,0 +1,12 @@
+{
+  "record_type": "SEP",
+  "request_url": "https://ccmc.gsfc.nasa.gov/DONKI-API/get/SEP?startDate=2024-05-08&endDate=2024-05-13&catalog=M2M_CATALOG&version=Latest",
+  "retrieved_at": "2026-11-15T10:48:20Z",
+  "http_status": 200,
+  "record_count": 14,
+  "sha256": "30c225b9a0fabee1ece4e0b56d0ccdbfe54f0b85e2a58815a885517db1fe4cfe",
+  "start_date": "2024-05-08",
+  "end_date": "2024-05-13",
+  "schema_source": "https://ccmc.gsfc.nasa.gov/DONKI/api/openapi/",
+  "note": "Original API response for a common date range. Records are not necessarily one causally linked event; SEP may contain model records. Not a lunar dose or communications-loss measurement."
+}
