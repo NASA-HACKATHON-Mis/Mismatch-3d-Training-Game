@@ -8,7 +8,14 @@ const UI = preload("res://scripts/ui/ui_style.gd")
 const SiteInteraction = preload("res://scripts/world/site_interaction.gd")
 const SpaceWeather = preload("res://scripts/data/space_weather.gd")
 const WeatherRules = preload("res://scripts/simulation/weather_rules.gd")
+const SitePanel = preload("res://scripts/ui/site_panel.gd")
 var _site_interaction = SiteInteraction.new()
+var _site_panel = SitePanel.new()
+var _active_site_slot := -1
+var _site_edit_enabled := false
+var _layout_state: Dictionary = {}
+var _inspection_return_mode := "terminal"
+var _inspection_look_mode := "drag"
 var _weather = SpaceWeather.new()
 var _weather_context: Dictionary = {}
 
@@ -36,6 +43,12 @@ var _has_explored := false
 func _ready() -> void:
 	add_child(_site_interaction)
 	_site_interaction.configure(station)
+	$Interface.add_child(_site_panel)
+	_site_panel.hide()
+	_site_panel.edited.connect(_edit)
+	_site_panel.closed.connect(_pause)
+	_site_panel.inspect_requested.connect(_inspect_site)
+	hud.site_action_requested.connect(_site_action)
 	add_child(_weather)
 	_weather.updated.connect(_on_weather_updated)
 	terminal.advice_request_changed.connect(_set_advice_request)
@@ -44,7 +57,6 @@ func _ready() -> void:
 	terminal.selected_slot_changed.connect(_highlight_selected)
 	terminal.inspect_requested.connect(_inspect_selected)
 	hud.inspection_closed.connect(_close_inspection)
-	terminal.edited.connect(_edit)
 	terminal.cancelled.connect(_cancel_draft)
 	terminal.advanced.connect(_commit)
 	terminal.rewound.connect(_restore)
@@ -114,24 +126,58 @@ func _advice_error(code: String) -> String:
 
 
 func _highlight_selected(slot: int) -> void:
-	var layout: Dictionary = session.preview().state
+	if mode not in ["terminal", "inspect"]: return
+	var layout: Dictionary = _layout_state
 	var facility: Dictionary = preload("res://scripts/simulation/simulation.gd").facility_at(layout,slot)
 	station.highlight_slot(slot,UI.name_for(facility.type) if not facility.is_empty() else "빈 칸")
 
 func _inspect_selected() -> void:
 	if mode != "terminal" or terminal._selected_slot < 0: return
+	_begin_inspection(terminal._selected_slot, "terminal")
+
+func _inspect_site(slot: int) -> void:
+	if mode != "field" or slot != _active_site_slot or not _site_access(slot): return
+	_begin_inspection(slot, "field")
+
+func _begin_inspection(slot: int, return_mode: String) -> void:
+	_inspection_return_mode = return_mode
+	_inspection_look_mode = look_mode if mode == "explore" else "drag"
 	_return_camera = get_viewport().get_camera_3d()
-	var slot: int = terminal._selected_slot
 	var target := Rules.slot_position(slot)
 	_observation_camera.position = target + Vector3(7,9,10)
 	_observation_camera.look_at(target + Vector3(0,0.8,0))
 	_observation_camera.make_current()
 	var state_label := "미확정 배치 포함" if not session.draft.is_empty() else "현재 확정 배치"
 	hud.show_inspection("지도 %02d번 칸 · %s · 청록색 테두리와 번호가 선택 위치예요." % [slot+1,state_label])
+	hud.set_inspection_return({"terminal":"대시보드로 돌아가기 · Esc", "field":"현장 메뉴로 돌아가기 · Esc", "explore":"탐색으로 돌아가기 · Esc"}.get(return_mode, "돌아가기 · Esc"))
 	_set_mode("inspect")
+	station.highlight_slot(slot, "3D 관찰")
 
 func _close_inspection() -> void:
-	if mode == "inspect": _set_mode("terminal")
+	if mode == "inspect": _set_mode(_inspection_return_mode, _inspection_look_mode)
+
+func _site_access(slot: int) -> bool:
+	return slot >= 0 and slot < Rules.SLOT_COUNT and _site_interaction.can_access_slot(player.camera, slot)
+
+func _site_action(action: String) -> void:
+	if mode != "explore" or help.visible: return
+	# Every shortcut/click queries the current scene, never a cached HUD target.
+	var target: Dictionary = _site_interaction.resolve_target(player.camera)
+	if target.kind == "console":
+		if action != "details": return
+		_refresh()
+		terminal.open_context()
+		_set_mode("terminal")
+	elif target.kind == "slot":
+		var slot := int(target.slot_id)
+		if not _site_access(slot): return
+		if action == "inspect":
+			_begin_inspection(slot, "explore")
+		elif action in ["edit", "details"]:
+			_active_site_slot = slot
+			_site_edit_enabled = action == "edit"
+			_site_panel.open_site(session, slot, action)
+			_set_mode("field")
 
 func _reopen_result() -> void:
 	if help.visible or mode != "pause" or session.state.phase == "planning": return
@@ -156,6 +202,8 @@ func _physics_process(delta: float) -> void:
 	if mode == "capturing":
 		_update_capture(delta, Input.mouse_mode == Input.MOUSE_MODE_CAPTURED)
 		return
+	if mode == "field":
+		_site_panel.set_access_allowed(_site_access(_active_site_slot), "해당 위치 가까이에서 작업해요.")
 	if mode == "explore":
 		if look_mode == "captured" and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			_pause()
@@ -165,6 +213,8 @@ func _physics_process(delta: float) -> void:
 		var target: Dictionary = _site_interaction.resolve_target(player.camera)
 		_aiming = target.kind != "none"
 		hud.set_target(_aiming,player.global_position,-player.global_basis.z,target.prompt)
+		hud.set_site_target(target, _layout_state)
+		station.show_interaction_target(target, _layout_state)
 
 
 func _input(event: InputEvent) -> void:
@@ -185,13 +235,14 @@ func _input(event: InputEvent) -> void:
 			_open_help()
 			get_viewport().set_input_as_handled()
 			return
-	if mode == "explore" and event.is_action_pressed(&"open_terminal", false):
-		var target: Dictionary = _site_interaction.resolve_target(player.camera)
-		if target.kind != "none":
-			_refresh()
-			terminal.open_context(target.slot_id)
-			_set_mode("terminal")
-		get_viewport().set_input_as_handled()
+	if mode == "explore":
+		var action := ""
+		if event.is_action_pressed(&"site_edit", false): action = "edit"
+		elif event.is_action_pressed(&"site_details", false) or event.is_action_pressed(&"open_terminal", false): action = "details"
+		elif event.is_action_pressed(&"site_inspect", false): action = "inspect"
+		if not action.is_empty():
+			_site_action(action)
+			get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -238,6 +289,7 @@ func _open_help() -> void:
 		_help_focus = terminal.help_button if mode == "terminal" else hud.help_button
 	hud.hide()
 	terminal.hide()
+	_site_panel.hide()
 	help.open(0)
 
 
@@ -264,6 +316,9 @@ func _set_mode(new_mode: String, requested_look_mode: String = "captured") -> vo
 		if is_instance_valid(_return_camera): _return_camera.make_current()
 		_return_camera = null
 	mode = new_mode
+	if mode not in ["field", "inspect"]:
+		_active_site_slot = -1
+		_site_edit_enabled = false
 	look_mode = requested_look_mode if mode == "explore" else "disabled"
 	if mode == "explore":
 		_has_explored = true
@@ -280,32 +335,49 @@ func _set_mode(new_mode: String, requested_look_mode: String = "captured") -> vo
 	# The HUD can bind this in PE-05 to show persistent drag guidance.
 	look_mode_changed.emit(look_mode)
 	terminal.visible = mode == "terminal"
+	_site_panel.visible = mode == "field"
+	if mode != "explore":
+		hud.set_site_target({"kind":"none", "slot_id":-1}, _layout_state)
+		station.show_interaction_target({"kind":"none", "slot_id":-1}, _layout_state)
+	if mode not in ["terminal", "inspect", "field"]: station.highlight_slot(-1)
+	if mode == "field":
+		station.highlight_slot(_active_site_slot, "현장 작업" if _site_edit_enabled else "현장 상세")
+		_site_panel.refresh(session)
+		_site_panel.set_access_allowed(_site_access(_active_site_slot), "해당 위치 가까이에서 작업해요.")
 	if terminal.visible:
 		terminal.focus_primary()
 
 
 func _refresh() -> void:
+	_layout_state = session.preview().state
 	hud.refresh(session.state)
 	terminal.refresh(session)
 	terminal.set_communication_state(session.state.get("communication", {}), session.advice_requested)
+	if is_instance_valid(_site_panel) and _site_panel.is_node_ready(): _site_panel.refresh(session)
 
 
 func _edit(action: String, slot_id: int, kind: String) -> void:
+	# Dashboard selections and forged/stale signals cannot edit a remote site.
+	if mode != "field" or not _site_edit_enabled or slot_id != _active_site_slot or not _site_access(slot_id):
+		var notice := "설치·철거는 해당 위치 가까이에서 1번 메뉴로 해요."
+		terminal.set_notice(notice, true)
+		_site_panel.set_notice(notice, true)
+		return
 	var verdict: Dictionary = session.edit(action, slot_id, kind, player.pose())
 	if verdict.has("error"):
-		terminal.set_notice(UI.error_text(verdict.error), true)
+		_site_panel.set_notice(UI.error_text(verdict.error), true)
 		return
 	var state: Dictionary = verdict.state
 	station.sync_facilities(state)
 	_refresh()
-	terminal.set_notice(UI.trn("배치를 바꿨어요. ‘이번 턴 진행’을 누르면 확정돼요.", "Layout updated. Advance to confirm it."))
+	_site_panel.set_notice("이 위치의 배치를 바꿨어요. 대시보드에서 턴을 진행하면 확정돼요.")
 
 
 func _cancel_draft() -> void:
-	session.cancel_draft()
-	station.sync_facilities(session.state)
+	# A dashboard cancellation may cancel a question, never undo remote builds.
+	session.set_advice_request(false)
 	_refresh()
-	terminal.set_notice(UI.trn("이번 변경을 취소했어요. 이전 턴의 시설은 그대로예요.", "This turn's layout changes were cancelled."))
+	terminal.set_notice("질문 예약을 취소했어요. 배치 취소는 해당 현장의 1번 메뉴에서 해요.")
 
 
 func _commit(event_choice: String) -> void:
