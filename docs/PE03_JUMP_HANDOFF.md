@@ -27,6 +27,8 @@ Windows / Godot4.7.2 stable. 전용 fixture는 실제 Player CharacterBody3D·�
 --path . --minimized --script res://scripts/simulation/tests/player_jump.gd -- --render
 ```
 
-최종 headless83/0: Space 바인딩·접지·초기속도·높이·hold 반복금지·공중 새 입력·UI release/repress·공중 pause/resume·apply_pose held·공중 복원 stale접지·낮은 천장·시설형 벽·낙하복귀, 실제 mission 되감기와 terminal/help/pause 상태 및 자원불변을 검사했다. 테스트의 카메라·캡슐 시각 마커는 fixture 전용이며 제품에 추가하지 않았다. `logs/pe03/jump_metrics.json`, `<30|60|120>-ground/apex/land/paused.png`가 측정·렌더 자료다.
+최종 headless85/0 및 실제 렌더97/0(PNG12): Space 바인딩·접지·초기속도·높이·hold 반복금지·공중 새 입력·UI release/repress·공중 pause/resume·apply_pose held·공중 복원 stale접지·낮은 천장·시설형 벽·낙하복귀, 실제 mission 되감기와 terminal/help/pause 상태 및 자원불변을 검사했다. 테스트의 카메라·캡슐 시각 마커는 fixture 전용이며 제품에 추가하지 않았다. `logs/pe03/jump_metrics.json`, `<30|60|120>-ground/apex/land/paused.png`가 측정·렌더 자료다.
 
-기존 core90·learning15·avatar44 자체 검사 통과. navigation70으로 실제 보행 출입구·모서리·배치 전후·되감기 후·단말기 재접근 회귀를 검사한다. 실제 표시30/60/120FPS, Native/Web 사용자 조작, 새 마우스 대체모드·몸·HUD 연결 및 dyhan0528 사람 교차 검증은 #29에서 확인한다. 기존8072 빌드는 유지하며 배포·제출은 하지 않는다. PR은 Refs #27, 실제 통합 인수 전 OPEN을 유지한다.
+기존 core90·learning15·avatar44 자체 검사 통과. navigation70/0으로 실제 보행 출입구·모서리·배치 전후·되감기 후·단말기 재접근 회귀를 검사한다. 실제 표시30/60/120FPS, Native/Web 사용자 조작, 새 마우스 대체모드·몸·HUD 연결 및 dyhan0528 사람 교차 검증은 #29에서 확인한다. 기존8072 빌드는 유지하며 배포·제출은 하지 않는다. PR은 Refs #27, 실제 통합 인수 전 OPEN을 유지한다.
+
+원격 PE-01/PE-04 main4a38d8b를 무충돌 일반 merge하여 보존했다. 최신 mission의 실제 _open_help/_close_help 경로를 검사하며 mouse_modes23/0 및 resource_gauges64/0도 통과했다. 제품 점프 코드는 병렬 통합 전후 동일하다.

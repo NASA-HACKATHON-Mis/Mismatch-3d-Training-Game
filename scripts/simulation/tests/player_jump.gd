@@ -208,10 +208,16 @@ func _run() -> void:
 	check(game.session.state.turn_id == 1 and game.player.pose() == game.session.state.player,"Actual rewind restores stored pose and turn")
 	var restored_state: Dictionary = game.session.state.duplicate(true)
 	for mode in ["terminal","help","pause"]:
-		game._set_mode(mode)
+		game._set_mode("terminal" if mode == "help" else mode)
+		if mode == "help":
+			game._open_help()
+			check(game.help.visible and game.mode == "terminal", "Actual help opens over terminal")
 		var before: Dictionary = game.player.pose()
 		await tick(game.player,3)
 		check(game.player.pose() == before and game.player.velocity == Vector3.ZERO,"Actual mode blocks jump: " + mode)
+		if mode == "help":
+			game._close_help()
+			check(not game.help.visible and game.mode == "terminal", "Actual help closes to terminal")
 		game._set_mode("explore")
 		await tick(game.player,10)
 		check(game.player.velocity.y <= 0,"Actual mode resume suppresses held jump: " + mode)
