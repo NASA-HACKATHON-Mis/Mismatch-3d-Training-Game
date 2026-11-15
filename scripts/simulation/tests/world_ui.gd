@@ -91,6 +91,8 @@ func _run() -> void:
 		game.terminal._clear_selection.pressed.emit()
 		check(game.station.selected_slot == -1 and not game.station._selection.visible,"Explicit deselect clears highlight")
 		game.terminal._select_slot(0)
+		check(not game.session.draft.is_empty() and game.station._selection_label.text.contains("발전기"),
+			"Cancel fixture still contains its earlier draft generator before removal")
 		game._cancel_draft()
 		check(game.station._selection_label.text.contains("빈 칸"),"Cancel rebuild cannot leave old facility label")
 		game._edit("place",0,"generator")

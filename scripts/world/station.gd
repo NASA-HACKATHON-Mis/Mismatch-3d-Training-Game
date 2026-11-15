@@ -227,6 +227,29 @@ func sync_facilities(state: Dictionary) -> void:
 		_facility(facility)
 
 
+func interaction_slot_occupied(slot_id: int) -> bool:
+	for wrapper in _wrappers.get_children():
+		if int(wrapper.get_meta("slot_id", -1)) == slot_id:
+			return true
+	return false
+
+
+func interaction_target_for(collider: Node) -> Dictionary:
+	var none := {"kind": "none", "slot_id": -1, "prompt": ""}
+	if not is_instance_valid(collider) or not is_ancestor_of(collider):
+		return none
+	if collider == console:
+		return {"kind": "console", "slot_id": -1, "prompt": "E · 기지 보기"}
+	var node := collider
+	while node != self and node != null:
+		if node.get_parent() == _wrappers:
+			var slot: int = node.get_meta("slot_id", -1)
+			if slot >= 0 and slot < Rules.SLOT_COUNT:
+				return {"kind": "slot", "slot_id": slot, "prompt": "E · 건물 보기"}
+			return none
+		node = node.get_parent()
+	return none
+
 func _load_model(model_name: String) -> PackedScene:
 	var path := MODEL_DIR + model_name + ".glb"
 	if not ResourceLoader.exists(path, "PackedScene"):
