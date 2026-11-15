@@ -12,6 +12,7 @@ const UI = preload("res://scripts/ui/ui_style.gd")
 const Rules = preload("res://scripts/simulation/scenario.gd")
 const Simulation = preload("res://scripts/simulation/simulation.gd")
 const Preview = preload("res://scripts/simulation/turn_preview.gd")
+const History = preload("res://scripts/ui/history_explanation.gd")
 const Outcome = preload("res://scripts/ui/outcome_summary.gd")
 const Learning = preload("res://resources/content/learning.gd")
 const GLYPHS := {"habitat": "HAB", "generator": "SOL", "battery": "BAT", "greenhouse": "GROW", "shelter": "SAFE"}
@@ -65,6 +66,9 @@ var _advance_reason: Label
 var _preview_toggle: Button
 var _preview_detail: Label
 var _preview_open := false
+var _candidate_note: Label
+var _candidate_buttons: Array[Button] = []
+var _start_preview: Label
 var _scroll: ScrollContainer
 var _outcome_card: PanelContainer
 var _outcome_title: Label
@@ -272,8 +276,13 @@ func _build_timeline(parent: Control) -> void:
 	var panel := UI.panel(parent, Color("#0d192b"), 12)
 	var content := UI.column(panel, 8)
 	_history_toggle = UI.button(content, "과거 기록 · 되감기와 비교", _toggle_history, UI.CYAN)
-	_history_empty = UI.label(content, "아직 끝낸 턴이 없어요. 턴을 진행하면 기록을 볼 수 있어요.", 18, UI.MUTED, true)
+	_history_empty = UI.label(content, "아직 실행 결과가 없어요. 저장된 시작 상태는 아래 기록을 열어 확인해요.", 18, UI.MUTED, true)
 	_history_body = UI.column(content, 8)
+	_candidate_note = UI.label(_history_body,"",18,UI.MUTED,true)
+	for index in 2:
+		var candidate := UI.button(_history_body,"",_select_candidate.bind(index),UI.CYAN)
+		candidate.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_candidate_buttons.append(candidate)
 	_timeline_top = BoxContainer.new()
 	_timeline_top.add_theme_constant_override("separation", 7)
 	_history_body.add_child(_timeline_top)
@@ -284,6 +293,7 @@ func _build_timeline(parent: Control) -> void:
 		UI.grow(button)
 		_timeline.append(button)
 	_rewind = UI.button(_timeline_top, "선택 턴 시작으로", func(): rewound.emit(_timeline_turn), UI.PURPLE, 40)
+	_start_preview = UI.label(_history_body,"",18,UI.MUTED,true)
 	_compare_title = UI.label(_history_body, "", 18, UI.CYAN)
 	_comparison_sides = BoxContainer.new()
 	_comparison_sides.add_theme_constant_override("separation", 12)
@@ -418,12 +428,12 @@ func _refresh_map(state: Dictionary, planning: bool) -> void:
 		elif shield:
 			marks = UI.trn("차폐", "SHIELD")
 		var button := _slots[slot_id]
-		var contents: String = GLYPHS.get(kind, marks if not marks.is_empty() else "·")
+		var contents: String = GLYPHS.get(kind, "빈 칸")
 		var tint: Color = UI.FACILITY_COLORS.get(kind, UI.AMBER if sun else (UI.PURPLE if shield else UI.MUTED))
 		if not kind.is_empty():
 			contents = UI.name_for(kind)
-		button.text = "%02d\n%s" % [slot_id + 1, contents]
-		button.tooltip_text = marks if kind.is_empty() else UI.description(kind)
+		button.text = "%02d\n%s\n%s" % [slot_id + 1, contents, marks if not marks.is_empty() else "일반"]
+		button.tooltip_text = marks if kind.is_empty() else UI.description(kind) + " · " + (marks if not marks.is_empty() else "일반 칸")
 		button.disabled = not planning
 		UI.paint_button(button, tint, _selected_slot == slot_id)
 	_map_help.text = "시설을 고르고 빈 칸을 누르면 배치해요. 확정 전에는 이번 변경을 취소할 수 있어요."
@@ -476,38 +486,38 @@ func _refresh_event(turn: int, planning: bool, draft_state: Dictionary) -> void:
 			UI.paint_button(button, UI.AMBER, _choice == _event_values[i])
 
 
+func _select_candidate(index: int) -> void:
+	var candidates := History.candidates(_session)
+	if index < candidates.size():
+		_select_turn(candidates[index].turn)
+		_rewind.grab_focus()
+		_scroll.call_deferred("ensure_control_visible", _start_preview)
+
 func _refresh_timeline() -> void:
-	var has_result: bool = not _session.current_history.results.is_empty() or not _session.previous_attempt.get("results", {}).is_empty()
-	_history_empty.visible = not has_result
-	_history_toggle.disabled = not has_result
-	_history_toggle.text = "과거 기록 닫기" if _history_open and has_result else "과거 기록 · 되감기와 비교"
-	_history_body.visible = has_result and _history_open
+	var has_record: bool = not _session.current_history.snapshots.is_empty() or not _session.previous_attempt.is_empty()
+	_history_empty.visible = _session.current_history.results.is_empty() and _session.previous_attempt.get("results",{}).is_empty()
+	_history_toggle.disabled = not has_record
+	_history_toggle.text = "과거 기록 닫기" if _history_open and has_record else "과거 기록 · 되감기와 비교"
+	_history_body.visible = has_record and _history_open
+	var candidates := History.candidates(_session)
+	_candidate_note.text = "저장된 시작점의 탐색 후보예요. 성공을 보장하지 않아요. 눌러서 살펴본 뒤 복원할지 골라요." if not candidates.is_empty() else "확실한 후보를 찾지 못했어요. 과거 상태를 함께 살펴봐요. 아래 턴을 눌러 직접 확인해요."
+	for i in _candidate_buttons.size():
+		_candidate_buttons[i].visible = i < candidates.size()
+		if i < candidates.size(): _candidate_buttons[i].text = candidates[i].text
 	for i in _timeline.size():
-		var button := _timeline[i]
 		var id := i + 1
-		button.disabled = _session.snapshot(id).is_empty()
-		UI.paint_button(button, UI.CYAN, id == _timeline_turn)
-	_rewind.disabled = _locked or _session.result_at(_timeline_turn).is_empty()
-	_compare_title.text = UI.trn("T%d   /   같은 턴 비교", "T%d   /   SAME TURN COMPARISON") % _timeline_turn
-	var compared: Dictionary = _session.compare_turn(_timeline_turn)
-	if compared.is_empty():
-		_prior.text = UI.trn("이전 시도 · 기록 없음", "Previous attempt  ·  awaiting result")
-		_current.text = UI.trn("이번 시도 · 기록 없음", "Current attempt  ·  awaiting result")
-		var old: Dictionary = _session.previous_attempt.get("results", {}).get(str(_timeline_turn), {})
-		var latest: Dictionary = _session.result_at(_timeline_turn)
-		if not old.is_empty():
-			_prior.text = _result_line(old)
-		if not latest.is_empty():
-			_current.text = _result_line(latest)
-		_delta.text = UI.trn("되감아 같은 턴을 다시 실행하면 두 결과를 비교해요.",
-			"Rewind and replay this turn to compare both results.")
-		return
-	_prior.text = "이전 시도 / " + _result_line(compared.previous) + "\n" + Learning.attempt_note(compared.previous)
-	_current.text = "이번 시도 / " + _result_line(compared.current) + "\n" + Learning.attempt_note(compared.current)
-	var difference: Dictionary = compared.delta
-	_delta.text = "변화   전력 %s   ·   산소 %s   ·   식량 %s" % [
-		UI.signed_delta(difference.E), UI.signed_delta(difference.O), UI.signed_delta(difference.F)]
-	_delta.text += "\n" + Learning.comparison_prompt(compared)
+		var archived: Dictionary = _session.previous_attempt
+		var readable: bool = not _session.snapshot(id).is_empty() or archived.get("snapshots",{}).has(str(id)) or archived.get("results",{}).has(str(id)) or not _session.result_at(id).is_empty()
+		_timeline[i].disabled = not readable
+		UI.paint_button(_timeline[i], UI.CYAN, id == _timeline_turn)
+	var start: Dictionary = _session.snapshot(_timeline_turn)
+	_rewind.disabled = _locked or start.is_empty()
+	_start_preview.text = "복원 대상 · T%d 시작\n%s" % [_timeline_turn,History.start_line(start)] if not start.is_empty() else "T%d는 이전 시도의 조회 전용 기록이에요. 현재 보관된 시작점이 없어 복원할 수 없어요." % _timeline_turn
+	if not start.is_empty(): _start_preview.text += "\n복원하면 지금 편집 중인 배치는 버리고, 저장된 시작 상태로 돌아가요."
+	_compare_title.text = "T%d / 같은 턴 비교 · 시작 상태와 실행 결과를 구분해요" % _timeline_turn
+	_prior.text = History.side(_session,_timeline_turn,true)
+	_current.text = History.side(_session,_timeline_turn,false)
+	_delta.text = History.changes(_session,_timeline_turn)
 
 
 func _result_line(result: Dictionary) -> String:
