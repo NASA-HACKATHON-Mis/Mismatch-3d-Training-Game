@@ -380,8 +380,8 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 | UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | jsjavsj | done / PR #19 검증·main 통합 |
 | UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | jsjavsj | done / PR #20 검증·main 통합 |
 | UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | jsjavsj | done / PR #21 검증·main 통합 |
-| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | in-progress / 되감기·비교 구현 검증 |
-| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | blocked / UX-R05 통합 대기 |
+| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | jsjavsj | done / PR #22 검증·main 통합 |
+| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | jsjavsj | ready / UX-R05 완료, 착수 claim 전 |
 
 저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
 
@@ -491,3 +491,7 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - PM Native GUI PASS: 코드로 기존정상배치·계산을 실행해 준비한 T3실패에서 후보T3/T2 근거, T2후보선택만 수행/복원preview초점, T2복원E20/O62/F30/가동1→절전/T2확정E14/O64/F24→T3확정E8/O66/F18→시도1실패/2완료와 가동2/3 대1/3·미계산·차이+8/+2/-6을 직접 확인했다. 01발전기 일조·차폐/25대피소 일반 속성 유지도 확인했다. 전체7턴 수동검사로 확대하지 않는다.
 
 - 독립검토에서 무재배식량중단의 너무늦은 T6/F6·T5/F12 후보 한계를 확인해 선정 기준을 보강했다. 실제 저장된 식량이 남은 가동횟수×소비6 이상인 시작점을 탐색한다(새재배실3회→18, 기존은 가장 자란 시설의 남은 가동횟수·칸번호 표시). 무재배 예시는 T4/F18·T3/F24로 바뀐다. 이는 최소 소비량에 견준 탐색 기준이며 정지·전력부족이면 더 필요하므로 더 이른 기록도 살펴보도록 안내한다. 미래 계산이나 수확·생존 보장은 추가하지 않았다.
+
+- 최종 소스 `a4293ea0e10bce1646fe0d0e39d97be00dbf29e4`와 독립 snapshot 일치. 최종 독립3,782개/0fail: 기존 core/generator/facility/learning/navigation246 + preview635 + outcome1,069 + guidance1,249 + rewind583. 식량후보 수정 뒤 영향받은 rewind/guidance를 재검사하고 불변 회귀 결과를 보존했다. 최종 실제렌더611개/0fail·28PNG와 Web export 성공.
+- PM Native는 전력 경로의 b55d4b0과 동일한 최종 UI 흐름에서 확인했으며, 이후 식량후보 개선은 실제렌더·코드·독립 검사로 확인했다. 800세로 화면에서 T4/F18·T3/F24의 가동3회/소비기준/정지·전력 추가제약/저장상태 가독성도 PM이 확인했다.
+- [PR #22](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/22)을 일반 merge하며 이 완료 작업판을 함께 반영한다. 실제 merge SHA와 #15 CLOSED 재조회는 이슈에 기록한다. #16은 ready/미착수이며 구현하지 않았다.
