@@ -39,7 +39,7 @@ func _run() -> void:
 	game._update_capture(2.0, false)
 	check(game.look_mode == "drag" and player.look_mode == "drag" and player.exploring, "Real player enters fallback")
 	check(is_instance_valid(player.avatar) and player.avatar.get_parent() == player, "Body attached to yaw root")
-	check("Space" in game.hud._controls.text and "드래그" in game.help._controls.text, "Integrated capabilities advertised")
+	check("Space" in game.hud._controls.text and "drag" in game.help._controls.text, "Integrated capabilities advertised")
 	var yaw: float = player.rotation.y
 	view.push_input(motion(Vector2(700,300),false),true)
 	check(player.rotation.y == yaw, "Hover cannot rotate")
@@ -81,10 +81,11 @@ func _run() -> void:
 		player._physics_process(1.0/60.0)
 	check(player.avatar._phase > 0, "Movement advances body animation")
 	Input.action_release("walk_back")
+	var grounded_leg: Transform3D = player.avatar._legs[0].transform
 	Input.action_press("jump")
 	await physics_frame
 	player._physics_process(1.0/60.0)
-	check(player.velocity.y > 0 and is_equal_approx(player.avatar._arms[0].rotation.x,-0.22), "Real jump drives airborne body pose")
+	check(player.velocity.y > 0 and not player.is_on_floor() and player.avatar._legs[0].transform != grounded_leg, "Real jump drives airborne body pose")
 	Input.action_release("jump")
 	game._pause()
 	var limb: Transform3D = player.avatar._arms[0].transform

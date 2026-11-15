@@ -40,8 +40,8 @@ static func build(context: Dictionary) -> Dictionary:
 	var level: String = "severe" if has_sep or maximum == 2 else ("warning" if maximum == 1 else "watch")
 	var protection := maximum * 2 + (2 if has_sep else 0)
 	var required := maximum > 0 or has_sep
-	var summary := "훈련 경보 %s · 대피 %s · 보호 전력 %d · 조언 대기 %d턴. 관측 자료가 고르는 교육용 조건이며 실제 피폭량이나 달의 CME 도착 예측이 아니에요." % [
-		{"watch":"관찰", "warning":"주의", "severe":"강화"}[level], "필수" if required else "선택", protection, delay]
+	var summary := "Training alert %s · Shelter %s · Protection power %d · Advice delay %d turns. Records select educational rules, not real radiation exposure or lunar CME arrival predictions." % [
+		{"watch":"Watch", "warning":"Warning", "severe":"Severe"}[level], "required" if required else "optional", protection, delay]
 	return {"mapping_version": MAPPING_VERSION, "context": context.duplicate(true),
 		"alert_level": level, "shelter_required": required, "protection_energy": protection,
 		"communication_delay": delay, "summary": summary, "source_ids": source_ids,

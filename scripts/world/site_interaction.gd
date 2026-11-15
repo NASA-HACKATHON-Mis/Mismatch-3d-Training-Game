@@ -44,7 +44,7 @@ func resolve_target(camera: Camera3D, max_distance: float = 4.0) -> Dictionary:
 					var center: Vector3 = Rules.slot_position(slot)
 					if absf(point.x - center.x) <= PAD_HALF_SIZE and absf(point.z - center.z) <= PAD_HALF_SIZE:
 						if not _station.interaction_slot_occupied(slot):
-							return {"kind": "slot", "slot_id": slot, "prompt": "1 · 여기 짓기"}
+							return {"kind": "slot", "slot_id": slot, "prompt": "1 · Build here"}
 						break
 	if not hit.is_empty():
 		return _station.interaction_target_for(hit.collider)

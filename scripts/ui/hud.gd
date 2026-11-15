@@ -54,8 +54,8 @@ func _ready() -> void:
 	UI.use_korean_theme(self)
 	_header = UI.panel(self, Color("#0b1728f5"), 14)
 	var heading := UI.column(_header, 3)
-	UI.label(heading, "달 표면 훈련 기지", 16, UI.CYAN)
-	_mission = UI.label(heading, "달기지 리와인드", 26)
+	UI.label(heading, "Lunar training base", 16, UI.CYAN)
+	_mission = UI.label(heading, "Lunar Base Rewind", 26)
 	_meters = GridContainer.new()
 	_meters.columns = 3
 	_meters.add_theme_constant_override("h_separation", 14)
@@ -72,8 +72,8 @@ func _ready() -> void:
 	_food.bar.hide()
 	var shield := UI.column(_meters, 4)
 	UI.grow(shield)
-	UI.label(shield, "차폐 준비", 16, UI.PURPLE)
-	_shield_status = UI.label(shield, "대피소 없음", 16, UI.AMBER)
+	UI.label(shield, "Shelter readiness", 16, UI.PURPLE)
+	_shield_status = UI.label(shield, "No shelter", 16, UI.AMBER)
 	_energy.set_color(UI.AMBER)
 	_oxygen.set_color(UI.CYAN)
 	_food.set_color(UI.GREEN)
@@ -97,12 +97,12 @@ func _ready() -> void:
 		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		card.focus_mode = Control.FOCUS_NONE
 		_site_buttons[action] = card
-	_site_buttons.map.text = "[ 4 ]\n기지 지도"
-	_map_shortcut = UI.button(self, "4  기지 지도", func(): site_action_requested.emit("map"), UI.CYAN, 44)
+	_site_buttons.map.text = "[ 4 ]\nBase map"
+	_map_shortcut = UI.button(self, "4  Base map", func(): site_action_requested.emit("map"), UI.CYAN, 44)
 	_map_shortcut.custom_minimum_size.x = 150
 	_map_shortcut.focus_mode = Control.FOCUS_NONE
 	_status_box.minimum_size_changed.connect(_layout)
-	_footnote = UI.label(self, "교육용 가상 훈련 · 수치는 게임 단위", 16, UI.MUTED)
+	_footnote = UI.label(self, "Educational simulation · Values are game units", 16, UI.MUTED)
 	_wayfinding = UI.label(self, "", 17, UI.CYAN)
 	_wayfinding.add_theme_color_override("font_outline_color", UI.DARK)
 	_wayfinding.add_theme_constant_override("outline_size", 4)
@@ -114,24 +114,24 @@ func _ready() -> void:
 	_intro.add_child(_intro_scroll)
 	var text := UI.column(_intro_scroll, 12)
 	UI.grow(text)
-	UI.label(text, "훈련 01 / 달 표면 기지", 16, UI.CYAN)
-	_heading = UI.label(text, "달 기지를 지켜요", 32, UI.TEXT, true)
-	_training_copy.append(UI.label(text, "시설을 짓고 7턴 동안 전력·산소·식량을 지켜요.", 20, UI.TEXT, true))
-	_training_copy.append(UI.label(text, "키보드와 마우스가 있는 PC에서 시작해요.", 18, UI.AMBER, true))
+	UI.label(text, "MISSION 01 / LUNAR BASE", 16, UI.CYAN)
+	_heading = UI.label(text, "Keep your lunar base safe", 32, UI.TEXT, true)
+	_training_copy.append(UI.label(text, "Build a base. Keep power, oxygen and food safe for 7 turns.", 20, UI.TEXT, true))
+	_training_copy.append(UI.label(text, "Play on a computer with a keyboard and mouse.", 18, UI.AMBER, true))
 	_controls = UI.label(text, "", 18, UI.MUTED, true)
 	configure_controls(false, false)
-	_first_step = UI.label(text, "현장 1 설치 · 2 정보 · 3 관찰 · 4 기지 지도", 20, UI.CYAN, true)
-	_guide_toggle = UI.button(text, "첫 안내 건너뛰기", _toggle_guidance, UI.MUTED)
+	_first_step = UI.label(text, "1 Build · 2 Details · 3 View · 4 Base map", 20, UI.CYAN, true)
+	_guide_toggle = UI.button(text, "Skip first tips", _toggle_guidance, UI.MUTED)
 	_input_notice = UI.label(text, "", 18, UI.AMBER, true)
 	_input_notice.hide()
-	_start = UI.button(text, "훈련 시작", func(): started.emit(), UI.CYAN, 46)
-	_result_button = UI.button(text, "결과 다시 보기", func(): result_requested.emit(), UI.CYAN)
+	_start = UI.button(text, "Start mission", func(): started.emit(), UI.CYAN, 46)
+	_result_button = UI.button(text, "View results", func(): result_requested.emit(), UI.CYAN)
 	_result_button.hide()
-	help_button = UI.button(text, "안내서  H", func(): help_requested.emit(), UI.MUTED)
+	help_button = UI.button(text, "Guide  H", func(): help_requested.emit(), UI.MUTED)
 	_inspection = UI.panel(self,Color("#0b182cf8"),16)
 	var observation := UI.column(_inspection,8)
 	_inspection_label = UI.label(observation,"",18,UI.TEXT,true)
-	_inspection_back = UI.button(observation,"단말기로 돌아가기 · Esc",func(): inspection_closed.emit(),UI.CYAN)
+	_inspection_back = UI.button(observation,"Back to dashboard · Esc",func(): inspection_closed.emit(),UI.CYAN)
 	_inspection.hide()
 	resized.connect(_layout)
 	_layout()
@@ -165,7 +165,7 @@ func _toggle_guidance() -> void:
 func set_guidance(enabled: bool) -> void:
 	guidance_enabled = enabled
 	_first_step.visible = enabled and not _ended and not has_started
-	_guide_toggle.text = "첫 안내 건너뛰기" if enabled else "첫 안내 다시 보기"
+	_guide_toggle.text = "Skip first tips" if enabled else "Show first tips"
 
 func show_mode(mode: String) -> void:
 	_mode = mode
@@ -181,14 +181,14 @@ func show_mode(mode: String) -> void:
 	_wayfinding.visible = mode == "explore" and _site_target.get("kind", "none") == "none"
 	_map_shortcut.visible = mode == "explore" and _site_target.get("kind", "none") == "none"
 	if mode == "explore": has_started = true
-	_heading.text = _outcome_heading if _ended else ("잠시 멈췄어요" if has_started else "달 기지를 지켜요")
+	_heading.text = _outcome_heading if _ended else ("Paused" if has_started else "Keep your lunar base safe")
 	for item in _training_copy: item.visible = not _ended and not has_started
 	_controls.visible = not has_started
 	_first_step.visible = guidance_enabled and not _ended and not has_started
 	_guide_toggle.visible = not _ended and not has_started
 	_result_button.visible = _ended
 	_result_button.disabled = mode == "capturing"
-	_start.text = "기지 둘러보기" if _ended else ("계속 탐색하기" if has_started else "훈련 시작")
+	_start.text = "Explore the base" if _ended else ("Resume exploring" if has_started else "Start mission")
 	if mode == "pause": _start.grab_focus()
 	_layout()
 
@@ -199,10 +199,10 @@ func set_input_notice(message: String) -> void:
 func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
 	_jump_enabled = jump_enabled
 	_drag_available = drag_available
-	_controls.text = "WASD 이동" + (" · Space 점프" if _jump_enabled else "")
-	_controls.text += " · 마우스로 둘러보기\n현장 1 설치·철거 / 2 상세 / 3 관찰 / 4 기지 지도\n단말기 E · Esc 창 닫고 탐색 / 탐색 중 잠시 멈춤"
+	_controls.text = "WASD Move" + (" · Space Jump" if _jump_enabled else "")
+	_controls.text += " · Mouse Look\n1 Build/Remove · 2 Details · 3 View · 4 Map\nE Console · Esc Close / Pause while exploring"
 	if _drag_available:
-		_controls.text += "\n마우스 잠금이 안 되면 왼쪽 버튼 드래그로 둘러봐요."
+		_controls.text += "\nIf mouse capture fails, hold left click and drag to look."
 
 func set_look_mode(value: String) -> void:
 	_look_mode = value
@@ -210,33 +210,33 @@ func set_look_mode(value: String) -> void:
 func refresh(state: Dictionary) -> void:
 	_ended = Outcome.ended(state)
 	_outcome_heading = Outcome.heading(state) if _ended else ""
-	_mission.text = "달기지 리와인드 / T%d" % state.turn_id
-	_energy.set_values("전력", state.E, Simulation.energy_cap(state))
-	_oxygen.set_values("생명 유지 · 산소", state.O, 100)
-	_food.set_values("식량", state.F, 100)
-	if state.F <= 0: _food.caption.text += " · 고갈!"
-	elif state.F <= 6: _food.caption.text += " · 부족!"
+	_mission.text = "Lunar Base Rewind / T%d" % state.turn_id
+	_energy.set_values("Power", state.E, Simulation.energy_cap(state))
+	_oxygen.set_values("Life support · Oxygen", state.O, 100)
+	_food.set_values("Food", state.F, 100)
+	if state.F <= 0: _food.caption.text += " · Empty!"
+	elif state.F <= 6: _food.caption.text += " · Low!"
 	_food.caption.add_theme_color_override("font_color", UI.ALERT if state.F <= 6 else UI.GREEN)
 	var prepared := Simulation.count_kind(state, "shelter") > 0
-	_shield_status.text = "대피소 준비됨" if prepared else "대피소 없음"
+	_shield_status.text = "Shelter ready" if prepared else "No shelter"
 	var weather: Dictionary = state.get("weather", {})
 	if not weather.is_empty():
-		_shield_status.text += "\nT4 " + ("대피 필수" if weather.get("shelter_required", true) else "대피 선택")
+		_shield_status.text += "\nT4 " + ("Shelter required" if weather.get("shelter_required", true) else "Shelter optional")
 	_shield_status.add_theme_color_override("font_color", UI.CYAN if prepared else UI.AMBER)
 
 func show_inspection(caption: String) -> void:
-	_inspection_label.text = caption + "\n관찰 화면이에요. 이동하거나 턴을 진행하지 않아요."
+	_inspection_label.text = caption + "\nView only. This does not move you or run a turn."
 
 func _direction(vector: Vector3) -> String:
-	if absf(vector.x) > absf(vector.z): return "동쪽" if vector.x > 0 else "서쪽"
-	return "남쪽" if vector.z > 0 else "북쪽"
+	if absf(vector.x) > absf(vector.z): return "East" if vector.x > 0 else "West"
+	return "South" if vector.z > 0 else "North"
 
 func set_target(active: bool, position_3d: Vector3 = Vector3.ZERO, facing: Vector3 = Vector3.FORWARD, prompt: String = "") -> void:
 	_reticle.modulate = UI.CYAN if active else UI.MUTED
 	var offset := preload("res://scripts/simulation/scenario.gd").CONSOLE - position_3d
 	var angle := Vector2(facing.x, facing.z).angle_to(Vector2(offset.x, offset.z))
 	var arrow := "↑" if absf(angle) < PI / 4 else ("↓" if absf(angle) > 3 * PI / 4 else "→" if angle > 0 else "←")
-	_wayfinding.text = "기지 단말기 %s · %dm" % [arrow, roundi(Vector2(offset.x, offset.z).length())]
+	_wayfinding.text = "Base console %s · %dm" % [arrow, roundi(Vector2(offset.x, offset.z).length())]
 	# Legacy callers can still update the reticle and a short prompt.
 	if active and not prompt.is_empty(): _hint.text = prompt
 
@@ -254,14 +254,14 @@ func set_site_target(target: Dictionary, state: Dictionary) -> void:
 	_site_buttons.inspect.visible = kind == "slot"
 	_site_buttons.details.visible = kind in ["slot", "console"]
 	if kind == "console":
-		_hint.text = "기지 운영 단말기"
-		_site_buttons.details.text = "[ 2 / E ]\n대시보드"
+		_hint.text = "Base operations console"
+		_site_buttons.details.text = "[ 2 / E ]\nDashboard"
 		_site_buttons.details.disabled = false
 	elif kind == "slot":
-		_hint.text = "%02d번 · %s" % [slot + 1, "빈 부지 · 여기 짓기" if facility.is_empty() else UI.name_for(facility.type)]
-		_site_buttons.edit.text = "[ 1 ]\n설치·철거"
-		_site_buttons.details.text = "[ 2 ]\n상세 보기"
-		_site_buttons.inspect.text = "[ 3 ]\n3D 보기"
+		_hint.text = "Pad %02d · %s" % [slot + 1, "Empty pad · Build here" if facility.is_empty() else UI.name_for(facility.type)]
+		_site_buttons.edit.text = "[ 1 ]\nBuild/Remove"
+		_site_buttons.details.text = "[ 2 ]\nDetails"
+		_site_buttons.inspect.text = "[ 3 ]\n3D view"
 		_site_buttons.edit.disabled = state.get("phase", "") != "planning" or facility.get("type", "") == "habitat"
 		_site_buttons.details.disabled = false
 		_site_buttons.inspect.disabled = slot < 0 or slot >= preload("res://scripts/simulation/scenario.gd").SLOT_COUNT

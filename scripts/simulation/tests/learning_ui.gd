@@ -1,6 +1,6 @@
 extends SceneTree
 const Fixture = preload("res://scripts/simulation/tests/ui_fixture.gd")
-## Checks the shipped Korean guide with the actual offline data and game controls.
+## Checks the shipped English guide with the actual offline data and game controls.
 
 const Mission = preload("res://scenes/main.tscn")
 const Learning = preload("res://resources/content/learning.gd")
@@ -37,7 +37,7 @@ func _run() -> void:
 	var guide: Control = game.help
 	var font := guide.get_theme_default_font() as FontVariation
 	_check(font != null and font.base_font.resource_path == "res://resources/fonts/NotoSansKR.ttf"
-		and font.has_char(0xd55c) and font.has_char(0xb3c4), "Project theme uses bundled Hangul font")
+		and font.has_char(0x41) and font.has_char(0x7a), "Project theme uses a bundled font with Latin support")
 	_check(Learning.FACILITIES.size() == 5 and Learning.EVENTS.keys() == [2, 4, 5], "The guide covers every facility and event")
 	await process_frame
 
@@ -47,12 +47,12 @@ func _run() -> void:
 	launch_help.pressed.emit()
 	_check(guide.visible and not game.hud.visible and not game.terminal.visible, "Opening the guide hides other focusable controls")
 	_check(guide.is_ancestor_of(root.gui_get_focus_owner()), "Focus moves to the guide")
-	var sources: Button = _button(guide, "실제 자료")
+	var sources: Button = _button(guide, "Real data")
 	sources.pressed.emit()
 	_check(_visible_text_has(guide, "M2.3") and _visible_text_has(guide, "2016-01-01 23:10 UTC")
-		and _visible_text_has(guide, "게임 4턴 경보는 가상 사건"), "Real observation and fictional warning stay distinct on screen")
-	_check(_button(guide, "NASA 사건 원문 ↗").is_visible_in_tree()
-		and _button(guide, "캐나다 우주국 원문 ↗").is_visible_in_tree(), "NASA and CSA source buttons are visible")
+		and _visible_text_has(guide, "T4 is a training scenario"), "Real observation and fictional warning stay distinct on screen")
+	_check(_button(guide, "NASA source record ↗").is_visible_in_tree()
+		and _button(guide, "Canadian Space Agency article ↗").is_visible_in_tree(), "NASA and CSA source buttons are visible")
 	_esc(game)
 	_check(not guide.visible and game.mode == begin.phase and root.gui_get_focus_owner() == launch_help,
 		"Escape returns focus to the opener without capturing the cursor")
@@ -73,15 +73,15 @@ func _run() -> void:
 	Fixture.edit(game, "place", 11, "battery")
 	game._commit("conserve")
 	var compared: Dictionary = game.session.compare_turn(2)
-	_check(not compared.is_empty() and Learning.comparison_prompt(compared).contains("배치와 대응"),
+	_check(not compared.is_empty() and Learning.comparison_prompt(compared).contains("Both layout and response"),
 		"When the layout and response change, the prompt does not isolate a cause")
-	_check(Learning.attempt_note(compared.previous).contains("재배 유지")
-		and Learning.attempt_note(compared.current).contains("절전"),
+	_check(Learning.attempt_note(compared.previous).contains("Keep farming")
+		and Learning.attempt_note(compared.current).contains("Save power"),
 		"Comparison text reports the choices from each real attempt")
 	var stopped := {"phase": "failed_power", "stats": {"generation": 0, "demand": 6, "harvest": 0, "supply": 0},
 		"not_applied_steps": ["oxygen", "growth", "supply", "food"]}
 	var note := Learning.attempt_note(stopped)
-	_check(note.contains("전력 필요 6") and not note.contains("수확 0") and note.contains("생략"),
+	_check(note.contains("Power required 6") and not note.contains("Harvest 0") and note.contains("Stopped before"),
 		"An interrupted turn names skipped calculations without treating them as zero results")
 	game.free()
 	print("HH-005 learning UI: %d checks, %d failures" % [_checks, _failures])

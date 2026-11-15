@@ -13,7 +13,7 @@ class FixedWeather extends Node:
 		var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://research/donki-sample.metadata.json"))
 		var record := {"record_type":"FLR", "event_id":raw.flrID, "observed_at":raw.beginTime, "class_type":raw.classType, "source_url":raw.link}
 		context = record.duplicate(true)
-		context.merge({"mode":"archive", "fetched_at":meta.retrieved_at, "status":"ready", "explanation":"보관 관측을 사용하는 교육용 훈련",
+		context.merge({"mode":"archive", "fetched_at":meta.retrieved_at, "status":"ready", "explanation":"Educational training using archived observations",
 			"records":{"FLR":[record], "SEP":[], "CME":[]}, "sources":{"FLR":{"mode":"archive", "fetched_at":meta.retrieved_at, "request_url":meta.request_url}}})
 	func freeze() -> Dictionary: return context.duplicate(true)
 	func get_context() -> Dictionary: return context.duplicate(true)
@@ -41,11 +41,11 @@ func _run() -> void:
 	var weather: Dictionary = game._weather_context.duplicate(true)
 	check(weather.mode == "archive" and weather.event_id == "2016-01-01T23:10:00-FLR-001", "offline mission shows genuine archived observation")
 	check(game.help._weather_text.text.contains(weather.observed_at) and game.help._weather_text.text.contains(weather.fetched_at), "help separates observation and retrieval dates")
-	check(game.help._weather_text.text.contains("교육용"), "help keeps educational scenario label")
+	check(game.help._weather_text.text.contains("game rules, not radiation"), "help keeps educational scenario label")
 	game.terminal.advice_request_changed.emit(true)
 	check(game.session.advice_requested and game.session.state.E == 20, "UI request signal selects without charging")
 	check(not game.terminal._advice_toggle.disabled, "request can be cancelled with advice toggle")
-	check(game.terminal._preview_detail.text.contains("조언 요청 전력 1"), "visible turn preview includes communication energy")
+	check(game.terminal._preview_detail.text.contains("Advice costs 1 power"), "visible turn preview includes communication energy")
 	game.terminal.advice_request_changed.emit(false)
 	check(not game.session.advice_requested and game.session.state.E == 20, "UI cancellation is free")
 	game.terminal.advice_request_changed.emit(true)
@@ -66,7 +66,7 @@ func _run() -> void:
 	game.terminal.advice_request_changed.emit(true)
 	game.terminal.advanced.emit("")
 	check(game.session.state.phase == "failed_power" and game.session.state.E == 0, "request cost can trigger normal power failure")
-	check(game.terminal._communication_label.text.contains("되감") and game.terminal._advice_toggle.text == "통신 중단", "failed turn does not promise unreachable reply")
+	check(game.terminal._communication_label.text.to_lower().contains("rewind") and game.terminal._advice_toggle.text == "Transmission interrupted", "failed turn does not promise unreachable reply")
 	game.terminal.rewound.emit(2)
 	check(game.session.state.turn_id == 2 and game.session.state.E == 13 and not game.session.state.communication.pending.is_empty(), "rewind restores power and pending reply together")
 	game.terminal.advanced.emit("conserve")

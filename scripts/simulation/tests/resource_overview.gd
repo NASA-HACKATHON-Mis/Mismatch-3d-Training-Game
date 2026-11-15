@@ -14,9 +14,9 @@ func _run() -> void:
 	var overview := Overview.new()
 	root.add_child(overview)
 	var data := {"resources":[
-		{"id":"energy","label":"전력","current":10,"capacity":20,"preview":10,"preview_capacity":40},
-		{"id":"oxygen","label":"산소","current":0,"capacity":100,"preview":100,"preview_capacity":100},
-		{"id":"food","label":"식량","current":120,"capacity":100,"preview":-5,"preview_capacity":100}],"show_preview":true}
+		{"id":"energy","label":"Power","current":10,"capacity":20,"preview":10,"preview_capacity":40},
+		{"id":"oxygen","label":"Oxygen","current":0,"capacity":100,"preview":100,"preview_capacity":100},
+		{"id":"food","label":"Food","current":120,"capacity":100,"preview":-5,"preview_capacity":100}],"show_preview":true}
 	var before := data.duplicate(true)
 	overview.set_view_model(data)
 	check(data == before,"Input view model is unchanged")
@@ -25,13 +25,13 @@ func _run() -> void:
 	check(overview._cards.oxygen.current_bar.value == 0 and overview._cards.oxygen.preview_bar.value == 1,"Empty/full")
 	check(overview._cards.food.current_bar.value == 1 and overview._cards.food.preview_bar.value == 0,"Out of range bars clamp")
 	check("120" in overview._cards.food.current.text and "-5" in overview._cards.food.preview.text,"Numbers are not clamped")
-	check("현재" in overview._cards.energy.current.text and "예상" in overview._cards.energy.preview.text,"Current and preview have different labels")
+	check("Now" in overview._cards.energy.current.text and "After layout" in overview._cards.energy.preview.text,"Current and preview have different labels")
 	for bad in [0,-1,null,"bad",NAN]:
 		overview.set_view_model({"resources":[{"id":"energy","current":10,"capacity":bad}],"show_preview":true})
-		check(overview._cards.energy.current_bar.value == 0 and "확인 불가" in overview._cards.energy.current.text,"Invalid capacity "+str(bad))
+		check(overview._cards.energy.current_bar.value == 0 and "Unknown" in overview._cards.energy.current.text,"Invalid capacity "+str(bad))
 	overview.set_view_model({})
 	for id: String in overview.IDS:
-		check("확인 불가" in overview._cards[id].current.text and not overview._cards[id].preview_box.visible,"Missing entry safe "+id)
+		check("Unknown" in overview._cards[id].current.text and not overview._cards[id].preview_box.visible,"Missing entry safe "+id)
 	overview.set_view_model({"resources":[null,12,{"id":"unknown"}],"show_preview":true})
 	check(overview._cards.energy.current_bar.value == 0,"Malformed entries ignored")
 	overview.queue_free()

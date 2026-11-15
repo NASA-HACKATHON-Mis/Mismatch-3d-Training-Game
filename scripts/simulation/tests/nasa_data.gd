@@ -35,6 +35,8 @@ func _run() -> void:
 	var service := fixture()
 	var before: Dictionary = service.get_context()
 	check(before.mode=="archive", "All archives are available before networking")
+	check(before.source_label == "Embedded historical data - not live" and not before.is_live_feed, "Embedded archive explicitly rejects live-feed presentation")
+	check(not before.snapshot_frozen, "Pre-start archive is not falsely marked frozen")
 	for pair in [["FLR",87],["SEP",14],["CME",21]]:
 		var kind: String=pair[0]
 		check(before.records[kind].size()==pair[1],"Actual common-period archive count "+kind)
@@ -43,6 +45,7 @@ func _run() -> void:
 		var hash:=HashingContext.new();hash.start(HashingContext.HASH_SHA256);hash.update(bytes)
 		check(hash.finish().hex_encode()==meta.sha256,"Original response SHA256 "+kind)
 		check(before.sources[kind].request_url.contains("startDate=2024-05-08") and before.sources[kind].end_date=="2024-05-13","Archive period "+kind)
+		check(before.sources[kind].fetched_at == meta.retrieved_at and before.sources[kind].fetched_at.begins_with("2026-"), "Archive keeps original retrieval date rather than current launch time " + kind)
 	service.start();service.start()
 	check(service.calls.size()==3,"Exactly three parallel startup requests, no repeats")
 	check(service._deadline.wait_time==8.0 and not service._deadline.is_stopped(),"One common eight-second deadline")
@@ -50,20 +53,24 @@ func _run() -> void:
 		check(request.url.contains("startDate=2026-10-16") and request.url.contains("endDate=2026-11-15"),"UTC recent period "+request.kind)
 	respond(service,"FLR",[record("FLR"),record("FLR","2026-10-16")])
 	check(service.get_context().mode=="mixed" and service.get_context().observed_at=="2026-11-14T21:16Z","Partial live result is explicit and FLR latest remains summary")
+	check(service.get_context().source_label.contains("Mixed fetched and historical") and not service.get_context().is_live_feed, "Mixed records are never advertised as a live feed")
 	respond(service,"SEP",[]);respond(service,"CME",[])
 	var live: Dictionary=service.get_context()
 	check(live.mode=="live" and live.records.SEP.is_empty() and live.records.CME.is_empty(),"Valid empty SEP/CME stays empty live data")
+	check(live.source_label == "Fetched NASA records - not a live feed" and not live.is_live_feed, "Successful catalogue fetch is not real-time monitoring")
 	check(live.sources.SEP.status=="no_recent_record" and service._deadline.is_stopped(),"Empty means no catalogue record and completed requests stop timer")
 	check(live.fetched_at!=live.observed_at,"Fetch and observation times remain distinct")
 	live.records.FLR.clear();live.sources.FLR.mode="bad"
 	check(not service.get_context().records.FLR.is_empty() and service.get_context().sources.FLR.mode=="live","Nested context is deep copied")
 	before=service.freeze();respond(service,"FLR",[record("FLR","2026-11-15")]);service._on_deadline()
+	check(before.snapshot_frozen and not before.is_live_feed, "Frozen fetched snapshot remains explicitly not live")
 	check(service.get_context()==before,"All frozen records ignore late responses and timeout")
 	service.free()
 	for kind: String in Weather.TYPES:
 		for outcome in [[0,HTTPRequest.RESULT_CANT_CONNECT],[500,HTTPRequest.RESULT_SUCCESS],[0,HTTPRequest.RESULT_TIMEOUT]]:
 			service=fixture();service.start();respond(service,kind,[],outcome[0],outcome[1])
 			check(service.get_context().sources[kind].mode=="archive" and not service.get_context().records[kind].is_empty(),"Failure retains actual archive "+kind+str(outcome))
+			check(service.get_context().source_label == "Embedded historical data - not live" and not service.get_context().is_live_feed, "API failure cannot label static archive as live " + kind)
 			service.free()
 		for invalid in [{},null,[{}],[record(kind,"2026-11-31")],[record(kind,"2024-05-10")]]:
 			service=fixture();service.start();respond(service,kind,invalid)

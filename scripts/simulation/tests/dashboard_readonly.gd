@@ -107,7 +107,7 @@ func _run() -> void:
 		var guide := Guide.new()
 		view.add_child(guide)
 		guide.configure_controls(true, false)
-		check(guide._controls.text.contains("1은 설치·철거 메뉴") and guide._controls.text.contains("3은 3D 관찰"), "Help matches field menu keys")
+		check(guide._controls.text.contains("1 build/remove") and guide._controls.text.contains("3 inspect in 3D"), "Help matches field menu keys")
 		view.queue_free()
 		await settle()
 	print("Dashboard read-only: %d checks / %d failures" % [checks,failures])

@@ -1,129 +1,68 @@
-# 실제 자료·출처 준비 기록
+# NASA and partner data: provenance and game use
 
-## 2026-11-15 v0.3 — 필수 DONKI 게임 규칙 연결
+Current implementation audit: 15 November 2026. This is the authoritative current source description; earlier FLR-only development notes have been superseded.
 
-현재 서비스는 최근30일 **FLR·SEP·CME를 동시에 각1회 조회**한다. 자료별 live/archive와 조회기간·조회시각을 기록한다. 실패/시작 전 미완료는 아래 실제 보관 기록을 사용하고, 정상 SEP/CME 빈배열은 그대로 최근 기록 없음으로 사용한다.
+## Genuine embedded records
 
-내장 원문은 `research/nasa-2024-05/{FLR,SEP,CME}.json` 및 각 `.metadata.json`에 있다. 같은 기간 **2024-05-08~13**에 FLR87·SEP14·CME21건을 공식 API에서 수집했다. 원문 바이트·URL·UTC 조회시각·SHA256을 보존했다. SEP에는 관측장비와 모델 기록이 섞일 수 있어 instruments/evidence_type를 보존하며 모델 전용 항목은 관측 포함 SEP 규칙에서 제외한다.
+The game ships original NASA CCMC DONKI responses for **8–13 May 2024** in `research/nasa-2024-05/`. They are historical catalogue records, not current conditions. The API may include observations and model products; normalization preserves that distinction. Model-only SEP entries do not trigger the observation-backed SEP rule.
 
-실제 Godot 최근 조회에서는 2026-11-15T10:50:50Z에 FLR14·SEP0·CME90건의 live 응답을 확인했다. 이때 SEP0을 보관 SEP로 채워 현재 사건인 것처럼 만들지 않는다. 모델/관측과 현재/과거를 구분한다.
+| Product | Records | Retrieved (UTC) | SHA256 of original response |
+| --- | --- | --- | --- |
+| FLR | 87 | 2026-11-15T10:48:21Z | `429fa9cb2c1d3457beb6c3de5f15fe34315de114c450d5fb6b74a0e906e8ea25` |
+| SEP | 14 | 2026-11-15T10:48:20Z | `30c225b9a0fabee1ece4e0b56d0ccdbfe54f0b85e2a58815a885517db1fe4cfe` |
+| CME | 21 | 2026-11-15T10:48:20Z | `2802ecb3dc15da06e6f36a23e8c717b3971dbafe879738a8a0a83d212104d1c8` |
 
-게임은 FLR 최대등급과 관측 포함 SEP 유무로 T4 대피 필요/보호전력을, CME 기록 유무로 통신 장애 훈련의 답장 대기를 정한다. 적용한 대표 사건 ID와 원문·자료별 출처·mapping_version을 snapshot과 턴 결과에 저장한다. **0/2/4/+2 전력과 1/2턴은 교육용 변환값이며 NASA 실측량이 아니다.** FLR/SEP/CME는 같은 실제 사건 또는 실제 달 위험의 직접 증거라고 주장하지 않는다. [현재 명세](NASA_GAMEPLAY_FIX.md)
+Each accompanying `.metadata.json` stores the exact request URL, observation window, retrieval timestamp, HTTP status, item count and hash. Original bytes are not rewritten to look recent. A new game launch does not replace the archive's collection date with its startup time.
 
-이하 절은 v0.2 및 초기 2016 단일 FLR/CSA 수집 이력이다. 2016 자료는 보충 학습 카드로 보존하며 이번 훈련의 기본 자료는 위3종 보관본 또는 실행 중 조회 결과다.
+## Startup, fallback and freeze
 
-## 2026-11-15 실행 중 조회 추가
+`scripts/data/space_weather.gd` makes at most one startup request for each of FLR, SEP and CME, in parallel, using a recent 30-day window. Each response is limited to 2 MiB and the shared deadline is eight seconds. The current official API host is `ccmc.gsfc.nasa.gov`.
 
-FIX-FEED-01은 `SpaceWeather` 서비스로 시작 시 공식 DONKI `/get/FLR`에 최근 30일 범위를 한 번 비동기 조회한다. API 키를 저장하지 않으며 제한은 8초/응답 2MiB다. 최근 유효 FLR 1건을 설명 사례로 사용하고, 네트워크·시간 초과·빈 응답·형식 오류는 아래 기존 수집본으로 대체한다. 최초 탐색/턴 확정 뒤에는 자료를 고정한다. 조회 성공은 최근 API 응답을 받았다는 의미이며 오늘의 관측을 보장하지 않는다.
+Unavailable, malformed, timed-out or unfinished products retain their genuine archive. Valid empty SEP/CME arrays mean no matching catalogue record and stay empty. An empty FLR case uses the historical example. No API key is embedded. `LUNAR_OFFLINE=1`, including the launcher's `-Offline` mode, skips requests entirely.
 
-관측 `beginTime`, 조회 시각, 사건 ID·등급과 공식 원문 링크를 별도로 표시한다. SEP/CME 연결 ID는 해당 상세 관측을 조회한 것으로 표시하지 않는다. 게임의 T4 경보·자원 피해는 교육용 규칙을 유지하며 등급을 실제 피폭량이나 피해로 환산하지 않는다.
+The first exploration or turn commit freezes the complete record/provenance context. Late responses cannot change the run. Rewind restores the same context so a result comparison changes player decisions rather than silently changing the source dataset.
 
-실제 Windows Godot HTTPRequest에서 2026-11-15 조회 성공, 사건 `2026-11-14T21:16:00-FLR-001` / C2.8 / 관측 `2026-11-14T21:16Z`를 확인했다. 직접 GET은 HTTP200/14건이었으며 실제 Godot 조회 시각은 `2026-11-15T10:32:26Z`다. 브라우저 CORS와 사용자 환경별 연결은 이 검사에 포함하지 않았다. 상세 구현/검사 범위는 [feed 픽스 명세](FEED_FIX_SPEC.md)를 따른다. 이하 절은 기존 보관본의 수집 이력이다.
-
-확인일: 2026-11-14 (Asia/Seoul). 작성 Worker: data_prep. 목적은 HH-005의 자료 준비이며 제품 구현·게임 검증 완료를 의미하지 않는다.
-
-## 준비 결과
-
-- DONKI 공식 공개 API에서 과거 태양 플레어 사건 **1개**를 실제 수집했다.
-- 원문 응답은 [research/donki-sample.json](../research/donki-sample.json)에 보관했다. 필드와 숫자는 수정하지 않았다.
-- [metadata](../research/donki-sample.metadata.json)에 조회 URL·시각·사건 ID·SHA256·사용 구분을 기록했다.
-- CSA 원문 두 페이지와 저작권 안내를 읽고 식량 교육 카드 초안을 준비했다.
-- 게임의 고장·대피·보급 지연 및 자원 수치는 START_SPEC v0.1의 교육용 모델이다. 실제 사건으로부터 계산하지 않는다.
-
-## 1. DONKI 과거 관측 사례
-
-공식 소개: [NASA CCMC DONKI](https://ccmc.gsfc.nasa.gov/tools/DONKI/)  
-공식 API 설명: [DONKI API Reference](https://ccmc.gsfc.nasa.gov/DONKI/api/)  
-공식 기계 판독 설명: [OpenAPI](https://ccmc.gsfc.nasa.gov/DONKI/api/openapi/)
-
-API 페이지의 공개 설명 모듈에서 OpenAPI 링크를 확인했고, OpenAPI에 기록된 server와 /get/FLR 경로·날짜 매개변수를 사용했다. API 키를 요청하거나 저장하지 않았다. OpenAPI의 예제 복사가 아니라 아래 URL을 실제 GET한 응답이다.
-
-[실제 조회 URL](https://ccmc.gsfc.nasa.gov/DONKI-API/get/FLR?startDate=2016-01-01&endDate=2016-01-02&catalog=M2M_CATALOG&class=ALL&version=Latest)
-
-| 필드 | API 원문에서 확인한 값 |
+| Public label | Interpretation |
 | --- | --- |
-| flrID | 2016-01-01T23:10:00-FLR-001 |
-| catalog | M2M_CATALOG |
-| beginTime | 2016-01-01T23:10Z |
-| peakTime | 2016-01-02T00:11Z |
-| endTime | 2016-01-02T01:01Z |
-| classType | M2.3 |
-| sourceLocation | S21W73 |
-| activeRegionNum | 12473 |
-| instrument | GOES-P: EXIS 1.0-8.0 |
-| submissionTime | 2025-09-09T19:05Z |
-| versionId | 5 |
+| Embedded historical data - not live | Historical records, including during offline/failure fallback |
+| Fetched NASA records - not a live feed | A single successful catalogue snapshot, not continuous monitoring |
+| Mixed fetched and historical records - not a live feed | Per-product provenance must be consulted |
 
-사건의 원문 상세 링크는 API 응답의 [DONKI event 9963](https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/9963/-1)이다. 별도 웹 읽기 도구에서는 상세 화면 접근에 실패했다. 따라서 위 필드는 상세 화면 교차 검증이 아니라 **공식 API 응답 직접 확인** 근거다.
+The guide separates observation dates, retrieval dates and source links. `mode="live"` remains an internal compatibility value meaning a successful HTTP fetch. It is **not** a public live-feed claim. The context explicitly carries `is_live_feed=false`, a public `source_label`, and `snapshot_frozen`.
 
-Z는 UTC이다. 관측 시각과 자료의 submissionTime, 우리 프로젝트의 조회 시각은 서로 다르다. version=Latest는 조회 당시의 데이터 개정판을 뜻하며 실시간 관측을 뜻하지 않는다.
+## Educational mapping, version 0.3
 
-- 실제 응답 항목 수: 1
-- 조회 완료 시각: 2026-11-14T15:49:09.6214612+09:00
-- 원문 응답 SHA256: A2AD2A855F30AB79DAEF95CDF819F02803BE2A2FB2F219C32F3EF374DB3BF6B0
-- 보관 방식: 응답 바이트를 그대로 저장한 UTF-8 JSON. 불변 스냅샷이며 자동 갱신하지 않는다.
-- 원문의 linkedEvents는 관련 기록 ID다. 이 게임에서 직접 검증한 인과관계나 개인 피폭량 계산으로 사용하지 않는다.
+`scripts/simulation/weather_rules.gd` derives a deterministic training profile from the frozen records. Representative IDs and original source URLs travel with the profile and turn history.
 
-### 사용할 교육 카드 초안
+| Input | Training rule |
+| --- | --- |
+| Strongest FLR class A/B/C, M, X | Protection power 0, 2, 4 respectively; M/X also require shelter |
+| Observation-backed SEP present | Add 2 protection power; shelter is required |
+| CME catalogue records present | Advice reply after two turns; otherwise one turn |
 
-제목: **태양에서 실제로 있었던 일**
+The embedded X5.8/SEP case yields 6 protection power. Shelter response pauses greenhouse growth. An Earth-advice request costs 1 power on commit. These values are game units, not radiation measurements, measured outages or propagation times. Records in one date window are not asserted to be a single causally linked event. No real astronaut safety calculation or physical lunar forecast is produced.
 
-본문: “NASA의 DONKI 기록에는 2016년 1월 1일 시작된 M2.3 등급의 태양 플레어가 있어요. 우주 임무를 계획할 때는 이런 우주 날씨 기록도 살펴봐요.”
+The planned events remain a fixed teaching schedule: T2–T3 array fault, T4 weather alert, T5 supply delay, T7 delivery. NASA records select conditions within the exercise; they do not claim a real power fault occurred on the Moon.
 
-아래 표시: “과거 관측 자료 · 시작 2016-01-01 23:10 UTC · NASA CCMC / DONKI · 자료 조회 2026-11-14”
+## NASA and CSA attribution
 
-필드 표시에는 ID·시각·등급과 출처 링크를 포함한다. 게임의 T4 경보는 이 사건의 재현이 아니라 교육용 가정이라고 별도로 표시한다. 이 등급을 대피소 성능·우주인 건강·달의 실제 방사선량으로 환산하지 않는다.
+We acknowledge NASA Goddard Space Flight Center's Community Coordinated Modeling Center (CCMC) for DONKI catalogue records used in this educational prototype.
 
-## 2. DONKI 사용 조건 확인
+- [DONKI overview and usage context](https://ccmc.gsfc.nasa.gov/tools/DONKI/)
+- [API reference](https://ccmc.gsfc.nasa.gov/DONKI/api/) and [OpenAPI](https://ccmc.gsfc.nasa.gov/DONKI/api/openapi/)
+- [CCMC publications policy](https://ccmc.gsfc.nasa.gov/publication-policy/)
+- [CSA food-production toolkit](https://www.asc-csa.gc.ca/eng/youth-educators/toolkits/food-production/)
+- [CSA: growing healthy food in space and remote areas](https://www.asc-csa.gc.ca/eng/sciences/food-production/growing-healthy-food-in-space-and-remote-areas.asp)
+- [CSA terms](https://www.asc-csa.gc.ca/eng/terms.asp)
 
-확인한 원문:
-- [DONKI Rules-of-the-Road 및 면책 설명](https://ccmc.gsfc.nasa.gov/tools/DONKI/)
-- [CCMC Publications Policy](https://ccmc.gsfc.nasa.gov/publication-policy/)
+CSA material informs original, short learning summaries about food self-sufficiency and difficult resupply. The game's growth cycle, harvest size and delivery turn are not measurements taken from that article. The in-game summaries are written by this project and are not official CSA translations. No NASA/CSA endorsement is implied. Agency logos, article photographs and videos are not included in this data bundle.
 
-DONKI는 연구·프로토타입 품질의 자료이며 운영 안전 예측으로 취급하지 않는다. 사건·검증 연구에 관한 협력 요청과 학술 출판·발표의 CCMC 감사 표기/출판 보고 요청을 확인했다. 공개 API 접근이 NASA의 제품 보증이나 승인이라는 뜻은 아니다.
+RadLab, OSDR and Mars Trek appear in the supplied challenge resources but are not integrated. The project does not claim measured radiation-dose comparisons, space-biology experiments or real terrain data. The supplied feed recommends these at different priority levels; it requires DONKI FLR/SEP/CME, which are integrated.
 
-이 프로젝트의 준비 범위는 출처를 붙인 작은 과거 기록과 교육용 설명이다. 모델 실행 결과를 사용하지 않았고, 학술 결과나 실제 우주인 안전 판단을 산출하지 않는다. 발표·제출 자료에는 다음 자체 작성 감사 문구를 넣는다.
+## Retained earlier example
 
-“과거 우주 날씨 사례에는 NASA Goddard Space Flight Center의 Community Coordinated Modeling Center(CCMC)가 제공하는 DONKI 자료를 사용했습니다.”
+`research/donki-sample.json` and its metadata preserve an earlier genuine FLR-only learning example: `2016-01-01T23:10:00-FLR-001`, M2.3. It was retrieved on 14 November 2026 and is historical, not the current three-product training fallback. Its hash is `a2ad2a855f30ab79daef95cdf819f02803be2a2fb2f219c32f3ef374db3bf6b0` as recorded in metadata; consult the metadata for the authoritative exact bytes/hash. Old integration fixtures may deliberately use this example to exercise the no-CME one-turn path.
 
-NASA 로고·외부 이미지·모델 결과를 이 자료 묶음에 포함하지 않았다. 다른 자료나 상업적 활용으로 확장하면 해당 원문의 조건을 다시 검토한다.
+## Evidence and limits
 
-## 3. CSA 식량 설명과 카드 초안
-
-원문:
-- [공식 교육 자료 모음](https://www.asc-csa.gc.ca/eng/youth-educators/toolkits/food-production/)
-- [Growing healthy food in space and in remote areas](https://www.asc-csa.gc.ca/eng/sciences/food-production/growing-healthy-food-in-space-and-remote-areas.asp)
-- [CSA Terms — Copyright / Permission to reproduce](https://www.asc-csa.gc.ca/eng/terms.asp)
-
-원문에서 확인한 핵심은 먼 목적지일수록 보급을 자주 받기 어려워 자급 능력이 중요해진다는 점, 우주 식량에는 무게·부피·영양·보존성 조건이 있다는 점이다. 본문에 있는 개인별 열량 수치는 게임 식량 단위와 연결하지 않는다.
-
-| 카드 | 어린이용 자체 요약 문구 | 연결할 게임 선택 |
-| --- | --- | --- |
-| 멀리 갈수록 스스로 준비해요 | “우주기지가 지구에서 멀어질수록 새 식량을 자주 받기 어려워져요. 가져온 식량을 아끼고 직접 기르는 방법을 함께 준비해요.” | 초기 비축·재배·보급 지연 |
-| 우주 식량은 짐도 생각해요 | “우주로 가져가는 식량은 영양뿐 아니라 무게와 부피, 오래 보관할 수 있는지도 중요해요.” | 제한된 자원이라는 배경 설명 |
-
-카드 표시는 “자료: Canadian Space Agency · 한국어 교육용 요약: 본 프로젝트 · CSA의 공식 번역이 아님”으로 한다. 이 한국어 문구는 직접 인용이 아니라 자체 요약이다. 재배 3턴·수확 18·보급 T7은 이 원문의 측정 결과가 아닌 게임 규칙이다.
-
-CSA 안내는 정확성·출처 인정·기관 보증 오인 방지 등의 조건으로 비상업 교육/정보 목적 복제를 허용한다. 상업적 재배포는 별도 허가 조건이며, 제3자 자료는 각 권리자 조건을 따른다. CSA 로고는 별도 허가 대상이므로 포함하지 않았다. 이번에는 텍스트의 자체 요약과 출처 링크만 준비했고 사진·영상은 복제하지 않았다.
-
-## 4. 제품에 연결할 때의 구분
-
-| 구분 | 준비 자료 | 제품 표시 |
-| --- | --- | --- |
-| 실제 관측 기록 | DONKI 응답 1건 | 과거 관측·UTC·기관·원문 URL·조회일 |
-| 출처가 있는 설명 | CSA 원문 자체 요약 | 기관·원문 URL·한국어 요약 표시 |
-| 교육용 모델 | START_SPEC v0.1의 자원·턴·사건 | 게임용 수치·시간 압축·실제 위험 예측 아님 |
-
-오프라인에서는 내장한 과거 자료만 보여주며 “실시간 연결됨”을 표시하지 않는다. 원문 링크를 누를 때만 네트워크가 필요하다. 원자료 갱신 시 기존 파일을 조용히 덮어쓰지 말고 새 조회 시각·해시·개정판을 남긴다.
-
-## 5. 확인 결과와 남은 범위
-
-- 완료: 공식 API 스키마 확인, 실제 GET·JSON 파싱·1개 사건 확인, 응답 바이트 보관·SHA256 계산, 원자료와 게임 수치 분리, CCMC/CSA 사용 안내 확인, 자체 요약 초안.
-- 미완료: 독립 Verifier 최종 검사, Godot UI 적용, 실제 사용자 이해도·링크·오프라인 표시 검증.
-- 별도 event 상세 웹 화면의 읽기 실패는 해결됐다고 표시하지 않는다. 원문 응답 링크 자체는 보존한다.
-- 제품 소스·모델·Git 브랜치/커밋·원격 이슈는 이 Worker가 변경하지 않았다. 다른 Worker의 .gitignore/WORK/환경 변경은 건드리지 않았다.
-- operation ID DATA-PREP-001: 공식 API 읽기와 지정 docs/research 파일 준비. 요청한 범위 안의 자료 준비이며 배포·제출은 수행하지 않았다.
-
-## 6. 게임 안내서 적용
-
-HH-005는 보관된 DONKI 응답과 metadata에서 사건 ID·등급·시작/최대/종료 UTC·개정판·조회일을 읽는다. 실제 자료 화면의 출처 버튼은 NASA 사건 상세, 처음 조회한 API 주소, CSA 원문을 연다. 화면의 CSA 설명은 프로젝트가 작성한 한국어 요약이다. 카드 표시는 오프라인에서 동작하며 출처 링크는 사용자가 눌렀을 때만 연다. 실제 관측과 게임 4턴의 경보를 명시적으로 구분한다.
+`nasa_data.gd` verifies original hashes/counts, timestamps, empty results, failure fallback, parallel request count, immutable context and non-live labels. `nasa_integration.gd` exercises the real game through profile selection, requests, turns and rewind. Tests of a successful fetch prove retrieval, not that the returned observations occurred today. Automated tests do not establish child comprehension or every browser's CORS/hosting behavior.

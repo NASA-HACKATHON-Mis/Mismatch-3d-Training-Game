@@ -57,6 +57,8 @@ func _run() -> void:
 			view.add_child(game)
 			game.set_physics_process(false)
 			game.player.set_physics_process(false)
+			# Mouse capture is tested separately; keep this UI fixture deterministic.
+			game._menu_look_mode = "drag"
 			await settle()
 			prepare(game,route)
 			finish(game,route)
@@ -66,12 +68,12 @@ func _run() -> void:
 			var turn: int = game.session.state.turn_id
 			check(game.terminal._outcome_card.visible,"Outcome visible")
 			check(not game.terminal._outcome_details.visible,"Long history starts collapsed")
-			if route == "success": check(game.terminal._outcome_title.text == "7턴 훈련 완료!","Success celebration")
+			if route == "success": check(game.terminal._outcome_title.text == "7-turn mission complete!","Success celebration")
 			else: check(game.terminal._outcome_title.text.contains("T%d" % turn),"Failure turn explicit")
 			var reason: String = game.terminal._outcome_reason.text
-			if route == "power": check(reason.contains("필요 전력") and reason.contains("계산 전 중단"),"Power need and skipped steps")
-			if route == "life": check(reason.begins_with("식량 부족(0)") and not reason.contains("산소"),"Only depleted food named")
-			if route == "safety": check(reason.contains("대피소") and reason.contains("전력·산소"),"Safety prerequisite before resources")
+			if route == "power": check(reason.contains("needed") and reason.contains("were not calculated"),"Power need and skipped steps")
+			if route == "life": check(reason.begins_with("Food reached 0") and not reason.contains("Oxygen"),"Only depleted food named")
+			if route == "safety": check(reason.contains("Shelter") and reason.contains("power, oxygen"),"Safety prerequisite before resources")
 			var tag := "%dx%d-%s" % [dimensions.x,dimensions.y,route]
 			geometry(view,game.terminal,tag)
 			await capture(view,tag)
@@ -86,15 +88,17 @@ func _run() -> void:
 			game.session.previous_attempt = original[3].duplicate(true)
 			game.terminal.closed.emit()
 			await settle()
-			check(game.mode == "pause" and game.hud._heading.text == Outcome.heading(game.session.state),"Close preserves outcome heading")
+			check(game.mode == "explore" and game.hud._heading.text == Outcome.heading(game.session.state),"Close returns to exploration and preserves outcome heading")
+			check(not game.hud._intro.visible, "Closing a result does not show a pause popup")
+			game._pause()
 			check(not game.hud._first_step.visible and not game.hud._guide_toggle.visible,"No first intro on outcome")
-			check(game.hud._start.text == "기지 둘러보기" and game.hud._result_button.visible,"Explore and reopen actions")
+			check(game.hud._start.text == "Explore the base" and game.hud._result_button.visible,"Explore and reopen actions")
 			geometry(view,game.hud,tag+" pause")
 			await capture(view,tag+"-closed")
 			game._open_help()
 			game._close_help()
 			check(game.hud._heading.text == Outcome.heading(game.session.state),"Help preserves outcome")
-			game._set_mode("explore")
+			game._set_mode("explore", "drag")
 			game._pause()
 			game.hud.result_requested.emit()
 			check(game.mode == "terminal" and game.terminal._outcome_card.visible,"Reopen after exploring")
@@ -104,7 +108,7 @@ func _run() -> void:
 			game.terminal._select_slot(12)
 			game._inspect_selected()
 			await settle()
-			check(game.mode == "inspect" and game.hud._inspection_label.text.contains("현재 확정 배치"),"Ended observation uses confirmed layout")
+			check(game.mode == "inspect" and game.hud._inspection_label.text.contains("confirmed layout"),"Ended observation uses confirmed layout")
 			if render:
 				await RenderingServer.frame_post_draw
 				view.get_texture().get_image().save_png("res://logs/ux16/"+tag+"-ended-inspection.png")
@@ -116,7 +120,8 @@ func _run() -> void:
 			escape.keycode = KEY_ESCAPE
 			escape.pressed = true
 			game._input(escape)
-			check(game.mode == "pause" and fingerprint(game) == original,"Escape closes without state change")
+			check(game.mode == "explore" and fingerprint(game) == original,"Escape returns to exploration without state change")
+			game._pause()
 			game._reopen_result()
 			game._open_help()
 			game._input(escape)
@@ -141,6 +146,6 @@ func _run() -> void:
 			await settle()
 	# Equality is also a power failure; no fabricated available/consumed quantity.
 	var equal_result := {"phase":"failed_power","state_after":{},"stats":{"demand":6}}
-	check(Outcome.reason(equal_result).contains("남은 전력이 0"),"Power equality boundary explanation")
+	check(Outcome.reason(equal_result).contains("reaching 0"),"Power equality boundary explanation")
 	print("UX-R04 outcome UI: %d checks, %d failures" % [checks,failures])
 	quit(1 if failures else 0)
