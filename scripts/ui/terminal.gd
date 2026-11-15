@@ -17,6 +17,7 @@ const Preview = preload("res://scripts/simulation/turn_preview.gd")
 const History = preload("res://scripts/ui/history_explanation.gd")
 const Outcome = preload("res://scripts/ui/outcome_summary.gd")
 const Learning = preload("res://resources/content/learning.gd")
+const ResourceMeter = preload("res://scripts/ui/resource_meter.gd")
 const GLYPHS := {"habitat": "HAB", "generator": "SOL", "battery": "BAT", "greenhouse": "GROW", "shelter": "SAFE"}
 
 var _session
@@ -36,6 +37,10 @@ var _remove: Button
 var _cancel: Button
 var _rewind: Button
 var _summary: Label
+var _resource_grid: GridContainer
+var _energy: ResourceMeter
+var _oxygen: ResourceMeter
+var _food: ResourceMeter
 var _map_help: Label
 var _event_title: Label
 var _event_text: Label
@@ -126,6 +131,19 @@ func _build_header(parent: Control) -> void:
 	help_button = UI.button(_header_actions, "안내서  H", func(): help_requested.emit(), UI.CYAN)
 	_close = UI.button(_header_actions, "닫기  Esc", func(): closed.emit(), UI.MUTED)
 	_summary = UI.label(contents, "", 18, UI.TEXT, true)
+	UI.label(contents, "현재 확정 자원", 16, UI.MUTED)
+	_resource_grid = GridContainer.new()
+	_resource_grid.columns = 3
+	_resource_grid.add_theme_constant_override("h_separation", 16)
+	_resource_grid.add_theme_constant_override("v_separation", 8)
+	contents.add_child(_resource_grid)
+	_energy = ResourceMeter.new()
+	_oxygen = ResourceMeter.new()
+	_food = ResourceMeter.new()
+	for meter in [_energy, _oxygen, _food]: _resource_grid.add_child(meter)
+	_energy.set_color(UI.AMBER)
+	_oxygen.set_color(UI.CYAN)
+	_food.set_color(UI.GREEN)
 
 func _build_outcome(parent: Control) -> void:
 	_outcome_card = UI.panel(parent, Color("#133047"), 16)
@@ -189,6 +207,7 @@ func _layout() -> void:
 	_working.vertical = size.x < 1100
 	_working.move_child(_controls_card if _working.vertical else _map_card, 0)
 	_header_actions.vertical = size.x < 600
+	_resource_grid.columns = 1 if size.x < 600 else 3
 	_timeline_top.vertical = size.x < 1100
 	_comparison_sides.vertical = size.x < 900
 
@@ -325,9 +344,10 @@ func refresh(session) -> void:
 		_choice = ""
 		_last_turn = turn
 	var planning: bool = state.phase == "planning"
-	_summary.text = UI.trn("T%d / 7    전력 %d/%d    산소 %d    식량 %d    건설 토큰 %d",
-		"T%d / 7    POWER %d/%d    OXYGEN %d    FOOD %d    Build tokens: %d") % [
-		turn, state.E, Simulation.energy_cap(state), state.O, state.F, edit_state.budget]
+	_summary.text = "T%d / 7 · 배치 후 남는 건설 토큰 %d" % [turn, edit_state.budget]
+	_energy.set_values("전력", state.E, Simulation.energy_cap(state))
+	_oxygen.set_values("산소", state.O, 100)
+	_food.set_values("식량", state.F, 100)
 	_refresh_map(edit_state, planning)
 	_refresh_facilities(edit_state, planning)
 	_refresh_event(turn, planning, edit_state)

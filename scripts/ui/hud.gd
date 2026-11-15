@@ -36,6 +36,10 @@ var _ended := false
 var _outcome_heading := ""
 var _result_button: Button
 var _training_copy: Array[Control] = []
+var _controls: Label
+var _jump_enabled := false
+var _drag_available := false
+var _look_mode := "disabled"
 const Outcome = preload("res://scripts/ui/outcome_summary.gd")
 
 func _ready() -> void:
@@ -81,7 +85,8 @@ func _ready() -> void:
 	_heading = UI.label(text, "달 기지를 지켜요", 32, UI.TEXT, true)
 	_training_copy.append(UI.label(text, "시설을 짓고 7턴 동안 전력·산소·식량을 지켜요.", 20, UI.TEXT, true))
 	_training_copy.append(UI.label(text, "키보드와 마우스가 있는 PC에서 시작해요.", 18, UI.AMBER, true))
-	UI.label(text, "WASD 이동 · 마우스로 둘러보기\n단말기를 보고 E · Esc 일시 정지", 18, UI.MUTED, true)
+	_controls = UI.label(text, "", 18, UI.MUTED, true)
+	configure_controls(false, false)
 	_first_step = UI.label(text, "1  단말기 가까이 가서 E를 눌러요.", 20, UI.CYAN, true)
 	_guide_toggle = UI.button(text, "첫 안내 건너뛰기", _toggle_guidance, UI.MUTED)
 	_input_notice = UI.label(text, "", 18, UI.AMBER, true)
@@ -149,6 +154,17 @@ func set_input_notice(message: String) -> void:
 	_input_notice.text = message
 	_input_notice.visible = not message.is_empty()
 
+func configure_controls(jump_enabled: bool, drag_available: bool) -> void:
+	_jump_enabled = jump_enabled
+	_drag_available = drag_available
+	_controls.text = "WASD 이동" + (" · Space 점프" if _jump_enabled else "")
+	_controls.text += " · 마우스로 둘러보기\n단말기를 보고 E · Esc 일시 정지"
+	if _drag_available:
+		_controls.text += "\n마우스 잠금이 안 되면 왼쪽 버튼 드래그로 둘러봐요."
+
+func set_look_mode(value: String) -> void:
+	_look_mode = value
+
 func refresh(state: Dictionary) -> void:
 	_ended = Outcome.ended(state)
 	_outcome_heading = Outcome.heading(state) if _ended else ""
@@ -171,3 +187,5 @@ func set_target(active: bool, position_3d: Vector3 = Vector3.ZERO, facing: Vecto
 	var relative := "앞쪽" if absf(angle) < PI/4 else ("뒤쪽" if absf(angle) > 3*PI/4 else "오른쪽" if angle > 0 else "왼쪽")
 	_hint.text = "[ E ] 단말기를 열어요" if active else "단말기 %s(%s) · 약 %dm. 시설 사이·바깥 통로를 따라 남쪽 입구 로봇 옆으로 돌아와 정면을 바라봐요." % [relative,_direction(target),roundi(Vector2(target.x,target.z).length())]
 	_hint.text += "\n이동 중에는 턴·자원이 바뀌지 않아요."
+	if _look_mode == "drag":
+		_hint.text = "마우스 잠금 대신 왼쪽 버튼 드래그로 둘러봐요.\n" + _hint.text
