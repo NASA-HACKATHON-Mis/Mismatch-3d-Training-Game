@@ -4,6 +4,21 @@ const Mission = preload("res://scenes/main.tscn")
 var checks := 0
 var failures := 0
 
+class FixedWeather extends Node:
+	signal updated(data: Dictionary)
+	var context: Dictionary
+	func _init() -> void:
+		# Keep this communication regression on the genuine older FLR-only case.
+		var raw: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://research/donki-sample.json"))[0]
+		var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://research/donki-sample.metadata.json"))
+		var record := {"record_type":"FLR", "event_id":raw.flrID, "observed_at":raw.beginTime, "class_type":raw.classType, "source_url":raw.link}
+		context = record.duplicate(true)
+		context.merge({"mode":"archive", "fetched_at":meta.retrieved_at, "status":"ready", "explanation":"보관 관측을 사용하는 교육용 훈련",
+			"records":{"FLR":[record], "SEP":[], "CME":[]}, "sources":{"FLR":{"mode":"archive", "fetched_at":meta.retrieved_at, "request_url":meta.request_url}}})
+	func freeze() -> Dictionary: return context.duplicate(true)
+	func get_context() -> Dictionary: return context.duplicate(true)
+	func start() -> void: updated.emit(get_context())
+
 func _initialize() -> void: call_deferred("_run")
 func check(ok: bool, label: String) -> void:
 	checks += 1
@@ -16,6 +31,8 @@ func settle() -> void:
 func _run() -> void:
 	OS.set_environment("LUNAR_OFFLINE", "1")
 	var game = Mission.instantiate()
+	game._weather.free()
+	game._weather = FixedWeather.new()
 	root.add_child(game)
 	game.set_physics_process(false)
 	game.player.set_physics_process(false)
