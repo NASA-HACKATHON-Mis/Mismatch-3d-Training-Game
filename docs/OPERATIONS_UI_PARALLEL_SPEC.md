@@ -1,6 +1,6 @@
 # 현장 조작·어린이용 기지 운영 화면 명세
 
-작성: 2026-11-15. 상태: 명세·작업 배정, 구현 전. 기준 main `97a9f34` (착수 시 최신 origin/main 재확인).
+작성: 2026-11-15. 상태: A/B/C 구현 main 통합 완료, D 및 E 최종 연결 대기. 기준 main `97a9f34` (착수 시 최신 origin/main 재확인).
 
 ## 목표와 범위
 
@@ -79,4 +79,23 @@ OPS-C: #45 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issue
 OPS-D: #46 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/46
 OPS-E: #47 https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/47
 
-A/B/C/D는 ready, E는 준비 가능·제품 연결은 A/B/C/D 인계 대기다.
+A/B/C는 아래 PR로 구현·검사·main 통합 완료. D는 담당 이슈 #46에서 실제 착수 상태를 확인한다. E는 A/B/C API 인계를 받았고 D 인계 및 최종 제품 연결이 남아 있다. 아래 최초 착수/배정 규칙과 현재 구현 상태를 구분한다.
+
+## A/B/C 구현 인계 — 2026-11-15
+
+검사 제품 main: `7342e58d317e2f5df1671086c17345e0e4a5ce90`. 이후 이 문서 PR은 제품 변경 없음.
+
+| 작업 | 병합 PR / source | 확인 결과 | 인계 상태 |
+| --- | --- | --- | --- |
+| A #43 | PR #50 / 802caca554f6e16e2143ced032cba3b5d51493b2 | 대상 조회14/0, 기존 navigation70/0, import0 | SiteInteraction.configure/resolve_target 제공; E 입력·HUD는 #47 |
+| B #44 | PR #51 / 42290c69c6fe49530b67bb9cd9513116c68e4819, 테스트 보강17d62c145b2bcdee77c82d35a6296ad4d7acf9b0 | core90+preview635+신규28=753/0, world_ui544/0, 실제 렌더28/0 | open_context 선택만 수행; 명시적 건설 버튼. terminal.gd 소유권 #47로 반환 |
+| C #45 | PR #49 / ad24715be15e3a1676ee38334a3869830279ab76 | 전용38/0, 실제 렌더40/0, import0 | ResourceOverview.set_view_model 제공; 단말기 장착은 #47 |
+
+root는 A/B/C 코드와 B의1280×800/960×600, C의840/280 PNG를 확인했다. 병합 제품7342e58에서 import0 및 A14+C38+B28=80개 핵심 확인을 재실행해 모두 통과했다. 독립 branch 검사와 병합본 검사를 구분하며 합산 횟수를 독립 기능 수로 주장하지 않는다.
+
+- A 빈 칸 대상은 패드 표면을 내려다보아 조준한다. 건물은 충돌 표면까지4m, 벽 뒤/거리 밖은 none. player.camera를 resolve_target에 전달한다.
+- B 연결 순서: refresh(session) → open_context(slot_id). -1은 전체 개요. 칸 클릭은 선택만 하며 ‘여기에 짓기’가 실제 draft를 만든다. 기존 edited 등 신호 유지. 960 화면에서 보드25칸·자원·건설 버튼은 보이고 아래 턴/보조 조작은 스크롤한다.
+- C 최소폭280, 폭840 이상 가로3열·그 미만 세로. 현 단말기는 아직 기존 ResourceMeter를 사용하므로 새 그래프가 제품 화면에 장착됐다고 보고하지 않는다.
+- D 시설 카드의 구현을 대신하지 않았다. #47이 실제 Session에서 view model을 만들고 C/D를 장착해야 한다. C 장착 이후 화면 높이는 재확인한다.
+- 실제 Native/Web/iframe 사용자 조작 및 현장 E 최종 흐름은 이번 검사에 포함하지 않았다. #43~#45는 구현 인계 완료·#47 연결 인수 대기로 OPEN 유지한다. 기존 #26~29/#38/#39 인수와 #7 보류를 유지한다.
+- 각 구현 worktree와 브랜치를 보존한다. 사용자 SUBMISSION.md 미커밋 변경은 건드리지 않았다. PPT/영상은 작업하지 않았다.
