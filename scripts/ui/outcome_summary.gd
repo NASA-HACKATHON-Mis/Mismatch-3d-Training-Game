@@ -17,7 +17,7 @@ static func reason(result: Dictionary) -> String:
 	match result.phase:
 		"completed": return "축하해요! 7턴 동안 기지를 운영했어요. 내가 고른 대응과 자원 기록을 확인해요."
 		"failed_power": return "전력이 다 떨어졌어요. 이번 턴 필요 전력은 %d예요. 남은 전력이 0이 되어 중단됐어요.\n산소·재배·식량·보급은 계산 전 중단됐어요." % result.stats.demand
-		"failed_safety": return "대피소에서 대피하지 못했어요. 대피소가 있고 ‘대피하기’를 골라야 안전해요.\n이번 턴 전력·산소·재배·식량·보급은 계산 전 중단됐어요."
+		"failed_safety": return "이번 자료에서 정한 게임 경보는 대피가 필수예요. 대피소를 짓고 ‘대피하기’를 골라야 훈련을 계속해요.\n이번 턴 전력·산소·재배·식량·보급은 계산 전 중단됐어요."
 		"failed_life_support":
 			var depleted: Array[String] = []
 			if after.O <= 0: depleted.append("산소")

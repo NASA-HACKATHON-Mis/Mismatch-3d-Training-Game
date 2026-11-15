@@ -1,0 +1,12 @@
+{
+  "record_type": "CME",
+  "request_url": "https://ccmc.gsfc.nasa.gov/DONKI-API/get/CME?startDate=2024-05-08&endDate=2024-05-13&catalog=M2M_CATALOG&version=Latest",
+  "retrieved_at": "2026-11-15T10:48:20Z",
+  "http_status": 200,
+  "record_count": 21,
+  "sha256": "2802ecb3dc15da06e6f36a23e8c717b3971dbafe879738a8a0a83d212104d1c8",
+  "start_date": "2024-05-08",
+  "end_date": "2024-05-13",
+  "schema_source": "https://ccmc.gsfc.nasa.gov/DONKI/api/openapi/",
+  "note": "Original API response for a common date range. Records are not necessarily one causally linked event; SEP may contain model records. Not a lunar dose or communications-loss measurement."
+}

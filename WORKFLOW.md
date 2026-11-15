@@ -1,5 +1,9 @@
 # 두 사람이 이어서 진행하는 워크플로 — 2026-11-15
 
+## 필수 NASA 활용 보완 — 현재 우선 작업
+
+PR #62의 FLR 수집/표시만으로 필수 자료 활용을 완료한 판단을 정정하고 #58/#61을 재개했다. #58은 FLR/SEP/CME 실제자료, #63은 자료 기반 훈련 규칙, #64는 원인·선택·결과 화면을 각각 별도 worktree로 병렬 구현하며 #61이 통합한다. 현재 명세는 [NASA_GAMEPLAY_FIX](docs/NASA_GAMEPLAY_FIX.md)다. 아래 v0.2 완료 기록보다 이 수정의 연결 PR/이슈 상태와 인수 결과를 우선한다.
+
 ## 최신 feed 픽스 통합
 
 사용자가 승인한 [feed 우선 픽스 명세](docs/FEED_FIX_SPEC.md)에 따라 #58 NASA 자료 / #59 통신 규칙 / #60 화면을 별도 worktree에서 병렬 구현하고 #61에서 통합했다. 검사 제품 SHA `9ff9639`: Godot import 성공, 핵심 headless 997/0, 실제 OpenGL 렌더 144/0 및 두 해상도 PNG 확인. 실제 NASA API/Godot 요청 성공과 모의 실패 대체를 구분해 기록했다.
@@ -234,3 +238,5 @@ MVP 자산·wrapper 통합은 `feature/HH-001-core-loop`에 기록되어 있다.
 **팀원 PC / jsjavsj**
 
 > 이 저장소의 README, WORKFLOW, ASSET_BRIEF, START_SPEC, WORK와 GitHub HH-004 이슈를 읽어 줘. 나는 jsjavsj이고 모델링 담당이다. 내 PC의 Blender 버전·Git 신원·계정·브랜치·계약 커밋을 실제 확인해 줘. 다른 PC가 준비됐다고 추정하지 말고, 부족한 공통 준비 조건을 AI가 정리해 줘. 준비 전에는 레퍼런스·치수표·체크리스트만 정리하고, 준비와 claim 확인 뒤 feature/HH-004-assets에서 발전기+1m 큐브를 먼저 제작해 줘. 자산 경로만 맡고 Godot 씬·충돌·코드는 core 담당에게 남겨 줘. GLB·원본·manifest·검사 결과·커밋을 이슈로 인계해 줘. 기존 승인과 결정을 반복 질문하지 마.
+
+이번 NASA 후속 구현은 실제 자료 조건에 따라 게임 결과가 달라지는 것까지 확인했다. 검사 제품 `4ec6b79`: 핵심 headless1041/0, OpenGL 두 해상도82/0, 실제 Godot FLR/SEP/CME 조회 성공. #58/#63/#64/#61은 연결 PR이 main에 병합되면 구현 완료로 종료한다. 사용자의 Native/Web/iframe 인수 #29/#47 및 제출 보류 #7은 유지한다. 원문/규칙/검사 근거는 NASA 게임 연결 명세를 따른다.

@@ -71,9 +71,17 @@ static func validate_draft(snapshot: Dictionary, draft: Array, pose: Dictionary 
 	return {"state": state}
 
 
+static func communication_delay(state: Dictionary) -> int:
+	return int(state.get("weather", {}).get("communication_delay", 1))
+
+
+static func shelter_required(state: Dictionary) -> bool:
+	return bool(state.get("weather", {}).get("shelter_required", true))
+
+
 static func advice_request_error(state: Dictionary) -> String:
 	if state.phase != "planning": return "turn_closed"
-	if int(state.turn_id) >= 7: return "advice_too_late"
+	if int(state.turn_id) + communication_delay(state) > 7: return "advice_too_late"
 	if not state.get("communication", {}).get("pending", {}).is_empty(): return "advice_pending"
 	if int(state.E) < 1: return "advice_power"
 	return ""
@@ -82,7 +90,7 @@ static func advice_request_error(state: Dictionary) -> String:
 static func _advice_for(state: Dictionary) -> String:
 	if state.turn_id <= 3:
 		return "발전기 고장 때는 저장 전력이 중요해요. 전력이 부족하면 재배를 잠깐 쉬게 해 봐요."
-	if count_kind(state, "shelter") == 0 and state.turn_id <= 4:
+	if shelter_required(state) and count_kind(state, "shelter") == 0 and state.turn_id <= 4:
 		return "우주 날씨 경보에 대비해 대피소를 준비해요. 대피할 때는 재배가 쉬어요."
 	if state.F <= 24:
 		return "남은 식량을 살펴봐요. 재배실은 세 번 가동해야 수확하고 전력도 필요해요."
@@ -117,6 +125,7 @@ static func simulate_turn(snapshot: Dictionary, draft: Array, event_choice: Stri
 	var generation := 0
 	var harvest := 0
 	var supply := 0
+	var protection_energy := 0
 	var farms: Array[Dictionary] = []
 	# A larger cap never adds charge. Removing storage can spill saved power.
 	if state.E > cap:
@@ -135,7 +144,7 @@ static func simulate_turn(snapshot: Dictionary, draft: Array, event_choice: Stri
 		causes.append("advice_received")
 	if advice_request:
 		state.E -= 1
-		communication.pending = {"requested_turn": turn, "reply_turn": turn + 1}
+		communication.pending = {"requested_turn": turn, "reply_turn": turn + communication_delay(state)}
 		communication.message = ""
 		communication.response_turn = -1
 		causes.append("advice_requested")
@@ -147,17 +156,22 @@ static func simulate_turn(snapshot: Dictionary, draft: Array, event_choice: Stri
 		state.event_applied["2"] = event_choice
 	if turn == 4:
 		state.event_applied["4"] = event_choice
-		if event_choice != "shelter" or count_kind(state, "shelter") == 0:
+		if (event_choice == "shelter" and count_kind(state, "shelter") == 0) or (event_choice != "shelter" and shelter_required(state)):
 			state.phase = "failed_safety"
 			causes.append("unsafe_weather")
 			return _result(snapshot, state, event_choice, causes, applied, remaining, {})
-		causes.append("sheltered")
+		if event_choice == "shelter":
+			causes.append("sheltered")
+			protection_energy = int(state.get("weather", {}).get("protection_energy", 0))
+			if protection_energy > 0: causes.append("weather_protection")
+		else:
+			causes.append("weather_watch_continued")
 	if turn == 5:
 		state.event_applied["5"] = event_choice
 		causes.append("supply_delayed")
 
 	var fault := turn == 2 or turn == 3
-	var stop_farms: bool = turn == 4 or (fault and state.fault_mode == "conserve")
+	var stop_farms: bool = (turn == 4 and event_choice == "shelter") or (fault and state.fault_mode == "conserve")
 	if fault:
 		causes.append("generators_offline")
 	if stop_farms:
@@ -167,12 +181,13 @@ static func simulate_turn(snapshot: Dictionary, draft: Array, event_choice: Stri
 			generation += 18 if Rules.SUNLIT.has(facility.slot_id) else 12
 		elif facility.type == "greenhouse" and not stop_farms:
 			farms.append(facility)
-	var demand := 6 + 4 * farms.size()
+	var demand := 6 + 4 * farms.size() + protection_energy
 	var available: int = state.E + generation
 	state.E = mini(cap, maxi(0, available - demand))
 	applied.append("power")
 	remaining.pop_front()
 	var stats := {"generation": generation, "demand": demand, "harvest": 0, "supply": 0}
+	if state.has("weather"): stats.protection_energy = protection_energy
 	if available <= demand:
 		state.phase = "failed_power"
 		causes.append("power_depleted")
@@ -217,4 +232,5 @@ static func _result(before: Dictionary, after: Dictionary, choice: String, cause
 		"stats": stats,
 		"event_choice": choice,
 		"communication_cost": 1 if causes.has("advice_requested") else 0,
+		"weather_profile": after.get("weather", {}).duplicate(true),
 	}

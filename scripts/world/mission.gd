@@ -7,6 +7,7 @@ const Session = preload("res://scripts/simulation/snapshot_store.gd")
 const UI = preload("res://scripts/ui/ui_style.gd")
 const SiteInteraction = preload("res://scripts/world/site_interaction.gd")
 const SpaceWeather = preload("res://scripts/data/space_weather.gd")
+const WeatherRules = preload("res://scripts/simulation/weather_rules.gd")
 var _site_interaction = SiteInteraction.new()
 var _weather = SpaceWeather.new()
 var _weather_context: Dictionary = {}
@@ -71,7 +72,7 @@ func _ready() -> void:
 	_set_mode("pause")
 	# Tests/offline launches can opt out without changing the shipped service.
 	if OS.get_environment("LUNAR_OFFLINE") == "1":
-		_on_weather_updated(_weather.freeze())
+		_freeze_weather()
 	else:
 		_weather.start()
 		_on_weather_updated(_weather.get_context())
@@ -79,12 +80,22 @@ func _ready() -> void:
 
 func _on_weather_updated(data: Dictionary) -> void:
 	_weather_context = data.duplicate(true)
-	terminal.set_weather_context(_weather_context)
-	help.set_weather_context(_weather_context)
+	var presentation := _weather_context.duplicate(true)
+	var profile: Dictionary = session.state.get("weather", {})
+	presentation.training_profile = profile.duplicate(true) if not profile.is_empty() else WeatherRules.build(data)
+	terminal.set_weather_context(presentation)
+	help.set_weather_context(presentation)
 
 
-func _freeze_weather() -> void:
-	_on_weather_updated(_weather.freeze())
+func _freeze_weather() -> bool:
+	var context: Dictionary = _weather.freeze()
+	var configured: Dictionary = session.configure_weather(context)
+	if configured.has("error"):
+		terminal.set_notice("이번 훈련의 자료를 고정하지 못했어요. 게임을 다시 열어 주세요.", true)
+		return false
+	_on_weather_updated(context)
+	_refresh()
+	return true
 
 
 func _set_advice_request(enabled: bool) -> void:
@@ -97,7 +108,7 @@ func _set_advice_request(enabled: bool) -> void:
 func _advice_error(code: String) -> String:
 	match code:
 		"advice_pending": return "지구의 답장을 기다리는 중이에요."
-		"advice_too_late": return "마지막 턴에는 새 조언을 요청할 수 없어요."
+		"advice_too_late": return "훈련이 끝나기 전에 답장을 받을 시간이 없어요."
 		"advice_power": return "조언 요청에 저장 전력 1이 필요해요."
 	return "지금은 요청을 바꿀 수 없어요. 턴과 남은 전력을 확인해요."
 
@@ -191,7 +202,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _start_exploring() -> void:
 	if mode == "pause" and not help.visible:
-		_freeze_weather()
+		if not _freeze_weather(): return
 		_capture_elapsed = 0.0
 		hud.set_input_notice(UI.trn("마우스 잠금을 기다리고 있어요. Esc로 취소할 수 있어요.",
 			"Waiting for mouse capture. Press Esc to cancel."))
@@ -298,7 +309,7 @@ func _cancel_draft() -> void:
 
 
 func _commit(event_choice: String) -> void:
-	_freeze_weather()
+	if not _freeze_weather(): return
 	_command_serial += 1
 	var command := {"attempt_id": session.attempt_id, "turn_id": session.state.turn_id,
 		"command_id": _command_serial, "draft": session.draft.duplicate(true), "event_choice": event_choice,
@@ -328,6 +339,8 @@ func _restore(turn_id: int) -> void:
 		pose = {"position": [Rules.SPAWN.x, Rules.SPAWN.y, Rules.SPAWN.z], "yaw": 0.0, "pitch": 0.0}
 	player.apply_pose(pose)
 	session.state.player = pose.duplicate(true)
+	var profile: Dictionary = session.state.get("weather", {})
+	if not profile.is_empty(): _on_weather_updated(profile.context)
 	terminal.on_restore(turn_id)
 	_refresh()
 	_set_mode("terminal")
