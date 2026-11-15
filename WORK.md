@@ -426,4 +426,4 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - headless DisplayServer는 실제 포인터 권한을 제공하지 않는다. 입력 상태 검사는 잠금 결과를 주입하며, E 검사는 실제 물리 ray 결과를 입력 처리기에 공급한다. 이 검사를 실제 브라우저 권한/입력 검사로 표시하지 않는다.
 - PM은 변경 전 Native 화면에서 시작 클릭·E 단말기 열기·Esc 일시정지를 확인했다. Native 정상 시작 정지는 미재현이며 단말기 자체의 별도 충돌 결함도 확인되지 않았다. 최종 Native 화면 및 Chrome/Edge 직접 클릭·잠금 거부·Esc/포커스 복귀·iframe 입력 검사는 미실행이다. Windows Computer Use가 브라우저 URL 정책 확인 불가로 중단되어 추가 UI 조작을 하지 않았다.
 - Web export 성공(exit 0), `build/web/index.pck` SHA-256 `5526aa8f6a61da6915aa0b3f7a7402c99f205ee8e14af86a0644a8fa5b47fba3`. 모델·폰트 import의 줄바꿈만 바뀐 부수 파일 8개는 내용 차이가 없음을 확인하고 작업 전 상태로 복구했다.
-- #11은 OPEN으로 유지한다. `Refs #11` PR을 준비하며 실제 브라우저 입력 인수 전 main 병합·이슈 종료를 보류한다. #12는 #11 검증·통합 대기 상태를 유지한다. 외부 terrain 위치 복원 시 기존 안전 위치 판정에 따른 spawn 복귀는 기존 계약 그대로다.
+- 검증한 소스 커밋 `78a1affc49938eca9c771a94564f4d87430fcb64`를 작업 브랜치에 push하고 [PR #18](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/pull/18)을 `Refs #11`, OPEN/DRAFT로 생성했다. 독립 Verifier가 커밋과 검증 파일 해시의 일치를 확인했다. #11 본문에도 결과·PR·미실행 조건을 반영했다. #11은 OPEN이며 실제 브라우저 입력 인수 전 main 병합·이슈 종료를 보류한다. #12는 #11 검증·통합 대기 상태를 유지한다. 외부 terrain 위치 복원 시 기존 안전 위치 판정에 따른 spawn 복귀는 기존 계약 그대로다.
