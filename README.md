@@ -107,6 +107,7 @@ godot --headless --path . --script res://scripts/simulation/tests/nasa_data.gd
 godot --headless --path . --script res://scripts/simulation/tests/nasa_integration.gd
 godot --headless --path . --script res://scripts/simulation/tests/operations_integration.gd
 godot --headless --path . --script res://scripts/simulation/tests/map_navigation.gd
+godot --headless --path . --script res://scripts/simulation/tests/english_ui.gd
 ```
 
 Automated checks cover rules, provenance/fallback, frozen data, rewind, local-only construction, maps and panel returns. Render checks at 1280×800 and 960×600 are distinct from actual child acceptance. The Windows launcher has been exercised from an empty engine folder through download, checksum, import and game startup, plus installed-engine reuse and outside-project path rejection.

@@ -6,6 +6,7 @@ Scope: English game/UI/guide, existing seven-slide presentation, honest NASA sna
 
 | Area | Result | Evidence |
 | --- | --- | --- |
+| Runtime English across actual play | 106 UI states, 24,424 displayed/tooltip strings (673 unique), no Hangul; 24,663 assertions passed | `english_ui.gd`, including help, map, site, history, rewind, success and failure routes |
 | Core resource/simulation contract | 90 checks, zero failures | `core_contract.gd` |
 | Real archive/provenance, fallback, empty results and freeze | 74 checks, zero failures | `nasa_data.gd` |
 | Actual archive → seven turns → rewind | 36 checks, zero failures | `nasa_integration.gd` |
