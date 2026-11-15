@@ -536,3 +536,13 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 추가 핵심실측: Edge/Chrome 각각 T1 20/60/36 captured explore→실제Alt-Tab/창복귀pause→게임클릭없이W/D각10회후구도·자원불변→재개버튼클릭pointerlock/E힌트→Esc pause 확인. pause배경좌클릭재개도 기존계약이며 Edge초기drag에포함된좌클릭재개는코드대조정상동작이다. ‘버튼만재개’로주장하지않음. 비클릭마우스hover미제공으로단독시선잠김수동시험은미실행명시. 최종matrix추가후독립승인요청.
 
 - 최종 인수 정리: #16 요구 범위의 Chrome/Edge 실제 성공·3종중단·복원·비교·관찰/포커스 입력·로딩 증거와 미실행 환경을 함께 정리했다. 제품 소스3d6372a/main042ea34는 그대로이며 독립자동검사4,338개를 새로 재실행한 것으로 기록하지 않는다. 후속 검증은 문서4개만 PR 일반merge하고 #16 상태를 완료로 동기화한다. 앞선 미커밋/OPEN/검증대기 문구는 당시 진행 이력이다. #7보류/배포없음 유지.
+
+## 플레이 경험 추가 작업 배정 — 2026-11-15
+
+- 사용자 요청: 로컬 최신화 후 명세 게시, 이슈 생성, 본인과 팀원으로 작업 분배.
+- origin/main 1a959edd6e55eab0a0e870ce084c666074cd24c5를 fetch하고 로컬 main을 fast-forward했다. 기존 SUBMISSION.md 초안 변경은 해시 대조로 보존하고 게시에서 제외했다.
+- 명세: [플레이 경험 개선](docs/PLAY_EXPERIENCE_SPEC.md). 최신 UX-R01~06 완료 상태와 비동기 마우스 캡처 구현을 반영했다. 이번 범위는 기존 디자인 전담 역할 대신 두 사람이 구현을 나눈다.
+- 본인 dyhan0528: [#25 게이지](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/25), [#28 마우스](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/28), [#29 최종 통합](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/29).
+- 팀원 jsjavsj: [#26 팔·다리](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/26), [#27 점프·중력](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/27), 최종 통합 교차 검증.
+- 실제 이슈 5개 생성 후 OPEN 상태와 assignee를 재조회했다. #25/#26 → #28/#27 병렬 진행 후 #29에서 연결한다. 공통 파일은 소유권 반환 후 순차 수정한다.
+- 문서 게시 브랜치 docs/play-experience-plan, 최초 명세 커밋 988a44b. 변경은 명세/README/WORKFLOW/WORK뿐이다. 게임 구현·실행 검증·배포·제출은 이번 작업 범위가 아니다. #7 제출 보류 및 기존 완료 이슈는 유지한다.

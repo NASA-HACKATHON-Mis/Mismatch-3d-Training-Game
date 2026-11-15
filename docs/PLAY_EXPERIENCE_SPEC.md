@@ -109,6 +109,16 @@
 
 ### 두 사람의 담당과 시작 순서
 
+실제 GitHub 작업판(전체 OPEN / 구현 전):
+
+| 이슈 | 작업 | 담당 | 선행 조건 |
+| --- | --- | --- | --- |
+| [#25](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/25) | PE-01 게이지 | dyhan0528 | 독립 착수 가능 |
+| [#26](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/26) | PE-02 팔·다리 | jsjavsj | 독립 착수 가능 |
+| [#27](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/27) | PE-03 점프·중력 | jsjavsj | 독립 착수 가능; 담당자 작업 순서는 #26 다음 권장 |
+| [#28](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/28) | PE-04 마우스 | dyhan0528 | 독립 상태 제어 준비 가능; 담당자 작업 순서는 #25 다음 권장 |
+| [#29](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/29) | PE-05 통합 | dyhan0528 / jsjavsj 교차 검증 | #25~28 구현·검사·소유권 반환 대기 |
+
 | 사람 | 담당 | 권장 작업 브랜치 | 시작/종료 조건 |
 | --- | --- | --- | --- |
 | 본인 dyhan0528 | A: PE-01 게이지 | feature/PE-01-resource-gauges | 명세 게시 후 독립 착수 가능 |
