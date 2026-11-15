@@ -1,4 +1,5 @@
 extends SceneTree
+const Fixture = preload("res://scripts/simulation/tests/ui_fixture.gd")
 ## Checks the shipped Korean guide with the actual offline data and game controls.
 
 const Mission = preload("res://scenes/main.tscn")
@@ -65,11 +66,11 @@ func _run() -> void:
 		"Escape closes help first and returns to the console")
 	_check(game.session.state == begin.state, "Reading help does not advance a turn or change the game state")
 
-	game._edit("place", 0, "generator")
+	Fixture.edit(game, "place", 0, "generator")
 	game._commit("")
 	game._commit("normal")
 	game._restore(2)
-	game._edit("place", 11, "battery")
+	Fixture.edit(game, "place", 11, "battery")
 	game._commit("conserve")
 	var compared: Dictionary = game.session.compare_turn(2)
 	_check(not compared.is_empty() and Learning.comparison_prompt(compared).contains("배치와 대응"),

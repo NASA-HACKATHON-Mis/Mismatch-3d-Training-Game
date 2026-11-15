@@ -1,4 +1,5 @@
 extends SceneTree
+const Fixture = preload("res://scripts/simulation/tests/ui_fixture.gd")
 ## Checks the remaining Blender models through the game's normal scene and turn flow.
 
 const Mission = preload("res://scenes/main.tscn")
@@ -29,9 +30,9 @@ func _run() -> void:
 	var game = Mission.instantiate()
 	root.add_child(game)
 	game._set_mode("terminal")
-	game._edit("place", 7, "generator")
+	Fixture.edit(game, "place", 7, "generator")
 	for kind: String in ["battery", "greenhouse", "shelter"]:
-		game._edit("place", MODELS[kind][0], kind)
+		Fixture.edit(game, "place", MODELS[kind][0], kind)
 
 	var station: Node3D = game.station
 	var wrappers := station.get_node("FacilityWrappers")
@@ -49,7 +50,7 @@ func _run() -> void:
 	_check_guide(station, player)
 
 	game._commit("")
-	game._edit("remove", 13, "")
+	Fixture.edit(game, "remove", 13, "")
 	_check(wrappers.get_node_or_null("Slot13_greenhouse") == null, "Removing the greenhouse removes its wrapper")
 	game._restore(2)
 	var restored := wrappers.get_node_or_null("Slot13_greenhouse/Visual") as Node3D

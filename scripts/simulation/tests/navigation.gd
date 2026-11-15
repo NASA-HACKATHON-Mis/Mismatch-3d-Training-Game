@@ -1,4 +1,5 @@
 extends SceneTree
+const Fixture = preload("res://scripts/simulation/tests/ui_fixture.gd")
 ## Exercise real CharacterBody motion, not only collision rays above the floor.
 const Mission = preload("res://scenes/main.tscn")
 var checks := 0
@@ -38,7 +39,7 @@ func _run() -> void:
 	for phase in ["initial", "placed", "restored"]:
 		if phase == "placed":
 			game._set_mode("terminal")
-			game._edit("place", 0, "generator")
+			Fixture.edit(game, "place", 0, "generator")
 			game._commit("")
 		elif phase == "restored":
 			game._restore(1)

@@ -1,4 +1,5 @@
 extends SceneTree
+const Fixture = preload("res://scripts/simulation/tests/ui_fixture.gd")
 const Mission = preload("res://scenes/main.tscn")
 const Meter = preload("res://scripts/ui/resource_meter.gd")
 const Simulation = preload("res://scripts/simulation/simulation.gd")
@@ -45,9 +46,9 @@ func _run() -> void:
 		var hud = game.hud
 		var initial: Dictionary = game.session.state.duplicate(true)
 		check(hud._energy.caption.text == "전력 20/20" and hud._oxygen.caption.text == "생명 유지 · 산소 60/100" and hud._food.caption.text == "식량 36/100", "Initial resources")
-		game._edit("place", 11, "battery")
+		Fixture.edit(game, "place", 11, "battery")
 		check(hud._energy.caption.text == "전력 20/20", "Unconfirmed battery does not change HUD")
-		game._edit("place", 0, "generator")
+		Fixture.edit(game, "place", 0, "generator")
 		var expected: Dictionary = Simulation.simulate_turn(initial, game.session.draft, "", game.player.pose())
 		hud.refresh(game.session.state)
 		check(game.session.state == initial, "HUD does not mutate state")

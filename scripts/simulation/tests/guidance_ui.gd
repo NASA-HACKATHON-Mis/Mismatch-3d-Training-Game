@@ -1,4 +1,5 @@
 extends SceneTree
+const Fixture = preload("res://scripts/simulation/tests/ui_fixture.gd")
 ## State/geometry checks also run headless. --render writes real viewport images.
 const Mission = preload("res://scenes/main.tscn")
 var checks := 0
@@ -86,12 +87,12 @@ func _run() -> void:
 		check(game.session.state == original and game.session.attempt_id == attempt and game.session.draft.is_empty(), "Guide only changes presentation")
 		game._set_mode("terminal")
 		await settle()
-		check(game.terminal._guide_text.text.begins_with("1"), "T1 next action")
+		check(game.terminal._guide_text.text.contains("가까이 가서 1"), "T1 directs construction to the physical site")
 		check(not game.terminal._history_body.visible and game.terminal._history_empty.visible, "Empty history explained")
 		_geometry(view, game.terminal, tag + " console")
 		await capture(view, tag + "-console")
-		game._edit("place",0,"generator")
-		check(game.terminal._guide_text.text.begins_with("3"), "Placement advances guidance")
+		Fixture.edit(game, "place",0,"generator")
+		check(game.terminal._guide_text.text.contains("이번 턴 진행"), "Prepared placement advances guidance")
 		game._commit("")
 		check(game.session.state.turn_id == 2 and game.terminal._guide_text.text.contains("대응"), "T2 requests event choice")
 		await settle()

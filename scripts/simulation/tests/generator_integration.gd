@@ -1,4 +1,5 @@
 extends SceneTree
+const Fixture = preload("res://scripts/simulation/tests/ui_fixture.gd")
 ## Checks the teammate's imported model as rendered by the actual station.
 
 const Mission = preload("res://scenes/main.tscn")
@@ -52,8 +53,8 @@ func _run() -> void:
 	var game = Mission.instantiate()
 	root.add_child(game)
 	game._set_mode("terminal")
-	game._edit("place", 17, "generator")
-	game._edit("place", 18, "generator")
+	Fixture.edit(game, "place", 17, "generator")
+	Fixture.edit(game, "place", 18, "generator")
 	var station: Node3D = game.station
 	var first := station.get_node_or_null("FacilityWrappers/Slot17_generator") as Node3D
 	var second := station.get_node_or_null("FacilityWrappers/Slot18_generator") as Node3D
