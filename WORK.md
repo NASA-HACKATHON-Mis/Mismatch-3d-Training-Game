@@ -368,19 +368,27 @@ pending 또는 부작용 unknown 상태에서는 재시도하지 않는다. 시�
 - 2026-11-15: 사용자 승인에 따라 refactor_docs_worker가 읽기 쉬운 명세 v1.1, 상세 수용 기준, 실제 GitHub 작업 이슈 6개를 준비한다. 사용자는 개발하지 않고 Codex가 구현과 별도 검증을 맡는다. dyhan0528는 제품 Owner이며 개발 assignee로 배정하지 않는다. jsjavsj의 추가 모델 작업도 배정하지 않는다.
 - 현재 기준: `docs/HH-007-submission-prep` / `9907d51d54b0b3a638cd61a6c7de29f46ff46e49`. 기존 SUBMISSION.md dirty와 Git 제외 LOCAL_BACKLOG.md를 보존한다. #1~6 CLOSED, #7 OPEN/제출 보류를 실제 조회했다.
 - UX-DOC-001 completed: UX_REDESIGN_SPEC.md를 쉬운 6묶음으로 개편하고 docs/UX_ACCEPTANCE.md에 상세30항목을 보존, README 진입점을 갱신한다. 독립 Verifier 검토 뒤 명시 파일만 commit한다. 제품 코드는 변경하지 않는다.
-- UX-PUBLISH-001 executing: 승인 저장소 `NASA-HACKATHON-Mis/Mismatch-3d-Training-Game`, 문서 브랜치 `docs/UX-refactoring-plan` 생성 및 명시 문서 commit/push. main·기존 core·모델 브랜치·SUBMISSION·로컬 백로그는 게시 대상이 아니다. 요청 근거는 사용자의 문서 업데이트·이슈 작성 진행 승인이다.
-- UX-ISSUES-001 unrequested: 같은 저장소에 UX-R01~06 중복 조회 후 create/update, 본문 파일은 logs/ux-refactor/UX-R01.md~UX-R06.md. 응답 후 실제 이슈를 재조회한다. 상태 불명확 시 조회로 대조하고 중복 생성하지 않는다. 기존 완료 이슈와 #7은 수정하지 않는다.
-- 준비 상태: 로컬 초안, 문서 검토 및 원격 등록 대기. 구현 준비 완료나 게임 검증 완료가 아니다. 순서는 R01→R02→R03→R04→R05→R06이며 선행 검증·core 통합 전 후속 이슈는 blocked다. 각 착수 때 실제 Worker/Verifier, claim 및 최신 실행 기준 SHA를 확정한다.
+- UX-PUBLISH-001 completed: 승인 저장소 `NASA-HACKATHON-Mis/Mismatch-3d-Training-Game`, 문서 브랜치 `docs/UX-refactoring-plan` 생성 및 명시 문서 commit/push. main·기존 core·모델 브랜치·SUBMISSION·로컬 백로그는 게시 대상이 아니다. 요청 근거는 사용자의 문서 업데이트·이슈 작성 진행 승인이다.
+- UX-ISSUES-001 completed: 같은 저장소에 UX-R01~06 중복 조회 후 create/update, 본문 파일은 logs/ux-refactor/UX-R01.md~UX-R06.md. 응답 후 실제 이슈를 재조회한다. 상태 불명확 시 조회로 대조하고 중복 생성하지 않는다. 기존 완료 이슈와 #7은 수정하지 않는다.
+- 준비 상태: 문서 독립 검토·원격 게시와 이슈6개 등록 완료. 구현 준비 완료나 게임 검증 완료가 아니다. 순서는 R01→R02→R03→R04→R05→R06이며 선행 검증·core 통합 전 후속 이슈는 blocked다. 각 착수 때 실제 Worker/Verifier, claim 및 최신 실행 기준 SHA를 확정한다.
 
 | 작업 | 범위 | 실제 이슈 | 상태 |
 | --- | --- | --- | --- |
-| UX-R01 | 시작·단말기·재진입 | 등록 대기 | 착수 점검 대기 |
-| UX-R02 | 첫 안내·화면 | 등록 대기 | R01 대기 |
-| UX-R03 | 시설·자원 | 등록 대기 | R02 대기 |
-| UX-R04 | 성공·실패 | 등록 대기 | R03 대기 |
-| UX-R05 | 되감기·비교 | 등록 대기 | R04 대기 |
-| UX-R06 | 사용성·통합 검증 | 등록 대기 | R05 대기 |
+| UX-R01 | 시작·단말기·재진입 | [UX-R01](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/11) | ready / 착수 claim 전 |
+| UX-R02 | 첫 안내·화면 | [UX-R02](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/12) | blocked / UX-R01 통합 대기 |
+| UX-R03 | 시설·자원 | [UX-R03](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/13) | blocked / UX-R02 통합 대기 |
+| UX-R04 | 성공·실패 | [UX-R04](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/14) | blocked / UX-R03 통합 대기 |
+| UX-R05 | 되감기·비교 | [UX-R05](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/15) | blocked / UX-R04 통합 대기 |
+| UX-R06 | 사용성·통합 검증 | [UX-R06](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues/16) | blocked / UX-R05 통합 대기 |
 
 저장 UX-010, 미래 사건 예고 UX-022 및 새 보상·밸런스·이동 생략은 보류다. 이슈6개에는 현재 승인된 개선28항목을 연결하고, 보류2항목도 누락 없이 식별한다.
 
 - refactor_docs_verify 독립 문서 검토 통과: 30 ID 보존, 28 실행+2 보류, 사용자 개발 없음, 규칙 유지, 검사 명령과 상대 링크 확인. 이번 작업은 문서 검사이며 게임 검사는 미실행이다. 게시 후 실제 커밋과 이슈를 다시 대조한다.
+
+- 문서 명세 커밋: ff0b38052f7087e1c3010c558ce230c3a833d67c. docs/UX-refactoring-plan push와 원격 SHA 일치를 확인했다. 이슈 본문은 이 고정 명세 커밋을 참조한다. 이슈 생성 배치는 매 생성 직전 전체 조회로 중복 확인 후 create하고, 생성된 번호/본문/assignee를 조회한다. 런타임 승인 요청 식별자는 제공되지 않았다.
+
+- UX-ISSUES-LINK-001 completed: 실제 생성한 #11~16의 본문을 logs/ux-refactor/UX-R01.md~UX-R06.md로 갱신해 선행 실제 링크와 상태를 맞춘 뒤 재조회한다. 모두 OPEN·assignee 없음이며 명세 ff0b38052f7087e1c3010c558ce230c3a833d67c를 참조한다. 문서 원격 브랜치는 docs/UX-refactoring-plan; 기존 제출 초안은 변경 없이 남아 있다.
+
+- 이슈6개의 실제 본문을 로컬 검토 본문과 정규화해 대조했고 모두 일치했다. R01 ready(착수 claim 전), R02~06 blocked(직전 이슈 검증·core 통합 대기). 제품 수정·게임 검사·main/core 병합·배포·제출은 수행하지 않았다. 다음 작업은 Codex Worker/Verifier를 지정하고 #11에서 실제 환경 재현부터 시작하는 것이다.
+
+- refactor_docs_verify의 원격 독립 대조 통과: #11~16 제목·본문·명세 SHA·assignee 없음·상태·선행 링크 일치, 명세 브랜치 원격 일치, 문서4개만 커밋 및 보호 파일 해시 유지 확인. UX-TRACK-001: 검토한 WORK 작업판만 추가 commit/push하여 최종 인계한다.
