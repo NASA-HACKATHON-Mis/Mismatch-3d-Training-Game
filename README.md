@@ -43,4 +43,4 @@ Windows portable 실행 방법은 [환경 기록](docs/ENVIRONMENT.md)을 따르
 
 [규칙 v0.1](START_SPEC.md) · [작업 기록과 검증 범위](WORK.md) · [팀원 워크플로](WORKFLOW.md) · [모델 제작 규격](ASSET_BRIEF.md) · [GitHub 이슈](https://github.com/NASA-HACKATHON-Mis/Mismatch-3d-Training-Game/issues)
 
-현재 작업은 [UX 리팩터링 계획 v1.2](UX_REDESIGN_SPEC.md)에 따른 기존 게임 개선입니다. dyhan0528는 디자인만 검토하고, 개선 구현 전체는 jsjavsj가 맡습니다. [작업판](WORK.md#ux-리팩터링-작업판)에서 이슈와 순서를 확인하세요. 기존 #1~6은 완료했으며 #7 제출 준비는 보류 중입니다.
+기존 UX 리팩터링 #11~16은 main에 통합되었습니다. 다음 작업은 [플레이 경험 개선 명세](docs/PLAY_EXPERIENCE_SPEC.md)입니다. dyhan0528는 자원 게이지·마우스 제어·최종 통합을, jsjavsj는 캐릭터 표현·점프를 맡아 병렬로 진행합니다. 이번 추가 기능은 구현 전이며 #7 제출 준비는 보류 중입니다.
