@@ -70,7 +70,7 @@ func _run() -> void:
 	game._update_capture(1.0, false)
 	check(game.mode == "explore" and probe.exploring and probe.look_mode == "drag", "Timeout selects drag with movement")
 	check(Input.mouse_mode == Input.MOUSE_MODE_VISIBLE, "Drag leaves cursor free")
-	check(not game.hud._intro.visible and game.hud._status_box.visible, "Drag uses exploration HUD")
+	check(not game.hud._intro.visible and game.hud._map_shortcut.visible, "Drag shows global map shortcut without an interaction target")
 	check(notifications.back() == "drag", "HUD receives persistent look-mode contract")
 	for i in 5: game._physics_process(0.1)
 	check(game.mode == "explore" and game.look_mode == "drag", "Uncaptured drag does not loop to pause")

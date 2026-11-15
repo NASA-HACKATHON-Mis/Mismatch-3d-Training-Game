@@ -14,6 +14,10 @@ window/size/window_height_override=720
 window/stretch/mode="disabled"
 
 [input]
+base_map={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":52), Object(InputEventKey,"keycode":52)]
+}
 site_edit={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":49), Object(InputEventKey,"keycode":49)]

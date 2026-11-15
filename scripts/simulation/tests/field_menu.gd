@@ -57,7 +57,7 @@ func _run() -> void:
 	check(hud._status_box.visible and hud._site_buttons.edit.visible, "Empty site has short square action menu")
 	check(not hud._site_buttons.inspect.disabled, "Empty site supports the same 3D inspection shortcut")
 	check(station._interaction_highlight.visible and station._interaction_highlight.get_child_count() == 8, "Empty site highlights pad corners")
-	check(hud._status_box.size.x <= 448 and hud._status_box.size.y < 160, "Nearby menu replaces the full width notification bar")
+	check(hud._status_box.size.x <= 592 and hud._status_box.size.y < 160, "Nearby menu stays compact with four shortcuts")
 	if "--render" in OS.get_cmdline_user_args():
 		await _capture(viewport, "field-hover.png")
 	var before: Dictionary = session.state.duplicate(true)
