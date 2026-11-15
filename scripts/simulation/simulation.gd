@@ -71,14 +71,35 @@ static func validate_draft(snapshot: Dictionary, draft: Array, pose: Dictionary 
 	return {"state": state}
 
 
+static func advice_request_error(state: Dictionary) -> String:
+	if state.phase != "planning": return "turn_closed"
+	if int(state.turn_id) >= 7: return "advice_too_late"
+	if not state.get("communication", {}).get("pending", {}).is_empty(): return "advice_pending"
+	if int(state.E) < 1: return "advice_power"
+	return ""
+
+
+static func _advice_for(state: Dictionary) -> String:
+	if state.turn_id <= 3:
+		return "발전기 고장 때는 저장 전력이 중요해요. 전력이 부족하면 재배를 잠깐 쉬게 해 봐요."
+	if count_kind(state, "shelter") == 0 and state.turn_id <= 4:
+		return "우주 날씨 경보에 대비해 대피소를 준비해요. 대피할 때는 재배가 쉬어요."
+	if state.F <= 24:
+		return "남은 식량을 살펴봐요. 재배실은 세 번 가동해야 수확하고 전력도 필요해요."
+	return "다음 턴 예상 자원과 시설 비용을 함께 살펴봐요. 바꾸기 전과 후를 비교해 보세요."
+
+
 static func simulate_turn(snapshot: Dictionary, draft: Array, event_choice: String,
-		pose: Dictionary = {}) -> Dictionary:
+		pose: Dictionary = {}, advice_request: bool = false) -> Dictionary:
 	if snapshot.phase != "planning":
 		return {"error": "turn_closed"}
 	var turn: int = snapshot.turn_id
 	var valid := validate_draft(snapshot, draft, pose)
 	if valid.has("error"):
 		return valid
+	if advice_request:
+		var request_error := advice_request_error(valid.state)
+		if not request_error.is_empty(): return {"error": request_error}
 	if turn == 2 and event_choice not in ["normal", "conserve"]:
 		return {"error": "choose_fault"}
 	if turn == 4 and event_choice not in ["shelter", "continue"]:
@@ -101,6 +122,25 @@ static func simulate_turn(snapshot: Dictionary, draft: Array, event_choice: Stri
 	if state.E > cap:
 		state.E = cap
 		causes.append("storage_reduced")
+	# Communication is committed once with this turn, before event/power checks.
+	# A failed turn may still contain a paid request or a received reply; rewind
+	# restores those facts together with all resources.
+	var communication: Dictionary = state.get("communication", {
+		"pending": {}, "message": "", "response_turn": -1}).duplicate(true)
+	var pending: Dictionary = communication.get("pending", {})
+	if not pending.is_empty() and int(pending.reply_turn) <= turn:
+		communication.message = _advice_for(state)
+		communication.response_turn = turn
+		communication.pending = {}
+		causes.append("advice_received")
+	if advice_request:
+		state.E -= 1
+		communication.pending = {"requested_turn": turn, "reply_turn": turn + 1}
+		communication.message = ""
+		communication.response_turn = -1
+		causes.append("advice_requested")
+	if advice_request or causes.has("advice_received"): applied.append("communication")
+	state.communication = communication
 
 	if turn == 2:
 		state.fault_mode = event_choice
@@ -176,4 +216,5 @@ static func _result(before: Dictionary, after: Dictionary, choice: String, cause
 		"not_applied_steps": remaining,
 		"stats": stats,
 		"event_choice": choice,
+		"communication_cost": 1 if causes.has("advice_requested") else 0,
 	}

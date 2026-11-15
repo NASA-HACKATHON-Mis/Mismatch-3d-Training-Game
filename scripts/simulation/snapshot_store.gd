@@ -9,6 +9,7 @@ var current_history := {"snapshots": {}, "results": {}}
 var previous_attempt := {}
 var committed_command_ids := {}
 var draft: Array = []
+var advice_requested := false
 var state: Dictionary
 var _committing := false
 
@@ -59,6 +60,16 @@ func edit(action: String, slot_id: int, kind: String, pose: Dictionary) -> Dicti
 func cancel_draft() -> void:
 	if state.phase == "planning" and not _committing:
 		draft.clear()
+		advice_requested = false
+
+
+func set_advice_request(enabled: bool) -> Dictionary:
+	if _committing or state.phase != "planning": return {"error": "turn_closed"}
+	if enabled:
+		var request_error := Simulation.advice_request_error(state)
+		if not request_error.is_empty(): return {"error": request_error}
+	advice_requested = enabled
+	return {"requested": advice_requested}
 
 
 func commit_turn(command: Dictionary, pose: Dictionary, input_mode: String) -> Dictionary:
@@ -75,8 +86,10 @@ func commit_turn(command: Dictionary, pose: Dictionary, input_mode: String) -> D
 		return {"error": "turn_closed"}
 	if not command.get("draft") is Array or not command.get("event_choice") is String:
 		return {"error": "invalid_draft"}
+	var request: Variant = command.get("advice_request", advice_requested)
+	if not request is bool: return {"error": "invalid_advice_request"}
 	_committing = true
-	var result := Simulation.simulate_turn(snapshot(state.turn_id), command.draft, command.event_choice, pose)
+	var result := Simulation.simulate_turn(snapshot(state.turn_id), command.draft, command.event_choice, pose, request)
 	if result.has("error"):
 		_committing = false
 		return result
@@ -87,6 +100,7 @@ func commit_turn(command: Dictionary, pose: Dictionary, input_mode: String) -> D
 	committed_command_ids[key] = result.duplicate(true)
 	state = result.state_after.duplicate(true)
 	draft.clear()
+	advice_requested = false
 	if state.phase == "turn_complete":
 		state.turn_id += 1
 		state.phase = "planning"
@@ -106,6 +120,7 @@ func restore_turn(turn_id: int) -> Dictionary:
 	attempt_id += 1
 	committed_command_ids.clear()
 	draft.clear()
+	advice_requested = false
 	state = start.duplicate(true)
 	state.input_mode = "terminal"
 	# Earlier turns form the common history. Only this turn and later are replayed.

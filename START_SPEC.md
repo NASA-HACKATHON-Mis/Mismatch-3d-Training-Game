@@ -1,4 +1,6 @@
-# 바로 구현할 시작 계약 — 게임 규칙 v0.1
+# 바로 구현할 시작 계약 — 게임 규칙 v0.2
+
+2026-11-15 변경: 통신 요청을 선택하면 유효한 턴 확정 시 저장 전력 1을 쓰고, 다음 턴 확정에 조언을 받는다. 요청하지 않는 기존 7턴 산술은 그대로다. 최신 화면·자료·통신 범위는 [feed 픽스 명세](docs/FEED_FIX_SPEC.md)를 따른다. 아래 첫 구현·환경 준비 이력은 당시 기록이며 현재 통합 절차는 WORKFLOW의 최신 절을 따른다.
 
 대상: 달기지 리와인드, Blender + Godot/GDScript 1인칭 3D·웹. 작성 기준 2026-11-14 Asia/Seoul.
 **이 문서는 구현할 규칙을 고정한 계약이다. 게임 코드·제품 실행 검증 완료를 뜻하지 않는다. 현재 구현 준비와 claim은 WORK의 최신 실행 준비 해제 기록을 따른다.** 환경·두 PC·자료 검토·claim은 WORKFLOW 순서로 충족한다.
@@ -56,16 +58,24 @@ Godot 일반판 4.7.2 + 동일 export templates를 실행 후보로 사용하고
 | T4 | 우주날씨 경보 | `shelter`는 대피소가 있어야 가능하며 T4 모든 농장 정지. `continue` 또는 대피소 없는 상태는 safety 훈련 중단 |
 | T5 | 보급 지연 | 원래 T5 예정 F12가 T7로 연기됨. T5 지급 없음, T7에 한 번 지급. 확인 버튼만 있고 추가 보상 선택 없음 |
 
-T2와 T4의 선택은 명시적으로 골라야 다음 턴을 확정할 수 있다. 사건 없는 턴에는 별도 선택이 없다. 동일 시나리오의 사건 턴·강도는 되돌린 뒤에도 같다. 보급 지연과 고장은 교육용 가정이다. 우주날씨 경보도 현재 v0.1에서는 교육용 사건이며 실제 DONKI 기록을 수집했다고 주장하지 않는다.
+T2와 T4의 선택은 명시적으로 골라야 다음 턴을 확정할 수 있다. 사건 없는 턴에는 별도 선택이 없다. 동일 시나리오의 사건 턴·강도는 되돌린 뒤에도 같다. 보급 지연과 고장은 교육용 가정이다. 우주날씨 경보도 교육용 사건이다. v0.2는 시작 시 실제 DONKI 최근 FLR 조회를 시도하고 실패하면 내장 과거 관측을 사용한다. 관측은 경보 설명의 참고 사례이며 T4 피해를 계산하는 입력이 아니다.
+
+### 4.1 지구에 조언 요청
+
+- 확정 전 요청 토글·취소에는 비용이 없다. 유효한 턴 확정 시 저장 전력 E에서 1을 한 번만 뺀다. 발전으로 얻을 전력이 아니라 요청 전 저장 E가 1 이상이어야 한다.
+- 요청은 한 번에 1개다. T1에서 확정한 요청은 T2 확정 때 답장이 도착한다. 도착 예정 턴에도 기존 요청이 대기 중이면 새 요청을 예약하지 않는다. T7 신규 요청은 불가다.
+- 답장은 상황별 짧은 조언이며 자원 보상을 주지 않는다. 이 대기는 게임의 상담 처리 시간이며 실제 지구·달 전파 시간의 재현이 아니다.
+- 요청·답장·비용은 전체 상태와 함께 되감긴다. 이번 변경 취소는 요청 토글도 취소한다. 동일 명령 재전송은 비용이나 답장을 중복 적용하지 않는다.
+- 산술 예: 추가 시설 없이 T1 요청 확정 시 E=20-1-6=13, T2 절약 선택 확정 시 E=13-6=7 및 답장 도착. T1 시작으로 되감으면 E20·요청 없음으로 복원한다.
 
 ## 5. 정확한 턴 처리 순서
 
 입력은 `TurnCommand(attempt_id, turn_id, command_id, draft, event_choice)`다. command.attempt_id가 현재 시도와 다르면 늦게 도착한 이전 분기 요청을 거절하고 상태를 바꾸지 않는다. 현재 시도에서 이미 확정된 동일 turn_id/command_id는 저장된 결과만 반환한다. 그 외 command.turn_id가 현재 턴과 다르면 거절한다. 한 번 확정 중에는 버튼과 편집을 잠근다.
 
-1. 턴 시작 snapshot에서 draft의 합법성·예산·필수 거주실을 검증한다. 불법이면 오류만 반환한다.
+1. 턴 시작 snapshot에서 draft의 합법성·예산·필수 거주실·사건 선택·통신 요청 가능 여부를 검증한다. 불법이면 오류만 반환한다. command의 선택 인자 `advice_request`는 생략하면 Session의 요청 토글을 따른다.
 2. 격자·예산·시설 변경을 적용하고 배터리 제거로 줄어든 E cap를 적용한다.
-3. T2 선택을 T3까지 지속할 모드로 기록하고 이번 턴 사건 상태·가동 농장을 결정한다.
-4. T4 안전 조건 실패면 `failed_safety` 결과를 저장한다. E/O/F/growth 계산은 하지 않는다.
+3. 도착 예정 답장을 전달하고, 새 조언 요청이 있으면 E1을 차감해 다음 턴 답장을 예약한다. 그 뒤 T2 선택을 T3까지 지속할 모드로 기록하고 이번 턴 사건 상태·가동 농장을 결정한다.
+4. T4 안전 조건 실패면 `failed_safety` 결과를 저장한다. 이후 전력 생산·소비/O/F/growth 계산은 하지 않는다. 이미 확정한 통신 비용은 유지한다.
 5. 발전량 G와 수요 D를 계산한다. `D = 6 + 4 * 가동농장수`, `available = E + G`다.
 6. `available <= D`면 `E=max(0, available-D)`로 하고 `failed_power`를 저장한다. O/F/growth/보급은 이 턴에 적용하지 않는다.
 7. 충분하면 `E=min(cap, available-D)`다. 발전 직후 cap를 먼저 적용하지 않아 당일 발전의 직접 사용을 허용한다.
@@ -81,7 +91,7 @@ T2와 T4의 선택은 명시적으로 골라야 다음 턴을 확정할 수 있�
 
 논리 상태는 씬 Node 참조와 분리된 값이다. JSON으로 표현 가능한 원시 값/배열/사전만 저장하고 깊은 복사한다. 위치 Vector3는 숫자3개로 직렬화한다.
 
-- `Scenario`: scenario_id, rule_version='0.1', fixed_slots, fixed_events, source_labels.
+- `Scenario`: scenario_id, rule_version='0.2', fixed_slots, fixed_events, source_labels.
 - `GameState`: turn_id, phase, grid[25], E/O/F, budget, next_instance_id, facilities(instance_id/type/slot_id/actual_paid_cost/growth), fault_mode, event_schedule, event_applied, supply_delivered, mission_progress, player(position/yaw/pitch), input_mode.
 - `Snapshot`: 턴 편집 전 GameState 전체. 규칙·시나리오 ID 포함. 이번 draft와 UI의 가변 객체를 공유하지 않는다.
 - `TurnResult`: turn_id, command_id, phase, state_after, delta, causes, applied_steps, not_applied_steps. 실패와 완료를 구분한다.
@@ -92,6 +102,8 @@ T2와 T4의 선택은 명시적으로 골라야 다음 턴을 확정할 수 있�
 - `restore_turn(turn_id)`: 아래 복원 계약 수행. `compare_turn(turn_id)`는 양쪽 결과가 존재할 때만 비교한다.
 
 `Station`은 GameState를 읽어 slot_id→시설 wrapper를 재구성한다. Terminal의 row/col과 Station의 slot_id는 같은 매핑이다. 시각 메시가 자원 상태를 소유하지 않는다. 파일 구조는 SPEC의 계획을 따른다.
+
+v0.2에서 GameState에 `communication={pending:{requested_turn,reply_turn},message,response_turn}`을 추가한다. 대기 없음은 빈 pending 사전이며 초기 response_turn은 -1이다. Session은 미확정 `advice_requested`를 관리하며 취소/확정/되감기에 초기화한다. `simulate_turn`과 `Preview.inspect`의 다섯 번째 선택 인자는 `advice_request=false`다. TurnResult의 `communication_cost`는 0 또는 1이다. snapshot은 메모리에만 존재하며 이전 버전 저장 파일을 읽는 마이그레이션 기능은 제공하지 않는다.
 
 ## 7. 복원·시도 비교
 
